@@ -1,0 +1,6 @@
+@QmtdltTools_HostAddress = http://localhost:5183
+
+GET {{QmtdltTools_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

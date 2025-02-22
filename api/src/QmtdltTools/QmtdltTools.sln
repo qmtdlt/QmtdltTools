@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QmtdltTools", "QmtdltTools\QmtdltTools.csproj", "{5306A4BE-90F8-4C27-8ADD-26002039EFFB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QmtdltTools.Domain", "QmtdltTools.Domain\QmtdltTools.Domain.csproj", "{7F881ED1-753E-4F8C-B296-C189231EE0D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QmtdltTools.EFCore", "QmtdltTools.EFCore\QmtdltTools.EFCore.csproj", "{19B0ED25-8ED4-4A2A-A76D-D5AE9355D22D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QmtdltTools.Service", "QmtdltTools.Service\QmtdltTools.Service.csproj", "{42C6F3F9-F15B-42AF-8B0A-C5B1AB0F31FB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5306A4BE-90F8-4C27-8ADD-26002039EFFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5306A4BE-90F8-4C27-8ADD-26002039EFFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5306A4BE-90F8-4C27-8ADD-26002039EFFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5306A4BE-90F8-4C27-8ADD-26002039EFFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F881ED1-753E-4F8C-B296-C189231EE0D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F881ED1-753E-4F8C-B296-C189231EE0D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F881ED1-753E-4F8C-B296-C189231EE0D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F881ED1-753E-4F8C-B296-C189231EE0D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19B0ED25-8ED4-4A2A-A76D-D5AE9355D22D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19B0ED25-8ED4-4A2A-A76D-D5AE9355D22D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19B0ED25-8ED4-4A2A-A76D-D5AE9355D22D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19B0ED25-8ED4-4A2A-A76D-D5AE9355D22D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42C6F3F9-F15B-42AF-8B0A-C5B1AB0F31FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42C6F3F9-F15B-42AF-8B0A-C5B1AB0F31FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42C6F3F9-F15B-42AF-8B0A-C5B1AB0F31FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42C6F3F9-F15B-42AF-8B0A-C5B1AB0F31FB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

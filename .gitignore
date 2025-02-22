@@ -1,0 +1,12 @@
+.DS_Store
+api/src/QmtdltTools/QmtdltTools/bin/
+api/src/QmtdltTools/QmtdltTools/obj/
+
+api/src/QmtdltTools/QmtdltTools.Domain/bin/
+api/src/QmtdltTools/QmtdltTools.Domain/obj/
+
+api/src/QmtdltTools/QmtdltTools.EFCore/bin/
+api/src/QmtdltTools/QmtdltTools.EFCore/obj/
+
+api/src/QmtdltTools/QmtdltTools.Service/bin/
+api/src/QmtdltTools/QmtdltTools.Service/obj/
