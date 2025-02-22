@@ -1,15 +1,17 @@
+using QmtdltTools.EFCore;
 using Volo.Abp.DependencyInjection;
 
 namespace QmtdltTools.Service.Services;
 
 public class TestService:ITransientDependency
 {
-    public TestService()
+    private readonly DC _dc;
+    public TestService(DC dc)
     {
-        
+        _dc = dc;
     }
-    public string GetTest()
+    public string? GetTest()
     {
-        return "Test";
+        return _dc.SysUsers.First().Id.ToString();
     }
 }
