@@ -10,7 +10,8 @@ namespace QmtdltTools.Domain.Entitys
     [Table("DayToDo")]
     public class DayToDo:EntityBaseId
     {
-        public string Content { get; set; }
-        public DateTime FinishTime { get; set; }
+        public string? Content { get; set; }
+        public bool? IsFinish { get; set; }
+        public DateTime? FinishTime { get; set; }
     }
 }
