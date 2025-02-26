@@ -26,4 +26,7 @@ public class DC:AbpDbContext<DC>
         }
     }
     public DbSet<SysUser> SysUsers { get; set; }
+    public DbSet<EBookEntity> EBooks { get; set; }
+    public DbSet<DayToDo> DayToDos { get; set; }
+    public DbSet<YearToDo> YearToDos { get; set; }
 }

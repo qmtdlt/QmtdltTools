@@ -10,8 +10,7 @@ namespace QmtdltTools.Domain.Entitys
     [Table("YearToDo")]
     public class YearToDo:EntityBaseId
     {
-        public string Content { get; set; }
+        public string? Content { get; set; }
         public DateTime? FinishTime { get; set; }
-        public bool? IsReject { get; set; }
     }
 }
