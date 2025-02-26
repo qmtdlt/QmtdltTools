@@ -40,10 +40,12 @@ public class QmtdltToolsAPIModule:AbpModule
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "QmtdltTools API");
             });
         }
+        // 增加身份认证和授权
+        
+        
         app.UseHttpsRedirection();
         app.UseStaticFiles();
         app.UseRouting();
         app.UseConfiguredEndpoints();
-        
     }
 }
