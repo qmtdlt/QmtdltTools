@@ -1,6 +1,7 @@
 ﻿using Volo.Abp.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc;
 using QmtdltTools.Service.Services;
+using QmtdltTools.Domain.Entitys;
 
 namespace QmtdltTools.Controllers
 {
@@ -18,6 +19,11 @@ namespace QmtdltTools.Controllers
         public async Task AddDayToDoItem(string content)
         {
             await _dayToDoService.AddItem(content);
+        }
+        [HttpPost("DeleteDayToDoItem")]
+        public async Task DeleteDayToDoItem(DayToDo input)
+        {
+            await _dayToDoService.DeleteItem(input.Id);
         }
 
         [HttpGet("GetDayUnFinishedList")]
