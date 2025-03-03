@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121.
+-->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>E:\myprj\QmtdltTools\api\src\QmtdltTools\QmtdltTools\bin\Release\net9.0\publish\</_PublishTargetUrl>
+    <History>True|2025-02-26T11:40:12.5045267Z||;True|2025-02-26T19:39:55.6710316+08:00||;True|2025-02-26T18:50:26.0992040+08:00||;False|2025-02-26T18:47:48.7856862+08:00||;False|2025-02-26T18:47:06.9557438+08:00||;True|2025-02-26T18:46:22.8733265+08:00||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>
