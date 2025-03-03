@@ -32,7 +32,7 @@ public class QmtdltToolsAPIModule:AbpModule
         var env = context.GetEnvironment();
         var app = context.GetApplicationBuilder();
 
-        if (env.IsDevelopment())
+        //if (env.IsDevelopment())
         {
             app.UseSwagger();
             app.UseAbpSwaggerUI(options =>
