@@ -26,6 +26,16 @@ namespace QmtdltTools.Controllers
             await _dayToDoService.DeleteItem(input.Id);
         }
 
+        [HttpPost("MarkAsComplete")]
+        public async Task MarkAsComplete(DayToDo input)
+        {
+            await _dayToDoService.MarkAsComplete(input.Id);
+        }
+        [HttpGet("GetDayFinishedList")]
+        public async Task<List<Domain.Entitys.DayToDo>> GetDayFinishedList()
+        {
+            return await _dayToDoService.GetFinishedList();
+        }
         [HttpGet("GetDayUnFinishedList")]
         public async Task<List<Domain.Entitys.DayToDo>> GetDayUnFinishedList()
         {

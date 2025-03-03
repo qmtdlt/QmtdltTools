@@ -33,6 +33,19 @@ namespace QmtdltTools.Service.Services
             var item = await _dc.DayToDos.FindAsync(id);
             item.Content = content;
             item.UpdateTime = DateTime.Now;
+            _dc.Update(item);
+            await _dc.SaveChangesAsync();
+        }
+
+        public async Task MarkAsComplete(Guid id)
+        {
+            var item = await _dc.DayToDos.FindAsync(id);
+            if (null == item) return;
+
+            item.IsFinish = true;
+            item.UpdateTime = DateTime.Now;
+            item.FinishTime = DateTime.Now;
+            _dc.Update(item);
             await _dc.SaveChangesAsync();
         }
 

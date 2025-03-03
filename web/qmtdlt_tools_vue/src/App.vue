@@ -20,7 +20,7 @@ onMounted(() => {
           to="/" 
           @click="activeRoute = '/'" 
           :class="{ active: activeRoute === '/' }"
-        >Home</RouterLink>
+        >Day ToDo</RouterLink>
         <RouterLink 
           to="/about" 
           @click="activeRoute = '/about'" 
