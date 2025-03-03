@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Check, Delete, Refresh } from '@element-plus/icons-vue'
+import request from '@/utils/request' // Import your request utility
 
 // Type definition for Todo items based on your Swagger schema
 interface DayToDo {
@@ -17,21 +17,65 @@ interface DayToDo {
 }
 
 const todoList = ref<DayToDo[]>([])
+const finishedList = ref<DayToDo[]>([]) // Add this for finished tasks
 const newTodoContent = ref('')
 const loading = ref(false)
-const apiBaseUrl = import.meta.env.VITE_API_URL || ''
+const finishedLoading = ref(false) // Separate loading state for finished tasks
 
 // Fetch the list of unfinished todos
 const fetchTodos = async () => {
   loading.value = true
   try {
-    const response = await axios.get(`${apiBaseUrl}/api/ToDo/GetDayUnFinishedList/GetDayUnFinishedList`)
-    todoList.value = response.data
+    // Using your request utility instead of axios directly
+    const response = await request.get('/api/ToDo/GetDayUnFinishedList/GetDayUnFinishedList')
+    console.log('API Response:', response) // Add this to debug
+    
+    // Check the structure of the response
+    if (response && response.data) {
+      todoList.value = response.data
+    } else if (Array.isArray(response)) {
+      // If the response itself is the array (your utility might unwrap the data)
+      todoList.value = response
+    } else {
+      console.error('Unexpected response format:', response)
+      todoList.value = [] // Set empty array as fallback
+    }
+    
+    console.log('Todo list after assignment:', todoList.value)
   } catch (error) {
     console.error('Failed to fetch todos:', error)
     ElMessage.error('Failed to load todo list')
+    todoList.value = [] // Ensure we have an empty array on error
   } finally {
     loading.value = false
+  }
+}
+
+// Fetch the list of finished todos
+const fetchFinishedTodos = async () => {
+  finishedLoading.value = true
+  try {
+    // Using your request utility instead of axios directly
+    const response = await request.get('/api/ToDo/GetDayFinishedList/GetDayFinishedList')
+    
+    // Check the structure of the response
+    if (response && response.data) {
+      finishedList.value = response.data
+    } else if (Array.isArray(response)) {
+      // If the response itself is the array (your utility might unwrap the data)
+      finishedList.value = response
+    } else {
+      console.error('Unexpected response format for finished tasks:', response)
+      finishedList.value = [] // Set empty array as fallback
+    }
+    
+    console.log('Finished list after assignment:', finishedList.value)
+  } catch (error) {
+    console.error('Failed to fetch finished todos:', error)
+    ElMessage.error('Failed to load finished tasks')
+    finishedList.value = [] // Ensure we have an empty array on error
+  } finally {
+    finishedLoading.value = false
   }
 }
 
@@ -44,7 +88,8 @@ const addTodo = async () => {
   
   loading.value = true
   try {
-    await axios.post(`${apiBaseUrl}/api/ToDo/AddDayToDoItem/AddDayToDoItem`, null, {
+    // Using your request utility instead of axios directly
+    await request.post('/api/ToDo/AddDayToDoItem/AddDayToDoItem', null, {
       params: {
         content: newTodoContent.value
       }
@@ -75,19 +120,45 @@ const deleteTodo = async (todo: DayToDo) => {
     )
     
     loading.value = true
-    await axios.post(`${apiBaseUrl}/api/ToDo/DeleteDayToDoItem/DeleteDayToDoItem`, null, {
+    // Using your request utility instead of axios directly
+    await request.post('/api/ToDo/DeleteDayToDoItem/DeleteDayToDoItem', null, {
       params: {
         Id: todo.id
       }
     })
     
     ElMessage.success('Todo deleted successfully')
-    fetchTodos() // Refresh the list
+    fetchTodos() // Refresh the unfinished list
+    fetchFinishedTodos() // Also refresh the finished list in case a completed task was deleted
   } catch (error) {
     if (error !== 'cancel') {
       console.error('Failed to delete todo:', error)
       ElMessage.error('Failed to delete todo')
     }
+  } finally {
+    loading.value = false
+  }
+}
+
+// Mark todo as complete
+const markAsComplete = async (todo: DayToDo) => {
+  loading.value = true
+  try {
+    // Using your request utility instead of axios directly
+    await request.post('/api/ToDo/MarkAsComplete/MarkAsComplete', null, {
+      params: {
+        Id: todo.id,
+        IsFinish: true,
+        FinishTime: new Date().toISOString()
+      }
+    })
+    
+    ElMessage.success('Todo completed successfully')
+    fetchTodos() // Refresh the unfinished list
+    fetchFinishedTodos() // Also refresh the finished list to show the newly completed item
+  } catch (error) {
+    console.error('Failed to mark todo as complete:', error)
+    ElMessage.error('Failed to mark todo as complete')
   } finally {
     loading.value = false
   }
@@ -100,7 +171,10 @@ const formatDate = (dateString: string | null) => {
 }
 
 // Load todos when the component is mounted
-onMounted(fetchTodos)
+onMounted(() => {
+  fetchTodos()
+  fetchFinishedTodos()
+})
 </script>
 
 <template>
@@ -124,7 +198,7 @@ onMounted(fetchTodos)
       </el-button>
     </div>
     
-    <!-- Todo list -->
+    <!-- Unfinished tasks list -->
     <div class="todo-list">
       <el-card class="todo-card" shadow="hover">
         <template #header>
@@ -140,12 +214,64 @@ onMounted(fetchTodos)
           v-loading="loading"
           :data="todoList"
           style="width: 100%"
-          empty-text="No tasks yet. Add your first task above!"
+          empty-text="No unfinished tasks. Everything done! 🎉"
         >
           <el-table-column prop="content" label="Task" min-width="200" />
           <el-table-column label="Created" width="180">
             <template #default="scope">
               {{ formatDate(scope.row.createTime) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="Actions" width="120" align="center">
+            <template #default="scope">
+              <el-tooltip content="Mark as complete" placement="top">
+                <el-button 
+                  type="success" 
+                  circle 
+                  size="small"
+                  @click="markAsComplete(scope.row)"
+                >
+                  <el-icon><Check /></el-icon>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip content="Delete" placement="top">
+                <el-button 
+                  type="danger" 
+                  circle 
+                  size="small"
+                  @click="deleteTodo(scope.row)"
+                >
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+    </div>
+    
+    <!-- Finished tasks list -->
+    <div class="todo-list">
+      <el-card class="todo-card finished-card" shadow="hover">
+        <template #header>
+          <div class="card-header">
+            <span>Completed Tasks</span>
+            <el-button type="primary" :loading="finishedLoading" @click="fetchFinishedTodos" circle>
+              <el-icon><Refresh /></el-icon>
+            </el-button>
+          </div>
+        </template>
+        
+        <el-table
+          v-loading="finishedLoading"
+          :data="finishedList"
+          style="width: 100%"
+          empty-text="No completed tasks yet. Start by completing a task above!"
+        >
+          <el-table-column prop="content" label="Task" min-width="200" />
+          <el-table-column label="Completed" width="180">
+            <template #default="scope">
+              {{ formatDate(scope.row.finishTime) }}
             </template>
           </el-table-column>
           <el-table-column label="Actions" width="120" align="center">
@@ -189,6 +315,11 @@ onMounted(fetchTodos)
   margin-bottom: 1rem;
 }
 
+.finished-card {
+  margin-top: 2rem;
+  border-top: 1px solid #ebeef5;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -204,5 +335,15 @@ h1 {
 
 .el-table {
   --el-table-header-bg-color: #f0f7ff;
+}
+
+.finished-card .el-table {
+  --el-table-header-bg-color: #f5f7fa;
+  color: #909399;
+}
+
+/* Style for completed tasks */
+.finished-card .el-table .el-table__row {
+  color: #909399;
 }
 </style>
