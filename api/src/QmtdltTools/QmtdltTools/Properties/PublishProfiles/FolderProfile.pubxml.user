@@ -5,7 +5,7 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
 <Project>
   <PropertyGroup>
     <_PublishTargetUrl>E:\myprj\QmtdltTools\api\src\QmtdltTools\QmtdltTools\bin\Release\net9.0\publish\</_PublishTargetUrl>
-    <History>True|2025-03-03T09:25:26.4093684Z||;True|2025-03-03T17:15:34.5590101+08:00||;True|2025-02-26T19:40:12.5045267+08:00||;True|2025-02-26T19:39:55.6710316+08:00||;True|2025-02-26T18:50:26.0992040+08:00||;False|2025-02-26T18:47:48.7856862+08:00||;False|2025-02-26T18:47:06.9557438+08:00||;True|2025-02-26T18:46:22.8733265+08:00||;</History>
+    <History>True|2025-03-04T08:12:52.2068141Z||;True|2025-03-04T16:12:41.5717862+08:00||;True|2025-03-03T17:25:26.4093684+08:00||;True|2025-03-03T17:15:34.5590101+08:00||;True|2025-02-26T19:40:12.5045267+08:00||;True|2025-02-26T19:39:55.6710316+08:00||;True|2025-02-26T18:50:26.0992040+08:00||;False|2025-02-26T18:47:48.7856862+08:00||;False|2025-02-26T18:47:06.9557438+08:00||;True|2025-02-26T18:46:22.8733265+08:00||;</History>
     <LastFailureDetails />
   </PropertyGroup>
 </Project>
