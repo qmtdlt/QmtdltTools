@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Check, Delete, Refresh } from '@element-plus/icons-vue'
+import { Check, Delete, Refresh, ArrowRight, ArrowLeft } from '@element-plus/icons-vue'
 import request from '@/utils/request' // Import your request utility
 
 // Type definition for Todo items based on your Swagger schema
@@ -18,16 +18,18 @@ interface DayToDo {
 
 const todoList = ref<DayToDo[]>([])
 const finishedList = ref<DayToDo[]>([]) // Add this for finished tasks
+const nonCurrentTodoList = ref<DayToDo[]>([]) // Add this for non-current unfinished tasks
 const newTodoContent = ref('')
 const loading = ref(false)
 const finishedLoading = ref(false) // Separate loading state for finished tasks
+const nonCurrentLoading = ref(false) // Separate loading state for non-current tasks
 
 // Fetch the list of unfinished todos
 const fetchTodos = async () => {
   loading.value = true
   try {
     // Using your request utility instead of axios directly
-    const response = await request.get('/api/ToDo/GetDayUnFinishedList/GetDayUnFinishedList')
+    const response = await request.get('/api/ToDo/GetCurrentUnFinishedList/GetCurrentUnFinishedList')
     console.log('API Response:', response) // Add this to debug
     
     // Check the structure of the response
@@ -48,6 +50,34 @@ const fetchTodos = async () => {
     todoList.value = [] // Ensure we have an empty array on error
   } finally {
     loading.value = false
+  }
+}
+
+// Fetch the list of non-current unfinished todos
+const fetchNonCurrentTodos = async () => {
+  nonCurrentLoading.value = true
+  try {
+    // Using your request utility instead of axios directly
+    const response = await request.get('/api/ToDo/GetDayUnFinishedList/GetDayUnFinishedList')
+    
+    // Check the structure of the response
+    if (response && response.data) {
+      nonCurrentTodoList.value = response.data
+    } else if (Array.isArray(response)) {
+      // If the response itself is the array (your utility might unwrap the data)
+      nonCurrentTodoList.value = response
+    } else {
+      console.error('Unexpected response format for non-current tasks:', response)
+      nonCurrentTodoList.value = [] // Set empty array as fallback
+    }
+    
+    console.log('Non-current list after assignment:', nonCurrentTodoList.value)
+  } catch (error) {
+    console.error('Failed to fetch non-current todos:', error)
+    ElMessage.error('Failed to load non-current tasks')
+    nonCurrentTodoList.value = [] // Ensure we have an empty array on error
+  } finally {
+    nonCurrentLoading.value = false
   }
 }
 
@@ -89,15 +119,20 @@ const addTodo = async () => {
   loading.value = true
   try {
     // Using your request utility instead of axios directly
-    await request.post('/api/ToDo/AddDayToDoItem/AddDayToDoItem', null, {
+    const response = await request.post('/api/ToDo/AddDayToDoItem/AddDayToDoItem', null, {
       params: {
         content: newTodoContent.value
       }
     })
     
-    ElMessage.success('Todo added successfully')
-    newTodoContent.value = '' // Clear input
-    fetchTodos() // Refresh the list
+    if (response.data) {
+      ElMessage.success('Todo added successfully')
+      newTodoContent.value = '' // Clear input
+      fetchTodos() // Refresh the current unfinished list
+      fetchNonCurrentTodos() // Refresh the non-current unfinished list
+    } else {
+      ElMessage.error(response.message || 'Failed to add todo')
+    }
   } catch (error) {
     console.error('Failed to add todo:', error)
     ElMessage.error('Failed to add todo')
@@ -130,6 +165,7 @@ const deleteTodo = async (todo: DayToDo) => {
     ElMessage.success('Todo deleted successfully')
     fetchTodos() // Refresh the unfinished list
     fetchFinishedTodos() // Also refresh the finished list in case a completed task was deleted
+    fetchNonCurrentTodos() // Also refresh the non-current list in case a non-current task was deleted
   } catch (error) {
     if (error !== 'cancel') {
       console.error('Failed to delete todo:', error)
@@ -164,6 +200,52 @@ const markAsComplete = async (todo: DayToDo) => {
   }
 }
 
+// Move todo to non-current list
+const moveToNonCurrent = async (todo: DayToDo) => {
+  loading.value = true
+  try {
+    // Using your request utility instead of axios directly
+    await request.post('/api/ToDo/SetItemOutCurrent/SetItemOutCurrent', null, {
+      params: {
+        Id: todo.id,
+        InCurrent: false
+      }
+    })
+    
+    ElMessage.success('Todo moved to non-current list successfully')
+    fetchTodos() // Refresh the current unfinished list
+    fetchNonCurrentTodos() // Refresh the non-current unfinished list
+  } catch (error) {
+    console.error('Failed to move todo to non-current list:', error)
+    ElMessage.error('Failed to move todo to non-current list')
+  } finally {
+    loading.value = false
+  }
+}
+
+// Move todo to current list
+const moveToCurrent = async (todo: DayToDo) => {
+  nonCurrentLoading.value = true
+  try {
+    // Using your request utility instead of axios directly
+    await request.post('/api/ToDo/SetItemInCurrent/SetItemInCurrent', null, {
+      params: {
+        Id: todo.id,
+        InCurrent: true
+      }
+    })
+    
+    ElMessage.success('Todo moved to current list successfully')
+    fetchTodos() // Refresh the current unfinished list
+    fetchNonCurrentTodos() // Refresh the non-current unfinished list
+  } catch (error) {
+    console.error('Failed to move todo to current list:', error)
+    ElMessage.error('Failed to move todo to current list')
+  } finally {
+    nonCurrentLoading.value = false
+  }
+}
+
 // Format date for display
 const formatDate = (dateString: string | null) => {
   if (!dateString) return '-'
@@ -174,6 +256,7 @@ const formatDate = (dateString: string | null) => {
 onMounted(() => {
   fetchTodos()
   fetchFinishedTodos()
+  fetchNonCurrentTodos()
 })
 </script>
 
@@ -198,12 +281,12 @@ onMounted(() => {
       </el-button>
     </div>
     
-    <!-- Unfinished tasks list -->
+    <!-- Current Unfinished tasks list -->
     <div class="todo-list">
       <el-card class="todo-card" shadow="hover">
         <template #header>
           <div class="card-header">
-            <span>Unfinished Tasks</span>
+            <span>Current Unfinished Tasks</span>
             <el-button type="primary" :loading="loading" @click="fetchTodos" circle>
               <el-icon><Refresh /></el-icon>
             </el-button>
@@ -214,7 +297,69 @@ onMounted(() => {
           v-loading="loading"
           :data="todoList"
           style="width: 100%"
-          empty-text="No unfinished tasks. Everything done! 🎉"
+          empty-text="No current unfinished tasks. Everything done! 🎉"
+        >
+          <el-table-column prop="content" label="Task" min-width="200" />
+          <el-table-column label="Created" width="180">
+            <template #default="scope">
+              {{ formatDate(scope.row.createTime) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="Actions" width="180" align="center">
+            <template #default="scope">
+              <el-tooltip content="Move to non-current" placement="top">
+                <el-button 
+                  type="warning" 
+                  circle 
+                  size="small"
+                  @click="moveToNonCurrent(scope.row)"
+                >
+                  <el-icon><ArrowRight /></el-icon>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip content="Mark as complete" placement="top">
+                <el-button 
+                  type="success" 
+                  circle 
+                  size="small"
+                  @click="markAsComplete(scope.row)"
+                >
+                  <el-icon><Check /></el-icon>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip content="Delete" placement="top">
+                <el-button 
+                  type="danger" 
+                  circle 
+                  size="small"
+                  @click="deleteTodo(scope.row)"
+                >
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+    </div>
+    
+    <!-- Non-Current Unfinished tasks list -->
+    <div class="todo-list">
+      <el-card class="todo-card non-current-card" shadow="hover">
+        <template #header>
+          <div class="card-header">
+            <span>Non-Current Unfinished Tasks</span>
+            <el-button type="primary" :loading="nonCurrentLoading" @click="fetchNonCurrentTodos" circle>
+              <el-icon><Refresh /></el-icon>
+            </el-button>
+          </div>
+        </template>
+        
+        <el-table
+          v-loading="nonCurrentLoading"
+          :data="nonCurrentTodoList"
+          style="width: 100%"
+          empty-text="No non-current unfinished tasks."
         >
           <el-table-column prop="content" label="Task" min-width="200" />
           <el-table-column label="Created" width="180">
@@ -224,14 +369,14 @@ onMounted(() => {
           </el-table-column>
           <el-table-column label="Actions" width="120" align="center">
             <template #default="scope">
-              <el-tooltip content="Mark as complete" placement="top">
+              <el-tooltip content="Move to current" placement="top">
                 <el-button 
-                  type="success" 
+                  type="primary" 
                   circle 
                   size="small"
-                  @click="markAsComplete(scope.row)"
+                  @click="moveToCurrent(scope.row)"
                 >
-                  <el-icon><Check /></el-icon>
+                  <el-icon><ArrowLeft /></el-icon>
                 </el-button>
               </el-tooltip>
               <el-tooltip content="Delete" placement="top">
