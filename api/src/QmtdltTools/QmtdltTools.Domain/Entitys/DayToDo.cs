@@ -13,5 +13,6 @@ namespace QmtdltTools.Domain.Entitys
         public string? Content { get; set; }
         public bool? IsFinish { get; set; }
         public DateTime? FinishTime { get; set; }
+        public long? SortBy { get; set; }
     }
 }
