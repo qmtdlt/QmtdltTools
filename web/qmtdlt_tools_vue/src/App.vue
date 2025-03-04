@@ -40,12 +40,19 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f8f9fa;
+
+
+.content {
+  flex: 1;
+  padding: 0; /* 原为2rem */
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 15px rgb(0 0 0 / 5%);
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 .header {
@@ -54,12 +61,14 @@ onMounted(() => {
   align-items: center;
   background: linear-gradient(135deg, #3a7bd5, #3a6073);
   color: white;
-  padding: 0 2rem;
+  padding: 0; /* 原为0 2rem */
   height: 80px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 10%);
   position: sticky;
   top: 0;
   z-index: 100;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .logo h1 {
@@ -91,15 +100,14 @@ onMounted(() => {
 .content {
   flex: 1;
   padding: 2rem;
-  max-width: 1200px;
-  width: 100%;
+  width: 100%; /* Ensure the content takes full width */
   margin: 0 auto;
-  box-sizing: border-box;
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 .content-view {

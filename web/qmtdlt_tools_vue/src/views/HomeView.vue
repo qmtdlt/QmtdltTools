@@ -441,15 +441,15 @@ onMounted(() => {
 
 <style scoped>
 .todo-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
+  width: 100%; /* 添加此行 */
+  margin: 0 auto; /* 保留，实际对width: 100%无影响 */
+  padding: 0.2rem 0.2rem;
 }
 
 .add-todo-form {
   display: flex;
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 0.8rem;
 }
 
 .todo-input {
@@ -457,11 +457,11 @@ onMounted(() => {
 }
 
 .todo-card {
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .finished-card {
-  margin-top: 2rem;
+  margin-top: 0.5rem;
   border-top: 1px solid #ebeef5;
 }
 
@@ -473,7 +473,7 @@ onMounted(() => {
 
 h1 {
   color: #409EFF;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   text-align: center;
   font-weight: 600;
 }
