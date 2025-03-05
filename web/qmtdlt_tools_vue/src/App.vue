@@ -41,11 +41,12 @@ onMounted(() => {
 
 <style scoped>
 
-
+ 
 .content {
   flex: 1;
-  padding: 0; /* 原为2rem */
+  padding: 1rem; /* 原为2rem */
   width: 100%;
+  height: 100%;
   margin: 0 auto;
   box-sizing: border-box;
   background-color: white;
@@ -56,25 +57,25 @@ onMounted(() => {
 }
 
 .header {
+  height: 80px;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: linear-gradient(135deg, #3a7bd5, #3a6073);
   color: white;
-  padding: 0; /* 原为0 2rem */
-  height: 80px;
+  padding: 2rem; /* 原为0 2rem */
   box-shadow: 0 2px 10px rgb(0 0 0 / 10%);
   position: sticky;
   top: 0;
   z-index: 100;
-  width: 100%;
   box-sizing: border-box;
 }
 
 .logo h1 {
+  margin-left: 1rem;
   font-size: 1.6rem;
   font-weight: 600;
-  margin: 0;
 }
 
 .main-nav {
