@@ -10,5 +10,4 @@ public class EntityBaseId
     public string? CreateBy { get; set; }
     public DateTime? UpdateTime { get; set; }
     public string? UpdateBy { get; set; }
-    public bool? InCurrent { get; set; }            // 是否处于当前待办
 }

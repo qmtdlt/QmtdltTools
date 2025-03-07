@@ -5,13 +5,9 @@ namespace QmtdltTools.Domain.Entitys;
 [Table("EBookMain")]
 public class EBookMain:EntityBaseId
 {
-    public string Title { get; }
-
-    public string Author { get; }
-
-    public string? Description { get; }
-
-    public byte[]? CoverImage { get; }
-
-    public Guid CurSubId { get; set; }
+    public string? Title { get; set; }
+    public string? Author { get; set; }
+    public string? Description { get; set; }
+    public string? CoverImage { get; set; }         // base64
+    public string? BookPath { get; set; }           // Êé¼®Â·¾¶
 }

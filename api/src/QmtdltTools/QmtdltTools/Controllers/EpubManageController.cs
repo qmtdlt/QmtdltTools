@@ -19,46 +19,27 @@ namespace QmtdltTools.Controllers
         [HttpPost("UploadEpub")]
         public async Task<Response<bool>> UploadEpub(IFormFile file)
         {
-            EpubBook book = EpubReader.ReadBook(file.OpenReadStream());
-            return await _epubManageService.UploadEpub(book);
+            var bytes = file.GetAllBytes();
+            
+            return await _epubManageService.UploadEpub(bytes);
         }
-        //// 下载epub，返回url
-        //[HttpGet("DownloadEpub")]
-        //public async Task<byte[]> DownloadEpub()
-        //{
-        //    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "epubs", "test.epub");
-        //    if(System.IO.File.Exists(filePath))
-        //    {
-        //        //var url = $"{Request.Scheme}://{Request.Host}/epubs/test.epub";
-        //        return System.IO.File.ReadAllBytes(filePath);
-        //    }
-        //    throw new Exception(filePath + "不存在！");
-        //}
         [HttpGet("DownloadEpub")]
-        public async Task<IActionResult> DownloadEpub()
+        public async Task<IActionResult> DownloadEpub(Guid id)
         {
             try
             {
-                // 获取epub文件路径
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "epubs", "test.epub");
+                var book = await _epubManageService.GetBookById(id); 
 
-                // 检查文件是否存在
-                if (!System.IO.File.Exists(filePath))
-                {
-                    return NotFound("电子书文件不存在");
-                }
-
-                // 读取文件为字节数组
-                byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+                if(book == null) return NotFound("电子书不存在");
 
                 // 返回文件内容，指定MIME类型
-                return File(fileBytes, "application/epub+zip");
+                return File(new MemoryStream(book.BookBin), "application/epub+zip");
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"服务器错误: {ex.Message}");
             }
         }
-
+        // 获取book列表
     }
 }

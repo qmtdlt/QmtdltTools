@@ -34,7 +34,7 @@ const fetchEpubBook = async () => {
     
     // Fetch the book data with responseType set to 'arraybuffer'
     const response = await request.get(
-      '/api/EpubManage/DownloadEpub/DownloadEpub', 
+      '/api/EpubManage/DownloadEpub/DownloadEpub?id=08dd5d55-b1f3-4b4d-8802-b1b7e34cfc35', 
       { responseType: 'arraybuffer' }
     )
     
