@@ -25,7 +25,7 @@ onMounted(() => {
           to="/about" 
           @click="activeRoute = '/about'" 
           :class="{ active: activeRoute === '/about' }"
-        >About</RouterLink>
+        >Books</RouterLink>
         <RouterLink 
           to="/login" 
           @click="activeRoute = '/login'" 
