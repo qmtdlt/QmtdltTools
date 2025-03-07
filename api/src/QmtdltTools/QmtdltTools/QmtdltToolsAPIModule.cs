@@ -32,7 +32,7 @@ public class QmtdltToolsAPIModule:AbpModule
                     .AllowCredentials();
             });
         });
-
+        context.Services.AddControllers();
         context.Services.AddAbpSwaggerGen(optins =>
         {
             optins.SwaggerDoc("v1", new OpenApiInfo { Title = "QmtdltTools API", Version = "v1" });
@@ -45,7 +45,7 @@ public class QmtdltToolsAPIModule:AbpModule
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         var env = context.GetEnvironment();
-        var app = context.GetApplicationBuilder();
+        IApplicationBuilder app = context.GetApplicationBuilder();
 
         //if (env.IsDevelopment())
         {
@@ -59,11 +59,13 @@ public class QmtdltToolsAPIModule:AbpModule
         // 增加跨域配置
         app.UseCors(Cors);
 
-
-
         app.UseHttpsRedirection();
+
         app.UseStaticFiles();
+        //app.MapStaticAssets();
+        app.MapAbpStaticAssets();
+
         app.UseRouting();
-        app.UseConfiguredEndpoints();
+        app.UseConfiguredEndpoints();        
     }
 }

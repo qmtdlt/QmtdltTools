@@ -29,8 +29,10 @@ try
         .UseSerilog();                      // use serilog
     
     await builder.AddApplicationAsync<QmtdltToolsAPIModule>();  // add application
-    
     var app = builder.Build();              // build app
+
+    //app.MapStaticAssets();                              // map static assets
+
     await app.InitializeApplicationAsync();             // init app
     await app.RunAsync();                               // run app
 }

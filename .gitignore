@@ -14,3 +14,4 @@ api/src/QmtdltTools/QmtdltTools.Service/obj/
 /api/src/QmtdltTools/.vs
 /api/src/QmtdltTools/QmtdltTools/QmtdltTools.csproj.user
 /api/src/QmtdltTools/QmtdltTools/appsettings.json
+*.epub
