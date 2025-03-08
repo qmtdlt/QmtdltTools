@@ -22,9 +22,9 @@ onMounted(() => {
           :class="{ active: activeRoute === '/' }"
         >Day ToDo</RouterLink>
         <RouterLink 
-          to="/about" 
-          @click="activeRoute = '/about'" 
-          :class="{ active: activeRoute === '/about' }"
+          to="/library" 
+          @click="activeRoute = '/library'" 
+          :class="{ active: activeRoute === '/library' }"
         >Books</RouterLink>
         <RouterLink 
           to="/login" 
