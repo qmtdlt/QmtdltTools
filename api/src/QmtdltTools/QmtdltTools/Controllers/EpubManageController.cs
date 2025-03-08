@@ -42,5 +42,16 @@ namespace QmtdltTools.Controllers
             }
         }
         // 获取book列表
+        [HttpGet("GetBooks")]
+        public async Task<List<EBookMain>> GetBooks()
+        {
+            return await _epubManageService.GetBooks();
+        }
+        // 删除book，DeleteBook
+        [HttpDelete("DeleteBook")]
+        public async Task<Response<bool>> DeleteBook(Guid id)
+        {
+            return await _epubManageService.DeleteBook(id);
+        }
     }
 }
