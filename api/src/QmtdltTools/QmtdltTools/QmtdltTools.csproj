@@ -23,12 +23,23 @@
 
     <ItemGroup>
       <None Remove="QmtdltTools.http" />
+      <None Remove="wwwroot\epubs\**" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="wwwroot\epubs\test.epub">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+      <Folder Include="wwwroot\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="wwwroot\epubs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="wwwroot\epubs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="wwwroot\epubs\**" />
     </ItemGroup>
 
 </Project>

@@ -19,9 +19,9 @@ namespace QmtdltTools.Controllers
         [HttpPost("UploadEpub")]
         public async Task<Response<bool>> UploadEpub(IFormFile file)
         {
-            var bytes = file.GetAllBytes();
+            var bytes = file.GetAllBytes();         // 文件转换为字节数组
             
-            return await _epubManageService.UploadEpub(bytes);
+            return await _epubManageService.UploadEpub(bytes,file.Name);
         }
         [HttpGet("DownloadEpub")]
         public async Task<IActionResult> DownloadEpub(Guid id)
@@ -33,7 +33,8 @@ namespace QmtdltTools.Controllers
                 if(book == null) return NotFound("电子书不存在");
 
                 // 返回文件内容，指定MIME类型
-                return File(new MemoryStream(book.BookBin), "application/epub+zip");
+                var bytes = System.IO.File.ReadAllBytes(book.BookPath);
+                return File(new MemoryStream(bytes), "application/epub+zip");
             }
             catch (Exception ex)
             {
