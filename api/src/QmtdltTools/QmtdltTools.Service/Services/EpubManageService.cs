@@ -96,5 +96,32 @@ namespace QmtdltTools.Service.Services
             Console.WriteLine(contentText);
             Console.WriteLine();
         }
+
+        public async Task<List<EBookMain>> GetBooks()
+        {
+            return await _dc.EBooks.ToListAsync();
+        }
+
+        public async Task<Response<bool>> DeleteBook(Guid id)
+        {
+            var book = await _dc.EBooks.Where(t => t.Id == id).FirstOrDefaultAsync();
+            if (book == null)
+            {
+                return new Response<bool>
+                {
+                    code = 1,
+                    message = "电子书不存在"
+                };
+            }
+            else
+            {
+                _dc.EBooks.Remove(book);
+                await _dc.SaveChangesAsync();
+                return new Response<bool>
+                {
+                    data = true
+                };
+            }
+        }
     }
 }
