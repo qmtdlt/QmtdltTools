@@ -21,10 +21,22 @@ namespace QmtdltTools.Service.Services
             _dc = dc;
         }
 
-        public async Task<Response<bool>> UploadEpub(byte[] buffer)
+        public async Task<Response<bool>> UploadEpub(byte[] buffer,string fileName)
         {
             using (var ms = new MemoryStream(buffer))
             {
+                // 将buffer存储搭配wwwroot下
+                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot","uploads","epubs", fileName);
+                // 判断路径是否存在，不存在则创建
+                if (!Directory.Exists(Path.GetDirectoryName(path)))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+                }
+                
+                using (var fs = new FileStream(path, FileMode.Create))
+                {
+                    await ms.CopyToAsync(fs);
+                }
                 EpubBook book = EpubReader.ReadBook(ms);
                 // 如果存在相同 book.Title 和 book.Author 的电子书，则不再插入
                 if (_dc.EBooks.Any(e => e.Title == book.Title && e.Author == book.Author))
@@ -41,8 +53,8 @@ namespace QmtdltTools.Service.Services
                     {
                         Title = book.Title,
                         Author = book.Author,
-                        CoverImage = book.CoverImage,
-                        BookBin = buffer
+                        CoverImage = Convert.ToBase64String(book.CoverImage),
+                        BookPath = path
                     };
                     _dc.EBooks.Add(eBookMain);
                     await _dc.SaveChangesAsync();
