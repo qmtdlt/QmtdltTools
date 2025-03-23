@@ -6,6 +6,7 @@ using QmtdltTools.Domain.Models;
 
 namespace QmtdltTools.Controllers
 {
+    [ApiController]
     [Route("api/[controller]/[action]")]
     public class ToDoController : AbpController
     {
