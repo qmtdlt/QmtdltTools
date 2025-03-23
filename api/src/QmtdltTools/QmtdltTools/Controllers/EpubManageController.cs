@@ -7,6 +7,7 @@ using VersOne.Epub;
 
 namespace QmtdltTools.Controllers
 {
+    [ApiController]
     [Route("api/[controller]/[action]")]
     public class EpubManageController:AbpController
     {
