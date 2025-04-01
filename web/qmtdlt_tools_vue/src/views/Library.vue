@@ -26,9 +26,10 @@
             class="cover"
           />
           <div class="title">{{ book.title }}</div>
-          <!-- 如果想显示作者等，可加上 
-          <div class="author">{{ book.author || '未知作者' }}</div> 
-          -->
+          <div class="actions">
+            <el-button size="mini" @click="readBook(book)">阅读</el-button>
+            <el-button size="mini" type="danger" @click="deleteBook(book.id)">删除</el-button>
+          </div>
         </div>
       </div>
     </div>
@@ -189,7 +190,8 @@ export default defineComponent({
     // 阅读电子书
     const readBook = (book: Book): void => {
       currentBook.value = book;
-      // 此处可以打开一个阅读器页面，或弹窗
+      // 使用 path 跳转到 /bookview 并携带查询参数
+      router.push({ path: '/bookview', query: { id: book.id, title: book.title } });
       console.log('阅读电子书:', book);
     };
 
@@ -293,6 +295,14 @@ export default defineComponent({
   font-size: 14px;
   color: #333;
   font-weight: 500;
+}
+
+/* 操作按钮 */
+.actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
 }
 
 /* 标签区域，可根据需求修改或去掉 */
