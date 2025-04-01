@@ -202,7 +202,7 @@ export default defineComponent({
       })
         .then(async () => {
           try {
-            await request.delete(`/api/EpubManage/DeleteBook/${bookId}`);
+            await request.delete(`/api/EpubManage/DeleteBook/DeleteBook?id=${bookId}`);
             ElMessage.success('删除成功');
             fetchBooks();
           } catch (error) {
