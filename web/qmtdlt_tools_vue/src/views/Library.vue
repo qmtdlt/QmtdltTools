@@ -17,7 +17,8 @@
     <div class="books-grid" v-loading="loading" element-loading-text="加载中...">
       <el-empty v-if="books.length === 0 && !loading" description="暂无电子书" />
       <div v-else class="grid-container">
-        <div class="book-item" v-for="book in books" :key="book.id">
+        <div class="book-item" v-for="book in books" :key="book.id"
+            @click="readBook(book)">
           <img
             :src="book.coverImage
               ? 'data:image/jpeg;base64,' + book.coverImage
@@ -27,7 +28,6 @@
           />
           <div class="title">{{ book.title }}</div>
           <div class="actions">
-            <el-button size="mini" @click="readBook(book)">阅读</el-button>
             <el-button size="mini" type="danger" @click="deleteBook(book.id)">删除</el-button>
           </div>
         </div>
@@ -278,6 +278,7 @@ export default defineComponent({
   width: 120px;
   text-align: center;
   cursor: pointer;
+  margin: 20px;
 }
 
 /* 封面图片 */
