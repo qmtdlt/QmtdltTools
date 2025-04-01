@@ -22,7 +22,7 @@ namespace QmtdltTools.Controllers
         {
             var bytes = file.GetAllBytes();         // 文件转换为字节数组
             
-            return await _epubManageService.UploadEpub(bytes,file.Name);
+            return await _epubManageService.UploadEpub(bytes,file.FileName);
         }
         [HttpGet("DownloadEpub")]
         public async Task<IActionResult> DownloadEpub(Guid id)

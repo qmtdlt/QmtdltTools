@@ -117,6 +117,15 @@ namespace QmtdltTools.Service.Services
             {
                 _dc.EBooks.Remove(book);
                 await _dc.SaveChangesAsync();
+                try
+                {
+                    File.Delete(book.BookPath);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
                 return new Response<bool>
                 {
                     data = true
