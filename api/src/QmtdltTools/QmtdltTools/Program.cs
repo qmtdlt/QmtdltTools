@@ -1,8 +1,10 @@
 using QmtdltTools;
 using QmtdltTools.Domain.Data;
+using QmtdltTools.Hubs;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
+using Volo.Abp.AspNetCore.SignalR;
 
 const string Cors = "VueApp";
 InitLog();
@@ -16,6 +18,7 @@ builder.Host
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();              // new add
 builder.Services.AddEndpointsApiExplorer();     // new add 
+
 
 var configuration = builder.Services.GetConfiguration();
 var allowedCorsOrigins = configuration.GetSection("AllowedCorsOrigins").Get<string[]>();
@@ -31,8 +34,9 @@ builder.Services.AddCors(options =>
     });
 });
 
+
 await builder.AddApplicationAsync<QmtdltToolsAPIModule>();  // add application
-    
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
