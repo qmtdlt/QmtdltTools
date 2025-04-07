@@ -14,7 +14,7 @@ import { ElMessage } from 'element-plus';
 import { blob } from 'stream/consumers';
 import { connect } from 'http2';
 
-const bookId = ref("08dd7289-c344-4f77-851f-50dcb08f1049") // 从查询参数中获取 id
+const bookId = ref("08dd75df-7d91-42b1-8c6b-0e8bec20e66a") // 从查询参数中获取 id
 
 var connection = new signalR.HubConnectionBuilder()
   .withUrl("http://localhost:5183/signalr-hubs/bookcontent")
@@ -22,7 +22,7 @@ var connection = new signalR.HubConnectionBuilder()
   .build()
 
 const callHub = async () => {
-  connection.start().then(() => connection.invoke("InitCache", "08dd7289-c344-4f77-851f-50dcb08f1049"));        // 开始阅读任务 onShowReadingText 
+  connection.start().then(() => connection.invoke("InitCache",bookId.value));        // 开始阅读任务 onShowReadingText 
 }
 
 const curText = ref("");
