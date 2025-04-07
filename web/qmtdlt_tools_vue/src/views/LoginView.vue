@@ -1,7 +1,8 @@
 <template>
   <div>
     <el-button @click="callHub">test</el-button>
-    <p>{{ curText }}</p>
+    <p style="color: black;">{{ curText }}</p>
+    <span style="color: black;">当前阅读位置: {{ curPosition }}</span>
   </div>
 </template>
 
@@ -26,6 +27,7 @@ const callHub = async () => {
 }
 
 const curText = ref("");
+const curPosition = ref(0);
 const bookPosition = ref(0);
 
 
@@ -37,6 +39,7 @@ connection.on("onShowErrMsg", (msg: string) => {
 connection.on("UIReadInfo", (readContent: any) => {
   debugger
   curText.value = readContent.text; // 读取到的文本内容
+  curPosition.value = readContent.position; // 读取到的文本位置
   readBase64(readContent.buffer); // 读取到的音频内容
   // call ms tts read context
 });
