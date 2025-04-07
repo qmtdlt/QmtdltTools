@@ -65,7 +65,7 @@ public class BookContentHub:AbpHub
         }
         else
         {
-            await Clients.All.SendAsync("onShowErrMsg", "电子书不存在");
+            await Clients.All.SendAsync("onShowErrMsg", "epub file doesn't exist"); // 前端显示错误信息
         }
     }
 
