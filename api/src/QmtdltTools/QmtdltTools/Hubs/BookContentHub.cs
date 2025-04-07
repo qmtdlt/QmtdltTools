@@ -44,11 +44,18 @@ public class BookContentHub:AbpHub
                         // 可进一步对文本进行整理，如去除多余空格
                         plainText = Regex.Replace(plainText, "\\s+", " ").Trim();
 
-                        await Clients.All.SendAsync("onShowReadingText", plainText);
+                        var buffer = EpubHelper.GetSpeakStream(plainText);
+
+                        await Clients.All.SendAsync("onPlayVoiceBuffer", buffer);                   // send audio buffer
+                        await Clients.All.SendAsync("onShowReadingText", plainText);                // send text
                     }
 
-                    await Task.Delay(1000);
+                    await Task.Delay(10000);
                     position++;
+#if DEBUG
+                    if(position > 5)
+                    return;
+#endif
                 }
             }
         }
@@ -58,19 +65,4 @@ public class BookContentHub:AbpHub
         }
     }
 
-    public async Task SendMessage(string message)
-    {
-        var currentUserName = CurrentUser.Name;
-        var text = L["MyText"];
-        int cnt = 0;
-        while (true)
-        {
-            await Clients.All.SendAsync("onReceiveFromSignalRHub", message  + cnt.ToString() + CurrentUser.Name);
-            await Task.Delay(1000);
-            if (cnt++ > 10)
-            {
-                return;
-            }
-        }
-    }
 }

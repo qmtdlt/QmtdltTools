@@ -89,5 +89,64 @@ namespace QmtdltTools.Service.Utils
 
             return null;
         }
+
+        public static byte[] GetSpeakStream(string text)
+        {
+            // Create speech configuration
+            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+            speechConfig.SpeechSynthesisVoiceName = "zh-CN-YunxiNeural";
+
+            // Set the output format to MP3
+            speechConfig.SetSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3);
+
+            using (var memoryStream = new MemoryStream())
+            {
+                // Create our callback handler
+                var callback = new CustomPushAudioOutputStreamCallback(memoryStream);
+
+                // Create the push audio output stream with our callback
+                using (var pushStream = new PushAudioOutputStream(callback))
+                {
+                    using (var audioConfig = AudioConfig.FromStreamOutput(pushStream))
+                    {
+                        using (var synthesizer = new SpeechSynthesizer(speechConfig, audioConfig))
+                        {
+                            // Synthesize the text to speech
+                            var result = synthesizer.SpeakTextAsync(text).GetAwaiter().GetResult();
+
+                            if (result.Reason == ResultReason.SynthesizingAudioCompleted)
+                            {
+                                return memoryStream.ToArray();
+                            }
+                            else
+                            {
+                                throw new Exception($"Speech synthesis failed: {result.Reason}");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private class CustomPushAudioOutputStreamCallback : PushAudioOutputStreamCallback
+        {
+            private readonly MemoryStream _stream;
+
+            public CustomPushAudioOutputStreamCallback(MemoryStream stream)
+            {
+                _stream = stream;
+            }
+
+            public override uint Write(byte[] dataBuffer)
+            {
+                _stream.Write(dataBuffer, 0, dataBuffer.Length);
+                return (uint)dataBuffer.Length;
+            }
+
+            public override void Close()
+            {
+                // No additional cleanup needed as MemoryStream is managed by the using statement
+            }
+        }
     }
 }
