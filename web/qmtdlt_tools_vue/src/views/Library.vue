@@ -17,9 +17,8 @@
     <div class="books-grid" v-loading="loading" element-loading-text="加载中...">
       <el-empty v-if="books.length === 0 && !loading" description="暂无电子书" />
       <div v-else class="grid-container">
-        <div class="book-item" v-for="book in books" :key="book.id"
-            @click="readBook(book)">
-          <img
+        <div class="book-item" v-for="book in books" :key="book.id" >
+          <img @click="readBook(book)"
             :src="book.coverImage
               ? 'data:image/jpeg;base64,' + book.coverImage
               : 'default-cover.jpg'"
