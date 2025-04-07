@@ -90,11 +90,18 @@ namespace QmtdltTools.Service.Utils
             return null;
         }
 
-        public static byte[] GetSpeakStream(string text)
+        /// <summary>
+        /// Generate by Grok:
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static byte[] GetSpeakStream(string text,string SpeechSynthesisVoiceName = "zh-CN-YunxiNeural")
         {
             // Create speech configuration
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-            speechConfig.SpeechSynthesisVoiceName = "zh-CN-YunxiNeural";
+
+            speechConfig.SpeechSynthesisVoiceName = SpeechSynthesisVoiceName;
 
             // Set the output format to MP3
             speechConfig.SetSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3);
@@ -128,6 +135,11 @@ namespace QmtdltTools.Service.Utils
             }
         }
 
+
+        /// <summary>
+        /// Generate by Grok: 
+        /// strem callback
+        /// </summary>
         private class CustomPushAudioOutputStreamCallback : PushAudioOutputStreamCallback
         {
             private readonly MemoryStream _stream;
