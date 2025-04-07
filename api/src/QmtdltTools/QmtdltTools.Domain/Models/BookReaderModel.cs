@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ namespace QmtdltTools.Domain.Models
     {
         public int position { get; set; }           // 位置
         public EpubBook ebook { get; set; }         // 电子书对象
+        public ConcurrentQueue<UIReadInfo> readQueue { get; set; } = new ConcurrentQueue<UIReadInfo>(); // 队列
     }
 
     public class UIReadInfo

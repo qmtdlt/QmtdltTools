@@ -23,14 +23,14 @@ public class BookContentHub:AbpHub
     {
         Console.WriteLine("on connected");
         var connectionId = Context.ConnectionId;
-        connectionStatusCache.AddOrUpdate(connectionId, true, (connectionId, old) => { return true; }); // Ìí¼ÓÁ¬½Ó×´Ì¬µ½»º´æ
+        connectionStatusCache.AddOrUpdate(connectionId, true, (connectionId, old) => { return true; }); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         return base.OnConnectedAsync();
     }
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         Console.WriteLine("on disconnected");
         var connectionId = Context.ConnectionId;
-        connectionStatusCache.AddOrUpdate(connectionId, false, (connectionId, old) => { return false; }); // ¸üÐÂÁ¬½Ó×´Ì¬µ½»º´æ
+        connectionStatusCache.AddOrUpdate(connectionId, false, (connectionId, old) => { return false; }); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         return base.OnDisconnectedAsync(exception);
     }
 
@@ -38,80 +38,111 @@ public class BookContentHub:AbpHub
     {
         var connectionId = Context.ConnectionId;            // connectionId
 
-        var book = await _epubManageService.GetBookById(bookId);            // ²éÑ¯Êý¾Ý¿â£¬»ñÈ¡ book ¶ÔÏó
+        var book = await _epubManageService.GetBookById(bookId);            // 
         if (book == null)
         {
-            await Clients.All.SendAsync("onShowErrMsg", "Î´ÕÒµ½Id¶ÔÓ¦µÄµç×ÓÊé");
+            await Clients.All.SendAsync("onShowErrMsg", "book not found");         //
             return;
         }
-        if (File.Exists(book.BookPath))                                      // ¼ì²éµç×ÓÊéÎÄ¼þÊÇ·ñ´æÔÚ
+        if (File.Exists(book.BookPath))                                      // 
         {
-            var ebook = EpubHelper.GetEbook(book.BookPath, out string message);  // ½«´ÅÅÌÉÏµÄµç×ÓÊé¼ÓÔØµ½ÄÚ´æÖÐ
+            var ebook = EpubHelper.GetEbook(book.BookPath, out string message);  // get ebook
             if (ebook == null)
             {
-                await Clients.All.SendAsync("onShowErrMsg", message);           // Ç°¶ËÏÔÊ¾´íÎóÐÅÏ¢
+                await Clients.All.SendAsync("onShowErrMsg", message);           // show err
             }
             else
             {
-                int count = ebook.ReadingOrder.Count;                                       // »ñÈ¡µç×ÓÊéµÄÕÂ½ÚÊý
+                int count = ebook.ReadingOrder.Count;                                       // 
                 bool success = bookReadingCache.TryGetValue(bookId, out var bookInfo);
                 if (!success)
                 {
                     bookInfo = new BookReaderModel { ebook = ebook, position = 0 };
                     bookReadingCache.AddOrUpdate(bookId, bookInfo, (bookId, old) => { return bookInfo; });
                 }
-                await Clients.All.SendAsync("onSetBookPosition", bookInfo.position); // Í¨ÖªÇ°¶Ë³õÊ¼»¯»º´æ
+                await Clients.All.SendAsync("onSetBookPosition", bookInfo.position); // 
             }
         }
         else
         {
-            await Clients.All.SendAsync("onShowErrMsg", "epub file doesn't exist"); // Ç°¶ËÏÔÊ¾´íÎóÐÅÏ¢
+            await Clients.All.SendAsync("onShowErrMsg", "epub file doesn't exist"); // 
         }
     }
 
     public async Task Read(Guid bookId,int position)
     {
         var connectionId = Context.ConnectionId;            // connectionId
-        bookReadingCache[bookId].position = position;       // ¸üÐÂ»º´æÖÐµÄÎ»ÖÃ
+        bookReadingCache[bookId].position = position;       // pos
 
         if (bookReadingCache[bookId].position < bookReadingCache[bookId].ebook.ReadingOrder.Count && connectionStatusCache[connectionId])
         {
-            var item = bookReadingCache[bookId].ebook.ReadingOrder[bookReadingCache[bookId].position];
-
-            if (!string.IsNullOrEmpty(item.Content))
+            bool success = bookReadingCache[bookId].readQueue.TryDequeue(out UIReadInfo uiReadInfo);
+            if (success)
             {
-                // Ê¹ÓÃÕýÔò±í´ïÊ½°þÀë HTML ±êÇ©£¬µÃµ½´¿ÎÄ±¾
-                string plainText = Regex.Replace(item.Content, "<[^>]+>", " ");
-                // ¿É½øÒ»²½¶ÔÎÄ±¾½øÐÐÕûÀí£¬ÈçÈ¥³ý¶àÓà¿Õ¸ñ
-                plainText = Regex.Replace(plainText, "\\s+", " ").Trim();
-
-                if(plainText.IsNullOrEmpty())
+                _ = Clients.All.SendAsync("UIReadInfo", uiReadInfo);
+            }
+            else
+            {
+                success = MakeQueue(bookId);
+                
+                if(!success)
                 {
                     bookReadingCache[bookId].position += 1;
-                    await Clients.All.SendAsync("onSetBookPosition", bookReadingCache[bookId].position); // Í¨ÖªÇ°¶Ë³õÊ¼»¯»º´æ
+                    await Clients.All.SendAsync("onSetBookPosition", bookReadingCache[bookId].position); 
                     return;
                 }
-
-                var buffer = EpubHelper.GetSpeakStream(plainText);
-
-                try
+                else
                 {
-                    await Clients.All.SendAsync("UIReadInfo", new UIReadInfo
-                    {
-                        buffer = buffer,
-                        text = plainText,
-                        position = bookReadingCache[bookId].position
-                    });                   // send audio buffer, this will be base64 string on client side
-                }
-                catch (Exception ex)
-                {
-
-                    throw;
+                    success = bookReadingCache[bookId].readQueue.TryDequeue(out UIReadInfo uiReadInfo2);
+                    if(success)
+                        _ = Clients.All.SendAsync("UIReadInfo", uiReadInfo2);
                 }
             }
+
+            bookReadingCache[bookId].position += 1; // pos
+            MakeQueue(bookId);
         }
     }
 
+    bool MakeQueue(Guid bookId)
+    {
+        bool success = GetCurContent(bookId, out byte[] buffer,out string plainText);
+        if (success)
+        {
+            bookReadingCache[bookId].readQueue.Enqueue(new UIReadInfo
+            {
+                buffer = buffer,
+                text = plainText,
+                position = bookReadingCache[bookId].position
+            });
+        }
+        return success;
+    }
+    bool GetCurContent(Guid bookId,out byte[] buffer,out string plainText)
+    {
+        buffer = null;
+        plainText = "";
+        Console.WriteLine("prepare position: " + bookReadingCache[bookId].position);
+        var item = bookReadingCache[bookId].ebook.ReadingOrder[bookReadingCache[bookId].position];
+        
+        if (!string.IsNullOrEmpty(item.Content))
+        {
+            // get plain text
+            plainText = Regex.Replace(item.Content, "<[^>]+>", " ");
+            // remove spaces
+            plainText = Regex.Replace(plainText, "\\s+", " ").Trim();
+
+            if(plainText.IsNullOrEmpty()) return false;
+            buffer = EpubHelper.GetSpeakStream(plainText);
+            return true;
+        }
+        if(bookReadingCache[bookId].position + 1 < bookReadingCache[bookId].ebook.ReadingOrder.Count)
+        {
+            return false;
+        }
+        return false;
+    }
+    
     static ConcurrentDictionary<Guid, BookReaderModel> bookReadingCache = new ConcurrentDictionary<Guid, BookReaderModel>();
     static ConcurrentDictionary<string,bool> connectionStatusCache = new ConcurrentDictionary<string,bool>();
     
