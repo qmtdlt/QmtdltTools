@@ -32,28 +32,36 @@ connection.on("onShowReadingText", (text: string) => {
 });
 
 
-connection.on("onPlayVoiceBuffer", async (arraybuffer: any) => {
-  
-  // play buffer as audio
-  console.log("onPlayVoiceBuffer", arraybuffer);
-
-  var byteArray = new Uint8Array(atob(arraybuffer).split('').map(char => char.charCodeAt(0)));
+connection.on("onPlayVoiceBuffer", async (base64string: any) => {
+  // from base64string to arraybuffer
+  var byteArray = new Uint8Array(atob(base64string).split('').map(char => char.charCodeAt(0)));
   
   const audioContext = new AudioContext();
   const audioSource = audioContext.createBufferSource()
 
-  debugger
-
   audioContext.decodeAudioData(byteArray.buffer, (buffer) => {
     audioSource.buffer = buffer;
     audioSource.connect(audioContext.destination);
+    audioSource.onended = () => {
+      onChapterReadFinished();
+    };
     audioSource.start();
   })
 });
 
+
+const onChapterReadFinished = ()=>{
+  // 章节阅读完成，调用 SignalR Hub 的 onChapterReadFinished 方法
+  debugger
+  connection.invoke("bookGoNext", "08dd7289-c344-4f77-851f-50dcb08f1049");        // 
+  console.log("章节阅读完成");
+};
+
+
 const callHub = async () => {
   connection.start().then(() => connection.invoke("StartReadTask", "08dd7289-c344-4f77-851f-50dcb08f1049"));        // 开始阅读任务 onShowReadingText 
 }
+
 </script>
 <style scoped>
 
