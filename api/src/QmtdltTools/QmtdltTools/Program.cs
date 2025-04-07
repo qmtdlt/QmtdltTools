@@ -45,17 +45,23 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
+
+
 app.UseCors(Cors);
 app.UseRouting();               // new add
+
+// 修改部分：使用 UseEndpoints 并手动映射 SignalR Hub
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHub<BookContentHub>("/signalr-hubs/bookcontent");
+    endpoints.MapControllers();
+});
+
 //app.UseAuthorization();         // new add
-app.MapControllers();           // new add
+//app.MapControllers();           // new add
 app.UseHttpsRedirection();
 await app.InitializeApplicationAsync();             // init app
 app.Run();
-
-
-
-//app.MapStaticAssets();                              // map static assets
 
 
 static void InitLog()
