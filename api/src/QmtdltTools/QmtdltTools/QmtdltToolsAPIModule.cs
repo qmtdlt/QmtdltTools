@@ -7,6 +7,10 @@ using Volo.Abp;
 using Volo.Abp.AspNetCore.SignalR;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace QmtdltTools;
 
@@ -20,7 +24,7 @@ namespace QmtdltTools;
 public class QmtdltToolsAPIModule:AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
-    {        
+    {
         base.ConfigureServices(context);
     }   
     
