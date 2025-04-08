@@ -1,16 +1,10 @@
-using Microsoft.OpenApi.Models;
 using QmtdltTools.Service;
 using Volo.Abp.Autofac;
 using Volo.Abp.Modularity;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.SignalR;
-using Volo.Abp.Swashbuckle;
 using Volo.Abp.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace QmtdltTools;
 

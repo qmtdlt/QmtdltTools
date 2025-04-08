@@ -21,7 +21,7 @@ builder.Host
     .UseAutofac()                       // use autofac
     .UseSerilog();                      // use serilog
 
-builder.Services.AddOpenApi();
+//builder.Services.AddOpenApi();
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
