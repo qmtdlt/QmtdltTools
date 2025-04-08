@@ -6,6 +6,7 @@ using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.SignalR;
 using Volo.Abp.Swashbuckle;
+using Volo.Abp.AspNetCore.Authentication.JwtBearer;
 
 namespace QmtdltTools;
 
@@ -13,20 +14,13 @@ namespace QmtdltTools;
     typeof(AbpAutofacModule),
     typeof(AbpAspNetCoreSerilogModule),
     typeof(QmtdltToolsServiceModule),
-    typeof(AbpAspNetCoreSignalRModule) 
+    typeof(AbpAspNetCoreSignalRModule),
+    typeof(AbpAspNetCoreAuthenticationJwtBearerModule)
     )]
 public class QmtdltToolsAPIModule:AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
-    {
-       
-        // context.Services.AddControllers();
-        // context.Services.AddAbpSwaggerGen(optins =>
-        // {
-        //     optins.SwaggerDoc("v1", new OpenApiInfo { Title = "QmtdltTools API", Version = "v1" });
-        //     optins.DocInclusionPredicate((docName, description) => true);
-        //     optins.CustomSchemaIds(type => type.FullName);
-        // });
+    {        
         base.ConfigureServices(context);
     }   
     

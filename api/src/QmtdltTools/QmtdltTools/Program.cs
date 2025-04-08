@@ -1,3 +1,4 @@
+using Microsoft.IdentityModel.Tokens;
 using QmtdltTools;
 using QmtdltTools.Domain.Data;
 using QmtdltTools.Hubs;
@@ -93,10 +94,4 @@ static void InitLog()
     {
         Log.CloseAndFlush();
     }
-
 }
-// 以下是原生 dotnet 代码
-    
-// // Add services to the container.
-// // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-
