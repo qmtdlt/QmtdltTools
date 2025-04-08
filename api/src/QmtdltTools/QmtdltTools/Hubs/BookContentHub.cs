@@ -83,7 +83,7 @@ public class BookContentHub:AbpHub
             }
             else
             {
-                success = MakeQueue(bookId);
+                success = MakeQueueData(bookId);
                 
                 if(!success)
                 {
@@ -100,11 +100,11 @@ public class BookContentHub:AbpHub
             }
 
             bookReadingCache[bookId].position += 1; // pos
-            MakeQueue(bookId);
+            MakeQueueData(bookId);
         }
     }
 
-    bool MakeQueue(Guid bookId)
+    bool MakeQueueData(Guid bookId)
     {
         bool success = GetCurContent(bookId, out byte[] buffer,out string plainText);
         if (success)
