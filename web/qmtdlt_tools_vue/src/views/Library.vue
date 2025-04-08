@@ -25,7 +25,7 @@
             alt="book cover"
             class="cover"
           />
-          <div class="title">{{ book.title }}</div>
+          <!-- <div class="title">{{ book.title }}</div> -->
           <div class="actions">
             <el-button size="mini" type="danger" @click="deleteBook(book.id)">删除</el-button>
           </div>

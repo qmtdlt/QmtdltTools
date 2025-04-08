@@ -41,9 +41,9 @@ namespace QmtdltTools.Controllers
 
             var claims = new[]
             {
-            new Claim(JwtRegisteredClaimNames.Sub, "user_id"), // 用户标识
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // token 唯一标识
-        };
+                new Claim(JwtRegisteredClaimNames.Sub, "user_id"), // 用户标识
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // token 唯一标识
+            };
 
             var token = new JwtSecurityToken(
                 issuer: Issuer,

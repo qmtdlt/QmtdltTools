@@ -56,12 +56,14 @@ builder.Services.AddAuthentication(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,           // 验证发行者
-        ValidateAudience = true,        // 验证受众
-        ValidateLifetime = true,        // 验证 token 有效期
-        ValidateIssuerSigningKey = true, // 验证签名密钥
-        ValidIssuer = Issuer,     // 指定发行者
-        ValidAudience = Audience, // 指定受众
+        ValidateIssuer = true,              // 验证发行者
+        ValidateAudience = true,            // 验证受众
+        ValidateLifetime = true,            // 验证 token 有效期
+        ValidateIssuerSigningKey = true,    // 验证签名密钥
+        ValidIssuer = Issuer,               // 指定发行者
+        ValidAudience = Audience,           // 指定受众
+        RequireExpirationTime = true,
+        ClockSkew = TimeSpan.Zero,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SystenScurityKey)) // 签名密钥
     };
 });
