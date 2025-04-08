@@ -78,10 +78,11 @@ const readBase64 = (base64string:string)=>{
     audioSource.buffer = buffer;
     audioSource.connect(audioContext.destination);
     audioSource.onended = () => {
-      bookPosition.value += 1; // 读取下一个位置
-      connection.invoke("Read", bookId.value,bookPosition.value);        // 
+      // callback when audio ends
+      bookPosition.value += 1; // 读取下一个位置,业务代码
+      connection.invoke("Read", bookId.value,bookPosition.value);        // 阅读下一章
     };
-    audioSource.start();
+    audioSource.start();      // start playing
   })
 }
 

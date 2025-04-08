@@ -23,14 +23,14 @@ public class BookContentHub:AbpHub
     {
         Console.WriteLine("on connected");
         var connectionId = Context.ConnectionId;
-        connectionStatusCache.AddOrUpdate(connectionId, true, (connectionId, old) => { return true; }); // �������״̬������
+        connectionStatusCache.AddOrUpdate(connectionId, true, (connectionId, old) => { return true; });
         return base.OnConnectedAsync();
     }
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         Console.WriteLine("on disconnected");
         var connectionId = Context.ConnectionId;
-        connectionStatusCache.AddOrUpdate(connectionId, false, (connectionId, old) => { return false; }); // ��������״̬������
+        connectionStatusCache.AddOrUpdate(connectionId, false, (connectionId, old) => { return false; });
         return base.OnDisconnectedAsync(exception);
     }
 
