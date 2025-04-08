@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Polly;
 using QmtdltTools;
 using QmtdltTools.Domain.Data;
 using QmtdltTools.Hubs;
@@ -6,6 +9,8 @@ using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
 using Volo.Abp.AspNetCore.SignalR;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.OpenApi.Models;
 
 const string Cors = "VueApp";
 InitLog();
@@ -15,11 +20,14 @@ builder.Host
     .AddAppSettingsSecretsJson()        // add appsettings.json
     .UseAutofac()                       // use autofac
     .UseSerilog();                      // use serilog
-    
+
 builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+});
 builder.Services.AddControllers();              // new add
 builder.Services.AddEndpointsApiExplorer();     // new add 
-
 
 var configuration = builder.Services.GetConfiguration();
 var allowedCorsOrigins = configuration.GetSection("AllowedCorsOrigins").Get<string[]>();
@@ -30,9 +38,32 @@ builder.Services.AddCors(options =>
     {
         builder.WithOrigins(allowedCorsOrigins)
             .AllowAnyHeader()
-            .AllowAnyMethod()
+        .AllowAnyMethod()
             .AllowCredentials();
     });
+});
+// jwt 
+
+var Issuer = configuration.GetSection("Jwt:Issuer").Get<string>();
+var Audience = configuration.GetSection("Jwt:Audience").Get<string>(); 
+var SystenScurityKey = configuration.GetSection("Jwt:SystenScurityKey").Get<string>();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,           // 验证发行者
+        ValidateAudience = true,        // 验证受众
+        ValidateLifetime = true,        // 验证 token 有效期
+        ValidateIssuerSigningKey = true, // 验证签名密钥
+        ValidIssuer = Issuer,     // 指定发行者
+        ValidAudience = Audience, // 指定受众
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SystenScurityKey)) // 签名密钥
+    };
 });
 
 
@@ -50,6 +81,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(Cors);
 app.UseRouting();               // new add
+app.UseAuthentication();
+app.UseAuthorization();         // new add
 
 // 修改部分：使用 UseEndpoints 并手动映射 SignalR Hub
 app.UseEndpoints(endpoints =>
@@ -58,7 +91,6 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
 });
 
-//app.UseAuthorization();         // new add
 //app.MapControllers();           // new add
 app.UseHttpsRedirection();
 await app.InitializeApplicationAsync();             // init app
@@ -67,7 +99,7 @@ app.Run();
 
 static void InitLog()
 {
-// init log
+    // init log
     Log.Logger = new LoggerConfiguration()
 #if DEBUG
         .MinimumLevel.Debug()
@@ -93,5 +125,37 @@ static void InitLog()
     finally
     {
         Log.CloseAndFlush();
+    }
+}
+
+
+internal sealed class BearerSecuritySchemeTransformer(Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider authenticationSchemeProvider) : IOpenApiDocumentTransformer
+{
+    public async Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+    {
+        var authenticationSchemes = await authenticationSchemeProvider.GetAllSchemesAsync();
+        if (authenticationSchemes.Any(authScheme => authScheme.Name == "Bearer"))
+        {
+            var requirements = new Dictionary<string, OpenApiSecurityScheme>
+            {
+                ["Bearer"] = new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    In = ParameterLocation.Header,
+                    BearerFormat = "Json Web Token"
+                }
+            };
+            document.Components ??= new OpenApiComponents();
+            document.Components.SecuritySchemes = requirements;
+
+            foreach (var operation in document.Paths.Values.SelectMany(path => path.Operations))
+            {
+                operation.Value.Security.Add(new OpenApiSecurityRequirement
+                {
+                    [new OpenApiSecurityScheme { Reference = new OpenApiReference { Id = "Bearer", Type = ReferenceType.SecurityScheme } }] = Array.Empty<string>()
+                });
+            }
+        }
     }
 }

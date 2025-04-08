@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using QmtdltTools.Service.Services;
 using QmtdltTools.Domain.Entitys;
 using QmtdltTools.Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace QmtdltTools.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]/[action]")]
     public class ToDoController : AbpController
