@@ -39,20 +39,21 @@ namespace QmtdltTools.Service.Services
             };
         }
         // check login
-        public async Task<Response<bool>> CheckLogin(string username, string password)
+        public async Task<Response<Guid>> CheckLogin(string username, string password)
         {
             var user = await _dc.SysUsers.Where(t => t.Name == username && t.PasswordHash == password).FirstOrDefaultAsync();
             if (user == null)
             {
-                return new Response<bool>
+                return new Response<Guid>
                 {
                     code = 1,
                     message = "用户名或密码错误"
                 };
             }
-            return new Response<bool>
+            return new Response<Guid>
             {
                 code = 0,
+                data = user.Id,
                 message = "登录成功"
             };
         }
