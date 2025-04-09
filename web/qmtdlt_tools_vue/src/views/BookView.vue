@@ -17,13 +17,13 @@
           </p>
         </el-row>
         <el-row>
-          <el-button @click="autoSelection">自动选中段落</el-button>
-          <el-button @click="speakText">朗读上方内容</el-button>
+          <!-- <el-button @click="autoSelection">自动选中段落</el-button>
+          <el-button @click="speakText">朗读上方内容</el-button> -->
           <el-button>讲一讲上方内容</el-button>
         </el-row>
         <el-row>
           <div>
-            <audio :src="audioSrc" controls></audio>
+            <!-- <audio :src="audioSrc" controls></audio> -->
           </div>
         </el-row>
       </div>

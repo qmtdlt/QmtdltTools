@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Formats.Tar;
 using System.Net;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using QmtdltTools.Domain.Models;
 using QmtdltTools.Service.Services;
@@ -11,6 +12,7 @@ using Volo.Abp.AspNetCore.SignalR;
 
 namespace QmtdltTools.Hubs;
 
+//[Authorize]
 public class BookContentHub:AbpHub
 {
     private readonly EpubManageService _epubManageService;
@@ -103,6 +105,10 @@ public class BookContentHub:AbpHub
             MakeQueueData(bookId);
         }
     }
+    public async Task StopReadTask()
+    {
+        await Clients.All.SendAsync("onStopReadTask");
+    }
 
     bool MakeQueueData(Guid bookId)
     {
@@ -146,8 +152,4 @@ public class BookContentHub:AbpHub
     static ConcurrentDictionary<Guid, BookReaderModel> bookReadingCache = new ConcurrentDictionary<Guid, BookReaderModel>();
     static ConcurrentDictionary<string,bool> connectionStatusCache = new ConcurrentDictionary<string,bool>();
     
-    public async Task StopReadTask()
-    {
-        await Clients.All.SendAsync("onStopReadTask");
-    }
 }

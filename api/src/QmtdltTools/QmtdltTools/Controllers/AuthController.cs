@@ -29,7 +29,7 @@ namespace QmtdltTools.Controllers
             // 简单示例：验证用户名和密码（实际项目中应使用数据库验证）
             if (result.code == 0)
             {
-                var token = GenerateJwtToken();
+                var token = GenerateJwtToken(result.data);
                 return Ok(new { token });
             }
             return Unauthorized();
@@ -39,7 +39,7 @@ namespace QmtdltTools.Controllers
         {
             return await _userService.Register(user);
         }
-        private string GenerateJwtToken()
+        private string GenerateJwtToken(Guid userId)
         {
 
             var Issuer = _configuration.GetSection("Jwt:Issuer").Get<string>();
@@ -52,8 +52,8 @@ namespace QmtdltTools.Controllers
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, "user_id"), // 用户标识
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // token 唯一标识
+                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),                  // 用户标识
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())   // token 唯一标识
             };
 
             var token = new JwtSecurityToken(
