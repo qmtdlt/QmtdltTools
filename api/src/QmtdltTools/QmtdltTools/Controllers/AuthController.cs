@@ -1,8 +1,12 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using QmtdltTools.Domain.Entitys;
+using QmtdltTools.Domain.Models;
+using QmtdltTools.Service.Services;
 using Volo.Abp.AspNetCore.Mvc;
 
 namespace QmtdltTools.Controllers
@@ -12,22 +16,29 @@ namespace QmtdltTools.Controllers
     public class AuthController : AbpController
     {
         IConfiguration _configuration;
-        public AuthController(IConfiguration configuration)
+        SysUserService _userService;
+        public AuthController(IConfiguration configuration, SysUserService userService)
         {
             _configuration = configuration;
+            _userService = userService;
         }
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginModel model)
+        public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
+            var result = await _userService.CheckLogin(model.Username, model.Password);
             // 简单示例：验证用户名和密码（实际项目中应使用数据库验证）
-            if (model.Username == "user" && model.Password == "password")
+            if (result.code == 0)
             {
                 var token = GenerateJwtToken();
                 return Ok(new { token });
             }
             return Unauthorized();
         }
-
+        [HttpPost("Register")]
+        public async Task<Response<bool>> Register(SysUser user)
+        {
+            return await _userService.Register(user);
+        }
         private string GenerateJwtToken()
         {
 
