@@ -17,3 +17,4 @@ api/src/QmtdltTools/QmtdltTools.Service/obj/
 *.epub
 /api/src/QmtdltTools/QmtdltTools.DbMigration/bin/Debug/net9.0
 /api/src/QmtdltTools/QmtdltTools.DbMigration/obj
+api/src/QmtdltTools/QmtdltTools.sln.DotSettings.user
