@@ -50,7 +50,7 @@ const ttsLoading = ref<boolean>(true)
 const loading = ref<boolean>(true)
 
   var connection = new signalR.HubConnectionBuilder()
-  .withUrl("http://localhost:5183/signalr-hubs/bookcontent")
+  .withUrl(`{import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent`)
   .configureLogging(signalR.LogLevel.Information)
   .build()
 
