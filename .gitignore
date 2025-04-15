@@ -15,3 +15,5 @@ api/src/QmtdltTools/QmtdltTools.Service/obj/
 /api/src/QmtdltTools/QmtdltTools/QmtdltTools.csproj.user
 /api/src/QmtdltTools/QmtdltTools/appsettings.json
 *.epub
+/api/src/QmtdltTools/QmtdltTools.DbMigration/bin/Debug/net9.0
+/api/src/QmtdltTools/QmtdltTools.DbMigration/obj
