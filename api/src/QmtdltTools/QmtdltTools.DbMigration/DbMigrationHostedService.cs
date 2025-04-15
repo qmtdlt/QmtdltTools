@@ -14,18 +14,16 @@ public class DbMigrationHostedService : IHostedService
     public DbMigrationHostedService(DC dc)
     {
         _dc = dc;
-        _= Start();
     }
 
     public async Task Start()
     {
-        var res = _dc.SysUsers.AsQueryable().ToList();
-        Console.WriteLine(res.Count);
+        _dc.Database.EnsureCreatedAsync().Wait();
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await Start();
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
