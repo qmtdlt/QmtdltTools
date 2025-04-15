@@ -49,8 +49,10 @@ const selections = ref<Array<any>>([]) // 用于存储选中的文本和范围
 const ttsLoading = ref<boolean>(true)
 const loading = ref<boolean>(true)
 
+console.log(import.meta.env.VITE_API_URL);
+debugger
   var connection = new signalR.HubConnectionBuilder()
-  .withUrl(`{import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent`)
+  .withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent`)
   .configureLogging(signalR.LogLevel.Information)
   .build()
 
