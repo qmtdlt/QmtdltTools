@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
@@ -20,9 +21,9 @@ namespace QmtdltTools.Service.Services
             _dc = dc;
         }
 
-        public async Task<Response<bool>> AddItem(string content)
+        public async Task<Response<bool>> AddItem(string content, Guid? uid)
         {
-            var list = await GetCurrentUnFinishedList();
+            var list = await GetCurrentUnFinishedList(uid);
             if (list.Count >= 3)
             {
                 return new Response<bool>
@@ -37,7 +38,8 @@ namespace QmtdltTools.Service.Services
             {
                 Id = Guid.NewGuid(),
                 Content = content,
-                CreateTime = DateTime.Now
+                CreateTime = DateTime.Now,
+                CreateBy = uid
             });
             await _dc.SaveChangesAsync();
             return new Response<bool>
@@ -74,23 +76,28 @@ namespace QmtdltTools.Service.Services
             await _dc.SaveChangesAsync();
         }
 
-        public async Task<List<DayToDo>> GetCurrentUnFinishedList()
+        public async Task<List<DayToDo>> GetCurrentUnFinishedList(Guid? uid)
         {
             return await _dc.DayToDos
                 .Where(t => t.IsFinish != true)             // 未完成
                 .Where(t=>t.InCurrent == true)              // 且为当前待办
+                .Where(t=>t.CreateBy == uid)
                 .OrderBy(t => t.SortBy).ThenBy(t => t.UpdateTime).ToListAsync();
         }
-        public async Task<List<DayToDo>> GetUnFinishedUnFinishedList()
+        public async Task<List<DayToDo>> GetUnFinishedUnFinishedList(Guid? uid)
         {
             return await _dc.DayToDos
                 .Where(t => t.IsFinish != true)
                 .Where(t => t.InCurrent != true)
+                .Where(t => t.CreateBy == uid)
                 .OrderBy(t => t.SortBy).ThenBy(t => t.UpdateTime).ToListAsync();
         }
-        public async Task<List<DayToDo>> GetFinishedList()
+        public async Task<List<DayToDo>> GetFinishedList(Guid? uid)
         {
-            return await _dc.DayToDos.Where(t=>t.IsFinish == true).OrderByDescending(t => t.UpdateTime).ToListAsync();
+            return await _dc.DayToDos
+                .Where(t=>t.IsFinish == true)
+                .Where(t=>t.CreateBy == uid)
+                .OrderByDescending(t => t.UpdateTime).ToListAsync();
         }
 
         public async Task SetInCurrent(Guid id)
