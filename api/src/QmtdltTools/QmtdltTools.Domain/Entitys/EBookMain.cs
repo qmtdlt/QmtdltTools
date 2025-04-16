@@ -9,5 +9,5 @@ public class EBookMain:EntityBaseId
     public string? Author { get; set; }
     public string? Description { get; set; }
     public string? CoverImage { get; set; }         // base64
-    public string? BookPath { get; set; }           // Êé¼®Â·¾¶
+    public string? BookPath { get; set; }           // 
 }

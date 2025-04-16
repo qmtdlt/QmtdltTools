@@ -5,6 +5,8 @@ using QmtdltTools.Domain.Entitys;
 using QmtdltTools.Domain.Models;
 using VersOne.Epub;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.JsonWebTokens;
+using QmtdltTools.Extensions;
 
 namespace QmtdltTools.Controllers
 {
@@ -22,9 +24,11 @@ namespace QmtdltTools.Controllers
         [HttpPost("UploadEpub")]
         public async Task<Response<bool>> UploadEpub(IFormFile file)
         {
+            
+            Guid? uid = HttpContext.GetUserId();           // 当前登录用户id
             var bytes = file.GetAllBytes();         // 文件转换为字节数组
             
-            return await _epubManageService.UploadEpub(bytes,file.FileName);
+            return await _epubManageService.UploadEpub(bytes,file.FileName,uid);
         }
         [HttpGet("DownloadEpub")]
         public async Task<IActionResult> DownloadEpub(Guid id)
@@ -48,7 +52,9 @@ namespace QmtdltTools.Controllers
         [HttpGet("GetBooks")]
         public async Task<List<EBookMain>> GetBooks()
         {
-            return await _epubManageService.GetBooks();
+            var userId = HttpContext.GetUserId();           // 当前登录用户id
+
+            return await _epubManageService.GetBooks(HttpContext.GetUserId());
         }
         // 删除book，DeleteBook
         [HttpDelete("DeleteBook")]
@@ -57,4 +63,6 @@ namespace QmtdltTools.Controllers
             return await _epubManageService.DeleteBook(id);
         }
     }
+    
+    
 }

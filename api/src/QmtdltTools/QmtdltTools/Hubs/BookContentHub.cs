@@ -1,13 +1,9 @@
 using System.Collections.Concurrent;
-using System.Formats.Tar;
-using System.Net;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using QmtdltTools.Domain.Models;
 using QmtdltTools.Service.Services;
 using QmtdltTools.Service.Utils;
-using VersOne.Epub;
 using Volo.Abp.AspNetCore.SignalR;
 
 namespace QmtdltTools.Hubs;

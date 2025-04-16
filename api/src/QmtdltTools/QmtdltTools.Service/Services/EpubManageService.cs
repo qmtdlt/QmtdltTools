@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using VersOne.Epub;
 using Volo.Abp.DependencyInjection;
 
@@ -21,7 +22,7 @@ namespace QmtdltTools.Service.Services
             _dc = dc;
         }
 
-        public async Task<Response<bool>> UploadEpub(byte[] buffer,string fileName)
+        public async Task<Response<bool>> UploadEpub(byte[] buffer,string fileName,Guid? uid)
         {
             using (var ms = new MemoryStream(buffer))
             {
@@ -54,7 +55,8 @@ namespace QmtdltTools.Service.Services
                         Title = book.Title,
                         Author = book.Author,
                         CoverImage = Convert.ToBase64String(book.CoverImage),
-                        BookPath = path
+                        BookPath = path,
+                        CreateBy = uid,
                     };
                     _dc.EBooks.Add(eBookMain);
                     await _dc.SaveChangesAsync();
@@ -97,9 +99,9 @@ namespace QmtdltTools.Service.Services
             Console.WriteLine();
         }
 
-        public async Task<List<EBookMain>> GetBooks()
+        public async Task<List<EBookMain>> GetBooks(Guid? uid)
         {
-            return await _dc.EBooks.ToListAsync();
+            return await _dc.EBooks.Where(t=>t.CreateBy == uid).ToListAsync();
         }
 
         public async Task<Response<bool>> DeleteBook(Guid id)
