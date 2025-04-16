@@ -7,7 +7,7 @@ public class EntityBaseId
     [Key]
     public Guid Id { get; set; }
     public DateTime? CreateTime { get; set; }
-    public string? CreateBy { get; set; }
+    public Guid? CreateBy { get; set; }
     public DateTime? UpdateTime { get; set; }
-    public string? UpdateBy { get; set; }
+    public Guid? UpdateBy { get; set; }
 }

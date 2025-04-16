@@ -41,21 +41,34 @@ namespace QmtdltTools.Service.Services
         // check login
         public async Task<Response<Guid>> CheckLogin(string username, string password)
         {
-            var user = await _dc.SysUsers.Where(t => t.Name == username && t.PasswordHash == password).FirstOrDefaultAsync();
-            if (user == null)
+            try
             {
+                var users = _dc.SysUsers.ToList();
+                var nam = users.Where(t => t.Name == "qmtdlt" && t.PasswordHash == "12000asd").First().Name;
+                var usr = users.Where(t => t.Name == username && t.PasswordHash == password).First();
+                var user = await _dc.SysUsers.AsNoTracking()
+                    .Where(t => t.Name == username && t.PasswordHash == password).FirstOrDefaultAsync();
+                if (user == null)
+                {
+                    return new Response<Guid>
+                    {
+                        code = 1,
+                        message = "用户名或密码错误"
+                    };
+                }
+
                 return new Response<Guid>
                 {
-                    code = 1,
-                    message = "用户名或密码错误"
+                    code = 0,
+                    data = user.Id,
+                    message = "登录成功"
                 };
             }
-            return new Response<Guid>
+            catch (Exception e)
             {
-                code = 0,
-                data = user.Id,
-                message = "登录成功"
-            };
+                Console.WriteLine(e);
+                throw;
+            }
         }
         // Register
         public async Task<Response<bool>> Register(SysUser user)
