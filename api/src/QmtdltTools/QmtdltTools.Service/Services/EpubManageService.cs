@@ -66,18 +66,6 @@ namespace QmtdltTools.Service.Services
             {
                 data = true
             };
-            //_dc.
-
-            //int cnt = 0;
-            //foreach (EpubLocalTextContentFile textContentFile in book.ReadingOrder)
-            //{
-            //    PrintTextContentFile(textContentFile);
-            //    Console.WriteLine(cnt++);
-            //}
-            //return new Response<bool>
-            //{
-            //    data = true
-            //};
         }
 
         public async Task<EBookMain?> GetBookById(Guid id)
@@ -85,20 +73,6 @@ namespace QmtdltTools.Service.Services
             var book = await _dc.EBooks.Where(t=>t.Id == id).FirstOrDefaultAsync();
             return book;
         }
-        private static void PrintTextContentFile(EpubLocalTextContentFile textContentFile)
-        {
-            HtmlDocument htmlDocument = new();
-            htmlDocument.LoadHtml(textContentFile.Content);
-            StringBuilder sb = new();
-            foreach (HtmlNode node in htmlDocument.DocumentNode.SelectNodes("//text()"))
-            {
-                sb.AppendLine(node.InnerText.Trim());
-            }
-            string contentText = sb.ToString();
-            Console.WriteLine(contentText);
-            Console.WriteLine();
-        }
-
         public async Task<List<EBookMain>> GetBooks(Guid? uid)
         {
             return await _dc.EBooks.Where(t=>t.CreateBy == uid).ToListAsync();

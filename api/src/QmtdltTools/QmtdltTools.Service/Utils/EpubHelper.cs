@@ -2,6 +2,9 @@
 using VersOne.Epub;
 using Microsoft.CognitiveServices.Speech;
 using Microsoft.CognitiveServices.Speech.Audio;
+using HtmlAgilityPack;
+using System.Text;
+using QmtdltTools.Domain.Models;
 namespace QmtdltTools.Service.Utils
 {
     
@@ -9,57 +12,6 @@ namespace QmtdltTools.Service.Utils
     {
         public static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
         public static string speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
-
-        
-
-        
-        public static string ConvertEpubToText(string epubFilePath)
-        {
-            if (!File.Exists(epubFilePath))
-            {
-                Console.WriteLine("文件不存在: " + epubFilePath);
-                return "";
-            }
-
-            try
-            {
-                // 根据 epub 文件生成 txt 文件路径（扩展名替换为 .txt）
-                string txtFilePath = Path.ChangeExtension(epubFilePath, ".txt");
-
-                Console.WriteLine(txtFilePath);
-                // 使用 VersOne.Epub 库读取 EPUB 文件
-                EpubBook epubBook = EpubReader.ReadBook(epubFilePath);
-
-                // 用于保存提取的纯文本内容
-                var combinedText = "";
-
-                // EPUB 文件中的正文内容通常保存在 ReadingOrder 中
-                foreach (var item in epubBook.ReadingOrder)
-                {
-                    // 每个 item 的 Content 属性包含 HTML 格式的内容
-                    if (!string.IsNullOrEmpty(item.Content))
-                    {
-                        // 使用正则表达式剥离 HTML 标签，得到纯文本
-                        string plainText = Regex.Replace(item.Content, "<[^>]+>", " ");
-                        // 可进一步对文本进行整理，如去除多余空格
-                        plainText = Regex.Replace(plainText, "\\s+", " ").Trim();
-
-                        combinedText += plainText + Environment.NewLine + Environment.NewLine;
-                    }
-                }
-
-                // 将结果写入 .txt 文件
-                File.WriteAllText(txtFilePath, combinedText);
-                Console.WriteLine("转换完成！输出文件：" + txtFilePath);
-                return txtFilePath;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("处理过程中发生错误: " + ex.Message);
-            }
-
-            return "";
-        }
 
 
         public static EpubBook GetEbook(string epubFilePath, out string message)
@@ -160,5 +112,71 @@ namespace QmtdltTools.Service.Utils
                 // No additional cleanup needed as MemoryStream is managed by the using statement
             }
         }
+
+
+
+        public static List<MyPragraph> PrepareAllPragraphs(EpubBook book)
+        {
+            List<MyPragraph> mybook = new List<MyPragraph>();
+
+            foreach (EpubLocalTextContentFile textContentFile in book.ReadingOrder)
+            {
+                var chapter = getChapterPragraphs(textContentFile);
+                if (null != chapter)
+                {
+                    mybook.AddRange(chapter);
+                }
+            }
+            return mybook;
+        }
+
+        static List<MyPragraph> getChapterPragraphs(EpubLocalTextContentFile textContentFile)
+        {
+            HtmlDocument htmlDocument = new();
+            htmlDocument.LoadHtml(textContentFile.Content);
+            StringBuilder sb = new();
+            foreach (HtmlNode node in htmlDocument.DocumentNode.SelectNodes("//text()"))
+            {
+                string paragraph = node.InnerText.Trim();
+                if (!string.IsNullOrEmpty(paragraph))
+                {
+                    sb.AppendLine(paragraph);
+                }
+            }
+            string chapterText = sb.ToString();
+            if (!string.IsNullOrEmpty(chapterText))
+            {
+                return GetParagraph(chapterText);
+            }
+            return null;
+        }
+
+        // 章节分段落
+        static List<MyPragraph> GetParagraph(string chapterText)
+        {
+            List<MyPragraph> res = new List<MyPragraph>();
+            string[] splitPragraphs = chapterText.Split("\r\n");
+            foreach (string pragraphs in splitPragraphs)
+            {
+                if (!string.IsNullOrEmpty(pragraphs.Trim()))
+                {
+                    MyPragraph myPragraph = new MyPragraph
+                    {
+                        PragraphText = pragraphs,
+                        Sentences = GetSentences(pragraphs)
+                    };
+                    res.Add(myPragraph);
+                }
+            }
+            return res;
+        }
+
+        static char[] splitSymbols = new List<char> { ',', '，', ':', '：', '。', '.' }.ToArray();
+        // 段落分句子
+        static List<string> GetSentences(string pragraphs)
+        {
+            return pragraphs.Split(splitSymbols).Where(t => !string.IsNullOrEmpty(t)).ToList();
+        }
+        
     }
 }

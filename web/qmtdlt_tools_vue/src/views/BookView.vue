@@ -4,7 +4,8 @@
       <div class="divLeft">
         <div>
           <el-button @click="callHub">test</el-button>
-          <p style="color: black; overflow-y: scroll; height: 600px;">{{ curText }}</p>
+          <p style="color: black; overflow-y: scroll; height: 600px;">{{ full_pragraph_text }}</p>
+          <p style="color: black; overflow-y: scroll; height: 600px;">{{ speaking_text }}</p>
           <span style="color: black;">当前阅读位置: {{ curPosition }}</span>
         </div>
        </div>
@@ -38,20 +39,13 @@ import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
 import { ElMessage } from 'element-plus';
 
-const curText = ref("");
-const curPosition = ref(0);
-const bookPosition = ref(0);
+const full_pragraph_text = ref("");
+const speaking_text = ref("");
+const curPosition = ref({});
 const route = useRoute() // 使用路由
 const bookId = ref(route.query.id as string) // 从查询参数中获取 id
-const bookTitle = ref(route.query.title as string) // 从查询参数中获取 title
-const rendition = ref<any>(null) // 用于存储 VueReader 的实例
-const selections = ref<Array<any>>([]) // 用于存储选中的文本和范围
-const ttsLoading = ref<boolean>(true)
-const loading = ref<boolean>(true)
 
-console.log(import.meta.env.VITE_API_URL);
-debugger
-  var connection = new signalR.HubConnectionBuilder()
+var connection = new signalR.HubConnectionBuilder()
   .withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent`)
   .configureLogging(signalR.LogLevel.Information)
   .build()
@@ -67,9 +61,10 @@ connection.on("onShowErrMsg", (msg: string) => {
 
 connection.on("UIReadInfo", (readContent: any) => {
   debugger
-  curText.value = readContent.text; // 读取到的文本内容
+  full_pragraph_text.value = readContent.full_pragraph_text; // 读取到的文本内容
+  speaking_text.value = readContent.speaking_text; // 读取到的文本内容
   curPosition.value = readContent.position; // 读取到的文本位置
-  readBase64(readContent.buffer); // 读取到的音频内容
+  readBase64(readContent.speaking_buffer); // 读取到的音频内容
 });
 
 const readBase64 = (base64string:string)=>{
@@ -80,18 +75,20 @@ const readBase64 = (base64string:string)=>{
     audioSource.buffer = buffer;
     audioSource.connect(audioContext.destination);
     audioSource.onended = () => {
+      debugger
       // callback when audio ends
-      bookPosition.value += 1; // 读取下一个位置,业务代码
-      connection.invoke("Read", bookId.value,bookPosition.value);        // 阅读下一章
+      connection.invoke("ReadNext", bookId.value);   
     };
     audioSource.start();      // start playing
   })
 }
 
-connection.on("onSetBookPosition", (pos: number) => {
+
+connection.on("onsetbookposition", (pos: any) => {
   // 设置书籍位置
-  bookPosition.value = pos;
-  connection.invoke("Read", bookId.value,bookPosition.value);        // 
+  debugger
+  curPosition.value = pos;
+  connection.invoke("Read", bookId.value);        // 
 });
 
 // 使用 VueUse 的 useStorage 来存储书籍进度
