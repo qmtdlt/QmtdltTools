@@ -4,6 +4,7 @@ using QmtdltTools.Service.Services;
 using QmtdltTools.Domain.Entitys;
 using QmtdltTools.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
+using QmtdltTools.Extensions;
 
 namespace QmtdltTools.Controllers
 {
@@ -22,7 +23,8 @@ namespace QmtdltTools.Controllers
         [HttpPost("AddDayToDoItem")]
         public async Task<Response<bool>> AddDayToDoItem(string content)
         {
-            return await _dayToDoService.AddItem(content);
+            
+            return await _dayToDoService.AddItem(content, HttpContext.GetUserId());
         }
         [HttpPost("DeleteDayToDoItem")]
         public async Task DeleteDayToDoItem(DayToDo input)
@@ -38,17 +40,17 @@ namespace QmtdltTools.Controllers
         [HttpGet("GetDayFinishedList")]
         public async Task<List<DayToDo>> GetDayFinishedList()
         {
-            return await _dayToDoService.GetFinishedList();
+            return await _dayToDoService.GetFinishedList(HttpContext.GetUserId());
         }
         [HttpGet("GetDayUnFinishedList")]
         public async Task<List<DayToDo>> GetDayUnFinishedList()
         {
-            return await _dayToDoService.GetUnFinishedUnFinishedList();
+            return await _dayToDoService.GetUnFinishedUnFinishedList(HttpContext.GetUserId());
         }
         [HttpGet("GetCurrentUnFinishedList")]
         public async Task<List<DayToDo>> GetCurrentUnFinishedList()
         {
-            return await _dayToDoService.GetCurrentUnFinishedList();
+            return await _dayToDoService.GetCurrentUnFinishedList(HttpContext.GetUserId());
         }
         [HttpPost("SetItemInCurrent")]
         public async Task SetItemInCurrent(DayToDo input)

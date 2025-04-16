@@ -40,7 +40,7 @@ namespace QmtdltTools.Service.Services
                 }
                 EpubBook book = EpubReader.ReadBook(ms);
                 // 如果存在相同 book.Title 和 book.Author 的电子书，则不再插入
-                if (_dc.EBooks.Any(e => e.Title == book.Title && e.Author == book.Author))
+                if (_dc.EBooks.Any(e => e.Title == book.Title && e.Author == book.Author && e.CreateBy == uid))
                 {
                     return new Response<bool>
                     {
