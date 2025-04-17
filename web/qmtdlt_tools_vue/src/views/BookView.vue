@@ -1,6 +1,6 @@
 <template>
   <el-row>
-    <el-col :span="12">
+    <el-col :span="12" v-if="showLeft">
       <div class="divLeft">
         <div>
           <el-button @click="startRead">start</el-button>
@@ -23,7 +23,9 @@
         <el-row>
           <!-- <el-button @click="autoSelection">自动选中段落</el-button>
           <el-button @click="speakText">朗读上方内容</el-button> -->
-          <el-button @click="listenWrite">speak highlight content</el-button>
+          <el-button @click="onListenWriteClick">speak highlight content</el-button>
+          <el-button @click="promptOneWord">prompt</el-button>
+          <el-button @click="cancelListenWrite">cancelListenWrite</el-button>
         </el-row>
         <ListenWrite
           :target-text="readContent.speaking_text"
@@ -64,6 +66,7 @@ const isReading = ref(false) // 是否正在阅读
 const jumpOffset = ref(1); // 跳转偏移量
 const currentAudioSource = ref<AudioBufferSourceNode | null>(null); // Store the current audio source
 const userInputListenedText = ref('') // 用户输入的听到的内容
+const showLeft = ref(true); // Control visibility of .divLeft
 
 var connection = new signalR.HubConnectionBuilder()
   .withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent`)
@@ -108,6 +111,19 @@ const listenWrite = ()=>{
   isReading.value = true
   readBase64(readContent.value.speaking_buffer,true); // 读取到的音频内容
 }
+const onListenWriteClick = () => {
+  showLeft.value = false;
+  listenWrite();
+};
+
+const promptOneWord = ()=>{
+
+}
+
+const cancelListenWrite = ()=>{
+  showLeft.value = true;
+}
+
 connection.on("onShowErrMsg", (msg: string) => {
   console.error(msg);
   ElMessage.error(msg);
