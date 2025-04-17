@@ -42,7 +42,7 @@ namespace QmtdltTools.Domain.Models
                 }
             }
         }
-        public UIReadInfo GetPostionUIReadInfo()
+        public UIReadInfo GetCurrentPosInfo()
         {
             if(PositionInbook())
             {
@@ -70,6 +70,11 @@ namespace QmtdltTools.Domain.Models
     }
     public class ReadPosition
     {
+        public ReadPosition()
+        {
+            PragraphIndex = 0;
+            SentenceIndex = 0;
+        }
         public int PragraphIndex { get; set; }
         public int SentenceIndex { get; set; }
     }
