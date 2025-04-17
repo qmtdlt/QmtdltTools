@@ -98,7 +98,18 @@ public class BookContentHub:AbpHub
             await Clients.All.SendAsync("onShowErrMsg", "epub file doesn't exist"); // 
         }
     }
-   
+    public async Task Trans(Guid bookId,string word)
+    {
+        var res = await RestHelper.GetTranslateResult(word);
+        if (res != null)
+        {
+            await Clients.All.SendAsync("onShowTrans", res);
+        }
+        else
+        {
+            await Clients.All.SendAsync("onShowErrMsg", "∑≠“Î ß∞‹");
+        }
+    }
     public void Read(Guid bookId)
     {
         var connectionId = Context.ConnectionId;            // connectionId
