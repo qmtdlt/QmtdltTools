@@ -217,6 +217,8 @@ const handleDrop = (event: DragEvent) => {
 
 onMounted(() => {
   connection.start().then(() => connection.invoke("InitCache",readContent.value.bookId));        // 开始阅读任务 onShowReadingText s
+  // Add keyboard shortcut listener for ctrl+1
+  window.addEventListener('keydown', handleKeyDown);
 })
 
 onBeforeUnmount(() => {
@@ -228,7 +230,16 @@ onBeforeUnmount(() => {
   }).catch((err) => {
     console.error("Error stopping SignalR connection:", err)
   })
+  window.removeEventListener('keydown', handleKeyDown);
 })
+
+// 快捷键监听 ctrl+1
+function handleKeyDown(e: KeyboardEvent) {
+  if (e.ctrlKey && e.key === '1') {
+    listenWrite();
+    e.preventDefault();
+  }
+}
 
 const handleListenWriteComplete = () => {
   console.log("Listen and write completed!");
