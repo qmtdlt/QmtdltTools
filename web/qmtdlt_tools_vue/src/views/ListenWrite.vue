@@ -87,7 +87,7 @@ const isComplete = computed(() => {
   padding: 28px 18px 18px 18px;
   margin: 0 auto;
   max-width: 600px;
-  min-width: 220px;
+  width: 100%;
   min-height: 120px;
   display: flex;
   flex-direction: column;
