@@ -84,7 +84,11 @@ public class BookContentHub:AbpHub
                 if (null == bookReadingCache[bookId].position) 
                     bookReadingCache[bookId].position = new ReadPosition();
 
-                await Clients.All.SendAsync("onSetBookPosition", bookInfo.position); // 
+                // first time
+                success = CurReadInfoEnQueue(bookId);            // get queue data fail,make data(only for first time)
+                bookReadingCache[bookId].readQueue.TryDequeue(out UIReadInfo uiReadInfo);
+
+                await Clients.All.SendAsync("onSetBookPosition", uiReadInfo); // 
             }
         }
         else
