@@ -21,22 +21,16 @@
           </p>
         </el-row>
         <el-row>
-          <!-- <el-button @click="autoSelection">自动选中段落</el-button>
-          <el-button @click="speakText">朗读上方内容</el-button> -->
           <el-button @click="onListenWriteClick">speak highlight content</el-button>
           <el-button @click="promptOneWord">prompt</el-button>
-          <el-button @click="cancelListenWrite">cancelListenWrite</el-button>
+          <el-button @click="showOrHidReader">showOrHidReader</el-button>
         </el-row>
         <ListenWrite
           :target-text="readContent.speaking_text"
           @completed="handleListenWriteComplete"
           style="padding: 10px;"
          />
-        
         <el-row>
-          <div>
-            <!-- <audio :src="audioSrc" controls></audio> -->
-          </div>
         </el-row>
       </div>
     </el-col>
@@ -112,7 +106,6 @@ const listenWrite = ()=>{
   readBase64(readContent.value.speaking_buffer,true); // 读取到的音频内容
 }
 const onListenWriteClick = () => {
-  showLeft.value = false;
   listenWrite();
 };
 
@@ -120,8 +113,8 @@ const promptOneWord = ()=>{
 
 }
 
-const cancelListenWrite = ()=>{
-  showLeft.value = true;
+const showOrHidReader = ()=>{
+  showLeft.value = !showLeft.value;
 }
 
 connection.on("onShowErrMsg", (msg: string) => {
