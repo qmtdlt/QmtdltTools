@@ -5,6 +5,7 @@ using Microsoft.CognitiveServices.Speech.Audio;
 using HtmlAgilityPack;
 using System.Text;
 using QmtdltTools.Domain.Models;
+using Serilog;
 namespace QmtdltTools.Service.Utils
 {
     
@@ -79,7 +80,8 @@ namespace QmtdltTools.Service.Utils
                             }
                             else
                             {
-                                throw new Exception($"Speech synthesis failed: {result.Reason}");
+                                Log.Error($"Speech synthesis failed: {result.Reason}");
+                                return new byte[0];
                             }
                         }
                     }
@@ -171,7 +173,7 @@ namespace QmtdltTools.Service.Utils
             return res;
         }
 
-        static char[] splitSymbols = new List<char> { ',', '，', ':', '：', '。', '.' }.ToArray();
+        static char[] splitSymbols = new List<char> { ':', '：', '。', '.' }.ToArray();
         // 段落分句子
         static List<string> GetSentences(string pragraphs)
         {

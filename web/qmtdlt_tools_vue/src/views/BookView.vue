@@ -5,8 +5,8 @@
         <div>
           <el-button @click="callHub">test</el-button>
           <p style="color: black; overflow-y: scroll; height: 600px;">{{ full_pragraph_text }}</p>
-          <p style="color: black; overflow-y: scroll; height: 600px;">{{ speaking_text }}</p>
           <span style="color: black;">当前阅读位置: {{ curPosition }}</span>
+          <p style="color: black; overflow-y: scroll; height: 600px;">{{ speaking_text }}</p>
         </div>
        </div>
     </el-col>
@@ -33,7 +33,7 @@
 </template>
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted,onBeforeUnmount } from 'vue'
 import request from '@/utils/request' // Import your request utility
 import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
@@ -75,9 +75,8 @@ const readBase64 = (base64string:string)=>{
     audioSource.buffer = buffer;
     audioSource.connect(audioContext.destination);
     audioSource.onended = () => {
-      debugger
-      // callback when audio ends
-      connection.invoke("ReadNext", bookId.value);   
+      // callback when audio read finished
+      connection.invoke("Read", bookId.value);   
     };
     audioSource.start();      // start playing
   })
@@ -86,7 +85,6 @@ const readBase64 = (base64string:string)=>{
 
 connection.on("onsetbookposition", (pos: any) => {
   // 设置书籍位置
-  debugger
   curPosition.value = pos;
   connection.invoke("Read", bookId.value);        // 
 });
@@ -111,6 +109,17 @@ const handleDrop = (event: DragEvent) => {
 
 onMounted(() => {
 
+})
+
+onBeforeUnmount(() => {
+  // 断开连接
+  connection.stop().then(() => {
+    console.log("Connection stopped.")
+  }).catch((err) => {
+    console.error(err)
+  })
+  // STOP audio play
+  
 })
 </script>
 

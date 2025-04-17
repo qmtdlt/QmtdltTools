@@ -34,6 +34,10 @@ public class BookContentHub:AbpHub
     {
         var connectionId = Context.ConnectionId;
         connectionStatusCache.AddOrUpdate(connectionId, false, (connectionId, old) => { return false; });       // set connection dead
+
+        // clear cache ?? 
+        // 持久化 redis bookid position 进度
+
         return base.OnDisconnectedAsync(exception);
     }
 
@@ -47,6 +51,7 @@ public class BookContentHub:AbpHub
             await Clients.All.SendAsync("onShowErrMsg", "book not found in database");         // 
             return;
         }
+        
         if (File.Exists(book.BookPath))                                             // if file exists
         {
             var ebook = EpubHelper.GetEbook(book.BookPath, out string message);     // get ebook
@@ -60,6 +65,7 @@ public class BookContentHub:AbpHub
                 // read book reading progress from redis or database
                                                       
                 bool success = bookReadingCache.TryGetValue(bookId, out var bookInfo);
+
                 if (!success)
                 {
                     bookInfo = new BookReaderModel { plist = plist, position = new ReadPosition {
@@ -67,6 +73,17 @@ public class BookContentHub:AbpHub
                     } };
                     bookReadingCache.AddOrUpdate(bookId, bookInfo, (bookId, old) => { return bookInfo; });
                 }
+
+                try
+                {
+                    bookReadingCache[bookId].position = RedisHelper.Get<ReadPosition>(bookId.ToString());
+                }
+                catch (Exception)
+                { }
+
+                if (null == bookReadingCache[bookId].position) 
+                    bookReadingCache[bookId].position = new ReadPosition();
+
                 await Clients.All.SendAsync("onSetBookPosition", bookInfo.position); // 
             }
         }
@@ -75,11 +92,7 @@ public class BookContentHub:AbpHub
             await Clients.All.SendAsync("onShowErrMsg", "epub file doesn't exist"); // 
         }
     }
-    public async Task ReadNext(Guid bookId)
-    {
-        bookReadingCache[bookId].PositionNext();
-        await Read(bookId);
-    }
+   
     public async Task Read(Guid bookId)
     {
         var connectionId = Context.ConnectionId;            // connectionId
@@ -87,23 +100,17 @@ public class BookContentHub:AbpHub
         if (bookReadingCache[bookId].PositionInbook() && connectionStatusCache[connectionId])
         {
             bool success = bookReadingCache[bookId].readQueue.TryDequeue(out UIReadInfo uiReadInfo);
-            if (success)
+            if (!success)
             {
-                _ = Clients.All.SendAsync("UIReadInfo", uiReadInfo);            // call client speak
+                success = CurReadInfoEnQueue(bookId);            // get queue data fail,make data(only for first time)
+                bookReadingCache[bookId].readQueue.TryDequeue(out uiReadInfo);
             }
-            else
-            {
-                success = MakeQueueData(bookId);            // TODO
-            }
-            if(bookReadingCache[bookId].PositionNext())
-            {
-                MakeQueueData(bookId);
-            }
-            else
-            {
-                // is End
-                Console.WriteLine("isEnd");
-            }
+
+            _ = Clients.All.SendAsync("UIReadInfo", uiReadInfo);            // call client speak
+            RedisHelper.Set(bookId.ToString(), bookReadingCache[bookId].position);
+
+            bookReadingCache[bookId].PositionNext();                // go next
+            success = CurReadInfoEnQueue(bookId);                   // en queue
         }
     }
     public async Task StopReadTask()
@@ -111,9 +118,9 @@ public class BookContentHub:AbpHub
         await Clients.All.SendAsync("onStopReadTask");
     }
 
-    bool MakeQueueData(Guid bookId)
+    bool CurReadInfoEnQueue(Guid bookId)
     {
-        bool success = GetCurContent(bookId, out UIReadInfo uiReadInfo);
+        bool success = GetCurUIReadInfo(bookId, out UIReadInfo uiReadInfo);
         if (success)
         {
             bookReadingCache[bookId].readQueue.Enqueue(uiReadInfo);
@@ -121,17 +128,17 @@ public class BookContentHub:AbpHub
         }
         return false;
     }
-    bool GetCurContent(Guid bookId,out UIReadInfo uiReadInfo)
+    bool GetCurUIReadInfo(Guid bookId,out UIReadInfo uiReadInfo)
     {
         uiReadInfo = new UIReadInfo();
         
-        uiReadInfo = bookReadingCache[bookId].GetPostionUIReadInfo();
+        uiReadInfo = bookReadingCache[bookId].GetCurrentPosInfo();              // cur position info
         if(null == uiReadInfo) return false;
 
         if (!string.IsNullOrEmpty(uiReadInfo.speaking_text))
         {
             if(uiReadInfo.speaking_text.IsNullOrEmpty()) return false;
-            uiReadInfo.speaking_buffer = EpubHelper.GetSpeakStream(uiReadInfo.speaking_text);
+            uiReadInfo.speaking_buffer = EpubHelper.GetSpeakStream(uiReadInfo.speaking_text);       // make speak buffer
             return true;
         }
         return false;

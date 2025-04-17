@@ -11,6 +11,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="CSRedisCore" Version="3.8.804" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.11.74" />
 		<PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.30.0" />
 		<PackageReference Include="Volo.Abp.AspNetCore.Authentication.JwtBearer" Version="9.1.1" />
