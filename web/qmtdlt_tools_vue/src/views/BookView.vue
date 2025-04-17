@@ -16,14 +16,26 @@
             <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text" />
           </div>
         </el-row>
-        <el-row class="position-row" justify="end">
-          <el-tag type="info" effect="plain" size="small">
-            当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句
-          </el-tag>
+        <el-row style="margin-top: 10px;">
+          <el-col :span="20">
+            <el-tag type="success" effect="plain" size="small">
+              拖拽翻译
+            </el-tag>
+            </el-col>
+          <el-col :span="4" justify="end">
+            <el-tag type="info" effect="plain" size="small" >
+              当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句
+            </el-tag>
+          </el-col>
         </el-row>
         <el-row class="dropped-row" justify="center">
           <div class="dropped-text-area" @dragover.prevent="onDragOver" @drop="handleDrop">
-            <p style="min-height: 100px;">{{ droppedText }}</p>
+            <p style="min-height: 50px;">{{ droppedText }}</p>
+          </div>
+        </el-row>
+        <el-row >
+          <div >
+            <p>翻译结果</p>
           </div>
         </el-row>
       </div>
@@ -282,7 +294,7 @@ const handleListenWriteComplete = () => {
   border-radius: 14px;
   box-shadow: 0 4px 24px 0 rgba(0,0,0,0.07), 0 1.5px 6px 0 rgba(0,0,0,0.03);
   padding: 32px 28px 24px 28px;
-  min-height: 70vh;
+  min-height: 80vh;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
