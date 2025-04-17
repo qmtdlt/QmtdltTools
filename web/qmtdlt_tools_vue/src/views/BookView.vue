@@ -1,37 +1,49 @@
 <template>
-  <el-row>
+  <el-row :gutter="24" class="main-row">
     <el-col :span="12" v-if="showLeft">
-      <div class="divLeft">
-        <div>
-          <el-button @click="startRead">start</el-button>
-          <el-button @click="stopRead">stop</el-button>
-          <el-button @click="goPrevious">go previous</el-button>
-          <el-input v-model="jumpOffset" placeholder="移动偏移量" style="width: 100px;"></el-input>
-          <el-button @click="goNext">go next</el-button>
-          <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text" />
-          <span style="color: black;">当前阅读位置: {{ readContent.curPosition }}</span>
+      <div class="divLeft card">
+        <div class="left-header">
+          <el-button-group>
+            <el-button @click="startRead" type="primary" icon="el-icon-caret-right">start</el-button>
+            <el-button @click="stopRead" type="danger" icon="el-icon-close">stop</el-button>
+            <el-button @click="goPrevious" icon="el-icon-arrow-left">previous</el-button>
+            <el-input v-model="jumpOffset" placeholder="偏移量" style="width: 90px; margin: 0 8px;" size="small"></el-input>
+            <el-button @click="goNext" icon="el-icon-arrow-right">next</el-button>
+          </el-button-group>
         </div>
-       </div>
+        <div class="paragraph-area">
+          <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text" />
+        </div>
+        <div class="position-info">
+          <el-tag type="info" effect="plain" size="small">当前阅读位置: {{ readContent.curPosition }}</el-tag>
+        </div>
+      </div>
     </el-col>
     <el-col :span="12">
-      <div class="divRIght" id="divRight" @dragover.prevent @drop="handleDrop">
-        <!--这里准备放一些自定义功能，例如翻译，笔记等-->
+      <div
+        class="divRight card"
+        id="divRight"
+        @dragover.prevent="onDragOver"
+        @drop="handleDrop"
+      >
         <el-row>
-          <p style="height: 20vh;width: 90%;background-color: green;margin: auto;margin-top: 20px;">{{ droppedText }}
-          </p>
+          <div class="dropped-text-area">
+            <p>{{ droppedText }}</p>
+          </div>
         </el-row>
-        <el-row>
-          <el-button @click="onListenWriteClick">speak highlight content</el-button>
-          <el-button @click="promptOneWord">prompt</el-button>
-          <el-button @click="showOrHidReader">showOrHidReader</el-button>
+        <el-row class="right-btn-group">
+          <el-button @click="onListenWriteClick" type="success" icon="el-icon-headset">speak highlight</el-button>
+          <el-button @click="promptOneWord" type="warning" icon="el-icon-lightning">prompt</el-button>
+          <el-button @click="showOrHidReader" type="info" icon="el-icon-view">
+            {{ showLeft ? '隐藏原文' : '显示原文' }}
+          </el-button>
         </el-row>
-        <ListenWrite
-          :target-text="readContent.speaking_text"
-          @completed="handleListenWriteComplete"
-          style="padding: 10px;"
-         />
-        <el-row>
-        </el-row>
+        <div class="listenwrite-card">
+          <ListenWrite
+            :target-text="readContent.speaking_text"
+            @completed="handleListenWriteComplete"
+          />
+        </div>
       </div>
     </el-col>
   </el-row>
@@ -211,9 +223,17 @@ const droppedText = ref('')
 
 // 接收拖拽到右侧区域的数据（使用原生拖拽事件，拖拽文本时默认类型为 text/plain）
 const handleDrop = (event: DragEvent) => {
-  event.preventDefault()
-  droppedText.value = event.dataTransfer?.getData('text/plain') || ''
+  event.preventDefault();
+  // 兼容性处理，确保 dataTransfer 存在
+  if (event.dataTransfer) {
+    droppedText.value = event.dataTransfer.getData('text/plain') || '';
+  }
 }
+
+// 修正拖拽事件，确保事件能被触发
+const onDragOver = (event: DragEvent) => {
+  event.preventDefault();
+};
 
 onMounted(() => {
   connection.start().then(() => connection.invoke("InitCache",readContent.value.bookId));        // 开始阅读任务 onShowReadingText s
@@ -250,23 +270,114 @@ const handleListenWriteComplete = () => {
 </script>
 
 <style scoped>
+.main-row {
+  margin: 0;
+  min-height: 100vh;
+  background: #f6f8fa;
+  padding: 32px 0 0 0;
+}
+
+.card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.07), 0 1.5px 6px 0 rgba(0,0,0,0.03);
+  padding: 32px 28px 24px 28px;
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
 .divLeft {
-  height: calc(90vh - 100px);
+  /* inherit card styles */
 }
 
-.divRIght {
-  background: red;
-  height: calc(90vh - 100px);
+.left-header {
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.paragraph-area {
+  flex: 1;
+  margin-bottom: 18px;
+  font-size: 1.18em;
+  color: #222;
+  line-height: 2;
+  background: #f7fafd;
+  border-radius: 8px;
+  padding: 18px 16px;
+  min-height: 180px;
+  box-sizing: border-box;
+  word-break: break-all;
+}
+
+.position-info {
+  margin-top: 8px;
+  text-align: right;
+}
+
+.divRight {
+  /* inherit card styles */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.dropped-text-area {
+  width: 95%;
+  min-height: 60px;
+  background: linear-gradient(90deg, #e0f7fa 0%, #f1f8e9 100%);
+  border-radius: 8px;
+  margin: 0 auto 18px auto;
+  padding: 12px 18px;
+  color: #333;
+  font-size: 1.08em;
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+}
+
+.right-btn-group {
+  margin-bottom: 18px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.listenwrite-card {
   width: 100%;
-}
-
-.selection {
-  z-index: 1;
-  background-color: white;
-  color: #000;
+  background: #f9fafc;
+  border-radius: 10px;
+  box-shadow: 0 1px 6px 0 rgba(0,0,0,0.03);
+  padding: 18px 14px;
+  margin-top: 10px;
 }
 
 .el-row {
-  margin-bottom: 10px; /* Add some spacing between rows */
+  margin-bottom: 0;
+}
+
+.el-button + .el-button {
+  margin-left: 10px;
+}
+
+@media (max-width: 900px) {
+  .main-row {
+    padding: 0;
+  }
+  .card {
+    padding: 16px 6px 12px 6px;
+    min-height: unset;
+  }
+  .paragraph-area {
+    padding: 10px 6px;
+    min-height: 80px;
+  }
+  .listenwrite-card {
+    padding: 10px 4px;
+  }
 }
 </style>
