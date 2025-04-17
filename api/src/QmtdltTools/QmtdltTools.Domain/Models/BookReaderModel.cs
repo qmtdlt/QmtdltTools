@@ -20,6 +20,41 @@ namespace QmtdltTools.Domain.Models
             }
             return false;
         }
+
+        public void ResetPosition(int offsetPos)
+        {
+            if(offsetPos >= 0)
+            {
+                int cnt = 0;
+                while(PositionInbook() && cnt < offsetPos - 1)      // sub 1, because cached two
+                {
+                    PositionNext();
+                    cnt++;
+                }
+            }
+            else
+            {
+                int cnt = 0;
+                while (PositionInbook() && cnt <= Math.Abs(offsetPos))
+                {
+                    if (position.SentenceIndex > 0)
+                    {
+                        position.SentenceIndex--;
+                    }
+                    else
+                    {
+                        if (position.PragraphIndex > 0)
+                        {
+                            position.PragraphIndex--;
+                            position.SentenceIndex = plist[position.PragraphIndex].Sentences.Count - 1;
+                        }
+                    }
+                    cnt++;
+                }
+            }
+        }
+
+
         public bool PositionNext()
         {
             if (position.SentenceIndex + 1 < plist[position.PragraphIndex].Sentences.Count)
@@ -58,11 +93,17 @@ namespace QmtdltTools.Domain.Models
                 return null;
             }
         }
+
         public ConcurrentQueue<UIReadInfo> readQueue { get; set; } = new ConcurrentQueue<UIReadInfo>(); // 队列
     }
 
     public class UIReadInfo
     {
+        public UIReadInfo()
+        {
+            voice_name = "en-US-AvaMultilingualNeural";
+        }
+        public string voice_name { get; set; }
         public string full_pragraph_text { get; set; }
         public string speaking_text { get; set; }
         public byte[] speaking_buffer { get; set; }

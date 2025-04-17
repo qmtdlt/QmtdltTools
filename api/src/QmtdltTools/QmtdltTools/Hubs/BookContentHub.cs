@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Autofac.Core.Resolving.Middleware;
 using Microsoft.AspNetCore.SignalR;
 using QmtdltTools.Domain.Models;
@@ -97,7 +99,7 @@ public class BookContentHub:AbpHub
         }
     }
    
-    public async Task Read(Guid bookId)
+    public void Read(Guid bookId)
     {
         var connectionId = Context.ConnectionId;            // connectionId
 
@@ -117,9 +119,12 @@ public class BookContentHub:AbpHub
             success = CurReadInfoEnQueue(bookId);                   // en queue
         }
     }
-    public async Task StopReadTask()
+    public async Task ResetPosition(Guid bookId ,int offsetPos)
     {
-        await Clients.All.SendAsync("onStopReadTask");
+        bookReadingCache[bookId].readQueue.Clear();
+        bookReadingCache[bookId].ResetPosition(offsetPos);
+        RedisHelper.Set(bookId.ToString(), bookReadingCache[bookId].position);
+        await InitCache(bookId);
     }
 
     bool CurReadInfoEnQueue(Guid bookId)
@@ -142,7 +147,7 @@ public class BookContentHub:AbpHub
         if (!string.IsNullOrEmpty(uiReadInfo.speaking_text))
         {
             if(uiReadInfo.speaking_text.IsNullOrEmpty()) return false;
-            uiReadInfo.speaking_buffer = EpubHelper.GetSpeakStream(uiReadInfo.speaking_text);       // make speak buffer
+            uiReadInfo.speaking_buffer = EpubHelper.GetSpeakStream(uiReadInfo.speaking_text, uiReadInfo.voice_name);       // make speak buffer
             return true;
         }
         return false;

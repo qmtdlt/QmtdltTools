@@ -49,7 +49,7 @@ namespace QmtdltTools.Service.Utils
         /// <param name="text"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static byte[] GetSpeakStream(string text,string SpeechSynthesisVoiceName = "zh-CN-YunxiNeural")
+        public static byte[] GetSpeakStream(string text,string SpeechSynthesisVoiceName)
         {
             // Create speech configuration
             var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
@@ -88,8 +88,6 @@ namespace QmtdltTools.Service.Utils
                 }
             }
         }
-
-
         /// <summary>
         /// Generate by Grok: 
         /// strem callback
@@ -114,8 +112,6 @@ namespace QmtdltTools.Service.Utils
                 // No additional cleanup needed as MemoryStream is managed by the using statement
             }
         }
-
-
 
         public static List<MyPragraph> PrepareAllPragraphs(EpubBook book)
         {
@@ -167,6 +163,8 @@ namespace QmtdltTools.Service.Utils
                         PragraphText = pragraphs,
                         Sentences = GetSentences(pragraphs)
                     };
+                    if (myPragraph.Sentences.Count <= 0)
+                        continue;
                     res.Add(myPragraph);
                 }
             }
@@ -179,6 +177,5 @@ namespace QmtdltTools.Service.Utils
         {
             return pragraphs.Split(splitSymbols).Where(t => !string.IsNullOrEmpty(t)).ToList();
         }
-        
     }
 }
