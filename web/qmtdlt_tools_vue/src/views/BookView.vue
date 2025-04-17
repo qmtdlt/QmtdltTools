@@ -34,9 +34,12 @@
           </div>
         </el-row>
         <el-row >
-          <div >
-            <p>翻译结果</p>
-          </div>
+          <p>explanation:</p>
+          <p>{{transResult.explanation}}</p>
+        </el-row>
+        <el-row >
+          <p>translation:</p>
+          <p>{{transResult.translation}}</p>
         </el-row>
       </div>
     </el-col>
@@ -82,8 +85,8 @@ const  readContent = ref({
 const isReading = ref(false) // 是否正在阅读
 const jumpOffset = ref("1"); // 跳转偏移量
 const currentAudioSource = ref<AudioBufferSourceNode | null>(null); // Store the current audio source
-const userInputListenedText = ref('') // 用户输入的听到的内容
 const showLeft = ref(true); // Control visibility of .divLeft
+const transResult = ref({explanation:"",translation:""}); // Store translation result
 
 var connection = new signalR.HubConnectionBuilder()
   .withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent`)
@@ -139,7 +142,11 @@ const promptOneWord = ()=>{
 const showOrHidReader = ()=>{
   showLeft.value = !showLeft.value;
 }
-
+connection.on("onShowTrans", (result: string) => {
+  debugger
+  console.log(result);
+  transResult.value = result; // Store the translation result
+});
 connection.on("onShowErrMsg", (msg: string) => {
   console.error(msg);
   ElMessage.error(msg);
@@ -238,6 +245,7 @@ const handleDrop = (event: DragEvent) => {
   // 兼容性处理，确保 dataTransfer 存在
   if (event.dataTransfer) {
     droppedText.value = event.dataTransfer.getData('text/plain') || '';
+    connection.invoke("Trans", readContent.value.bookId,droppedText.value);
   }
 }
 
