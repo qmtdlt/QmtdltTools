@@ -1,8 +1,8 @@
 <template>
-  <el-row :gutter="24" class="main-row">
+  <el-row :gutter="32" class="main-row">
     <el-col :span="12" v-if="showLeft">
       <div class="divLeft card">
-        <el-row >
+        <el-row class="left-header" justify="start" align="middle">
           <el-button-group>
             <el-button @click="startRead" type="primary" icon="el-icon-caret-right">start</el-button>
             <el-button @click="stopRead" type="danger" icon="el-icon-close">stop</el-button>
@@ -11,25 +11,26 @@
             <el-button @click="goNext" icon="el-icon-arrow-right">next</el-button>
           </el-button-group>
         </el-row>
-        <el-row>
-          <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text" />
+        <el-row class="paragraph-row" justify="center">
+          <div class="paragraph-area">
+            <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text" />
+          </div>
         </el-row>
-        <el-row >
-          <el-tag type="info" effect="plain" size="small">当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句</el-tag>          
+        <el-row class="position-row" justify="end">
+          <el-tag type="info" effect="plain" size="small">
+            当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句
+          </el-tag>
         </el-row>
-        <el-row>
-          <div class="dropped-text-area"  @dragover.prevent="onDragOver" @drop="handleDrop">
-            <p style="width: 99%;min-width: 600px;">{{ droppedText }}</p>
+        <el-row class="dropped-row" justify="center">
+          <div class="dropped-text-area" @dragover.prevent="onDragOver" @drop="handleDrop">
+            <p style="min-height: 100px;">{{ droppedText }}</p>
           </div>
         </el-row>
       </div>
     </el-col>
     <el-col :span="12">
-      <div
-        class="divRight card"
-        id="divRight">
-        
-        <el-row class="right-btn-group">
+      <div class="divRight card">
+        <el-row class="right-btn-group" justify="center" align="middle">
           <el-button @click="onListenWriteClick" type="success" icon="el-icon-headset">speak highlight</el-button>
           <el-button @click="promptOneWord" type="warning" icon="el-icon-lightning">prompt</el-button>
           <el-button @click="showOrHidReader" type="info" icon="el-icon-view">
@@ -273,6 +274,7 @@ const handleListenWriteComplete = () => {
   min-height: 100vh;
   background: #f6f8fa;
   padding: 32px 0 0 0;
+  box-sizing: border-box;
 }
 
 .card {
@@ -284,64 +286,72 @@ const handleListenWriteComplete = () => {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  box-sizing: border-box;
 }
 
-.divLeft {
-  /* inherit card styles */
+.divLeft, .divRight {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .left-header {
   margin-bottom: 18px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  gap: 12px;
+}
+
+.paragraph-row {
+  margin-bottom: 12px;
+  justify-content: center;
 }
 
 .paragraph-area {
-  flex: 1;
-  margin-bottom: 18px;
+  width: 100%;
   font-size: 1.18em;
   color: #222;
   line-height: 2;
   background: #f7fafd;
   border-radius: 8px;
   padding: 18px 16px;
-  min-height: 180px;
+  min-height: 120px;
   box-sizing: border-box;
   word-break: break-all;
+  margin-bottom: 0;
+  margin-top: 15px;
 }
 
-.position-info {
-  margin-top: 8px;
-  text-align: right;
+.position-row {
+  margin-bottom: 12px;
+  justify-content: flex-end;
 }
 
-.divRight {
-  /* inherit card styles */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
+.dropped-row {
+  margin-top: 10px;
+  justify-content: center;
 }
 
 .dropped-text-area {
-  width: 95%;
-  min-height: 60px;
+  width: 100%;
+  min-width: 220px;
+  min-height: 40px;
   background: linear-gradient(90deg, #e0f7fa 0%, #f1f8e9 100%);
   border-radius: 8px;
-  margin: 0 auto 18px auto;
-  padding: 12px 18px;
+  padding: 10px 16px;
   color: #333;
   font-size: 1.08em;
   box-shadow: 0 1px 4px 0 rgba(0,0,0,0.04);
   display: flex;
   align-items: center;
+  margin: 0 auto;
 }
 
 .right-btn-group {
   margin-bottom: 18px;
   display: flex;
-  gap: 12px;
+  gap: 16px;
   justify-content: center;
 }
 
@@ -352,6 +362,9 @@ const handleListenWriteComplete = () => {
   box-shadow: 0 1px 6px 0 rgba(0,0,0,0.03);
   padding: 18px 14px;
   margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .el-row {
@@ -367,15 +380,20 @@ const handleListenWriteComplete = () => {
     padding: 0;
   }
   .card {
-    padding: 16px 6px 12px 6px;
+    padding: 12px 2vw 10px 2vw;
     min-height: unset;
   }
   .paragraph-area {
     padding: 10px 6px;
-    min-height: 80px;
+    min-height: 60px;
   }
   .listenwrite-card {
     padding: 10px 4px;
+  }
+  .dropped-text-area {
+    min-width: 120px;
+    padding: 6px 4px;
+    font-size: 0.98em;
   }
 }
 </style>
