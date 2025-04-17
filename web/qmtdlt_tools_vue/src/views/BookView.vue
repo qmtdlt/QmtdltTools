@@ -2,7 +2,7 @@
   <el-row :gutter="24" class="main-row">
     <el-col :span="12" v-if="showLeft">
       <div class="divLeft card">
-        <div class="left-header">
+        <el-row >
           <el-button-group>
             <el-button @click="startRead" type="primary" icon="el-icon-caret-right">start</el-button>
             <el-button @click="stopRead" type="danger" icon="el-icon-close">stop</el-button>
@@ -10,27 +10,25 @@
             <el-input v-model="jumpOffset" placeholder="偏移量" style="width: 90px; margin: 0 8px;" size="small"></el-input>
             <el-button @click="goNext" icon="el-icon-arrow-right">next</el-button>
           </el-button-group>
-        </div>
-        <div class="paragraph-area">
+        </el-row>
+        <el-row>
           <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text" />
-        </div>
-        <div class="position-info">
-          <el-tag type="info" effect="plain" size="small">当前阅读位置: {{ readContent.curPosition }}</el-tag>
-        </div>
+        </el-row>
+        <el-row >
+          <el-tag type="info" effect="plain" size="small">当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句</el-tag>          
+        </el-row>
+        <el-row>
+          <div class="dropped-text-area"  @dragover.prevent="onDragOver" @drop="handleDrop">
+            <p style="width: 99%;min-width: 600px;">{{ droppedText }}</p>
+          </div>
+        </el-row>
       </div>
     </el-col>
     <el-col :span="12">
       <div
         class="divRight card"
-        id="divRight"
-        @dragover.prevent="onDragOver"
-        @drop="handleDrop"
-      >
-        <el-row>
-          <div class="dropped-text-area">
-            <p>{{ droppedText }}</p>
-          </div>
-        </el-row>
+        id="divRight">
+        
         <el-row class="right-btn-group">
           <el-button @click="onListenWriteClick" type="success" icon="el-icon-headset">speak highlight</el-button>
           <el-button @click="promptOneWord" type="warning" icon="el-icon-lightning">prompt</el-button>
@@ -69,7 +67,7 @@ const  readContent = ref({
 });
 
 const isReading = ref(false) // 是否正在阅读
-const jumpOffset = ref(1); // 跳转偏移量
+const jumpOffset = ref("1"); // 跳转偏移量
 const currentAudioSource = ref<AudioBufferSourceNode | null>(null); // Store the current audio source
 const userInputListenedText = ref('') // 用户输入的听到的内容
 const showLeft = ref(true); // Control visibility of .divLeft
@@ -80,10 +78,10 @@ var connection = new signalR.HubConnectionBuilder()
   .build()
 
 const goPrevious = async () => {
-  resetPosition(0-jumpOffset.value); // Reset position to the previous one
+  resetPosition(0-parseInt(jumpOffset.value)); // Reset position to the previous one
 }
 const goNext = async () => {
-  resetPosition(jumpOffset.value); // Reset position to the next one
+  resetPosition(parseInt(jumpOffset.value)); // Reset position to the next one
 }
 
 const resetPosition = (offset:number)=>{
