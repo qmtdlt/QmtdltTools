@@ -25,9 +25,12 @@
           <el-button @click="speakText">朗读上方内容</el-button> -->
           <el-button @click="listenWrite">speak highlight content</el-button>
         </el-row>
-        <el-row>
-          <el-input v-model="userInputListenedText" placeholder="输入听到的内容" style="width: 100%;"></el-input>
-        </el-row>
+        <ListenWrite
+          :target-text="readContent.speaking_text"
+          @completed="handleListenWriteComplete"
+          style="padding: 10px;"
+         />
+        
         <el-row>
           <div>
             <!-- <audio :src="audioSrc" controls></audio> -->
@@ -45,6 +48,7 @@ import request from '@/utils/request' // Import your request utility
 import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
 import { ElMessage } from 'element-plus';
+import ListenWrite from './ListenWrite.vue'; // Keep this import
 
 const route = useRoute() // 使用路由
 
@@ -216,6 +220,13 @@ onBeforeUnmount(() => {
     console.error("Error stopping SignalR connection:", err)
   })
 })
+
+const handleListenWriteComplete = () => {
+  console.log("Listen and write completed!");
+  ElMessage.success("听写完成!");
+  // Optionally trigger next action, e.g., goNext()
+  // goNext();
+}
 </script>
 
 <style scoped>
@@ -233,5 +244,9 @@ onBeforeUnmount(() => {
   z-index: 1;
   background-color: white;
   color: #000;
+}
+
+.el-row {
+  margin-bottom: 10px; /* Add some spacing between rows */
 }
 </style>
