@@ -29,4 +29,6 @@ public class DC:AbpDbContext<DC>
     public DbSet<EBookMain> EBooks { get; set; }
     public DbSet<DayToDo> DayToDos { get; set; }
     public DbSet<YearToDo> YearToDos { get; set; }
+    public DbSet<ListenWriteRecord> ListenWriteRecords { get; set; }
+    public DbSet<VocabularyRecord> VocabularyRecord { get; set; }
 }

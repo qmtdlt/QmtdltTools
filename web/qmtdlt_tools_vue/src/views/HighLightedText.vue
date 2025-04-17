@@ -1,10 +1,12 @@
 <!-- filepath: e:\work\QmtdltTools\web\qmtdlt_tools_vue\src\components\HighlightedText.vue -->
 <template>
-    <p>
+    <div style="min-height: 200px;">
+      <p>
       <span>{{ beforeText }}</span>
       <span class="highlight">{{ highlightedText }}</span>
       <span>{{ afterText }}</span>
     </p>
+    </div>
   </template>
   
   <script setup lang="ts">

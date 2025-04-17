@@ -63,6 +63,4 @@ namespace QmtdltTools.Controllers
             return await _epubManageService.DeleteBook(id);
         }
     }
-    
-    
 }
