@@ -1,17 +1,19 @@
 <template>
   <el-row>
-    <el-col :span="16">
+    <el-col :span="12">
       <div class="divLeft">
         <div>
           <el-button @click="startRead">start</el-button>
           <el-button @click="stopRead">stop</el-button>
-          <!-- <p style="color: black; overflow-y: scroll; height: 600px;">{{ full_pragraph_text }}</p> -->
-          <HighlightedText :full-text="full_pragraph_text" :highlight-text="speaking_text" />
-          <span style="color: black;">当前阅读位置: {{ curPosition }}</span>
+          <el-button @click="goPrevious">go previous</el-button>
+          <el-input v-model="jumpOffset" placeholder="移动偏移量" style="width: 100px;"></el-input>
+          <el-button @click="goNext">go next</el-button>
+          <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text" />
+          <span style="color: black;">当前阅读位置: {{ readContent.curPosition }}</span>
         </div>
        </div>
     </el-col>
-    <el-col :span="8">
+    <el-col :span="12">
       <div class="divRIght" id="divRight" @dragover.prevent @drop="handleDrop">
         <!--这里准备放一些自定义功能，例如翻译，笔记等-->
         <el-row>
@@ -21,7 +23,10 @@
         <el-row>
           <!-- <el-button @click="autoSelection">自动选中段落</el-button>
           <el-button @click="speakText">朗读上方内容</el-button> -->
-          <el-button>讲一讲上方内容</el-button>
+          <el-button @click="listenWrite">speak highlight content</el-button>
+        </el-row>
+        <el-row>
+          <el-input v-model="userInputListenedText" placeholder="输入听到的内容" style="width: 100%;"></el-input>
         </el-row>
         <el-row>
           <div>
@@ -41,24 +46,49 @@ import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
 import { ElMessage } from 'element-plus';
 
-const full_pragraph_text = ref("");
-const speaking_text = ref("");
-const curPosition = ref({});
 const route = useRoute() // 使用路由
-const bookId = ref(route.query.id as string) // 从查询参数中获取 id
+
+const  readContent = ref({
+  full_pragraph_text: '', // 读取到的文本内容
+  speaking_text: '', // 读取到的文本内容
+  curPosition: {}, // 读取到的文本位置
+  bookId: route.query.id as string, // 书籍 ID
+  speaking_buffer: '' // 读取到的音频内容
+});
+
 const isReading = ref(false) // 是否正在阅读
+const jumpOffset = ref(1); // 跳转偏移量
 const currentAudioSource = ref<AudioBufferSourceNode | null>(null); // Store the current audio source
+const userInputListenedText = ref('') // 用户输入的听到的内容
 
 var connection = new signalR.HubConnectionBuilder()
   .withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent`)
   .configureLogging(signalR.LogLevel.Information)
   .build()
 
+const goPrevious = async () => {
+  resetPosition(0-jumpOffset.value); // Reset position to the previous one
+}
+const goNext = async () => {
+  resetPosition(jumpOffset.value); // Reset position to the next one
+}
+
+const resetPosition = (offset:number)=>{
+  debugger
+  stopRead(); // Stop any current reading before starting a new one
+
+  connection.invoke("ResetPosition", readContent.value.bookId,offset).then(() => {
+    console.log("Position reset successfully.");
+    startRead(); // Start reading again
+  }).catch((err) => {
+    console.error("Error resetting position:", err);
+  });
+}
+
 const startRead = async () => {
   // 开始阅读任务
-  if (isReading.value) return; // Avoid starting multiple reads
   isReading.value = true
-  connection.invoke("Read", bookId.value);
+  connection.invoke("Read", readContent.value.bookId);
 }
 const stopRead = async() => {
   isReading.value = false;
@@ -69,20 +99,25 @@ const stopRead = async() => {
     console.log("Audio stopped by user.");
   }
 }
-
+const listenWrite = ()=>{
+  stopRead(); // Stop any current reading before starting a new one
+  isReading.value = true
+  readBase64(readContent.value.speaking_buffer,true); // 读取到的音频内容
+}
 connection.on("onShowErrMsg", (msg: string) => {
   console.error(msg);
   ElMessage.error(msg);
 });
 
-connection.on("UIReadInfo", (readContent: any) => {
-  full_pragraph_text.value = readContent.full_pragraph_text; // 读取到的文本内容
-  speaking_text.value = readContent.speaking_text; // 读取到的文本内容
-  curPosition.value = readContent.position; // 读取到的文本位置
-  readBase64(readContent.speaking_buffer); // 读取到的音频内容
+connection.on("UIReadInfo", (input: any) => {
+  readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
+  readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
+  readContent.value.curPosition = input.position; // 读取到的文本位置
+  readContent.value.speaking_buffer = input.speaking_buffer; // 读取到的文本位置
+  readBase64(input.speaking_buffer,false); // 读取到的音频内容
 });
 
-const readBase64 = (base64string:string)=>{
+const readBase64 = (base64string:string,isReadOnlyOneSentence:boolean)=>{
   if (!isReading.value) {
     console.log("Reading stopped, skipping audio playback.");
     return; // Don't play if reading is stopped
@@ -114,20 +149,26 @@ const readBase64 = (base64string:string)=>{
     }
     audioSource.buffer = buffer;
     audioSource.connect(audioContext.destination);
-    audioSource.onended = () => {
-      console.log("Audio ended. isReading:", isReading.value);
-      // Only proceed if this specific source finished naturally AND reading is still active
-      if (isReading.value && currentAudioSource.value === audioSource) {
-        currentAudioSource.value = null; // Clear ref after natural end
-        console.log("Invoking next Read.");
-        connection.invoke("Read", bookId.value);
-      } else if (currentAudioSource.value === audioSource) {
-         // If it ended but reading was stopped, just clear the ref
-         currentAudioSource.value = null;
-      }
-      // Close the context after playback finishes or is stopped
-      audioContext.close().catch(e => console.warn("Error closing AudioContext:", e));
-    };
+    debugger
+    if(!isReadOnlyOneSentence)
+    {
+      // not read only one sentence, so add onended event,and go to next sentence
+      audioSource.onended = () => {
+        console.log("Audio ended. isReading:", isReading.value);
+        // Only proceed if this specific source finished naturally AND reading is still active
+        if (isReading.value && currentAudioSource.value === audioSource) {
+          currentAudioSource.value = null; // Clear ref after natural end
+          console.log("Invoking next Read.");
+          connection.invoke("Read", readContent.value.bookId);
+        } else if (currentAudioSource.value === audioSource) {
+          // If it ended but reading was stopped, just clear the ref
+          currentAudioSource.value = null;
+        }
+        // Close the context after playback finishes or is stopped
+        audioContext.close().catch(e => console.warn("Error closing AudioContext:", e));
+      };
+    }
+    
     try {
       audioSource.start();      // start playing
       console.log("Audio started.");
@@ -145,20 +186,12 @@ const readBase64 = (base64string:string)=>{
   })
 }
 
-connection.on("onsetbookposition", (readContent: any) => {
+connection.on("onsetbookposition", (input: any) => {
   // 设置书籍位置
-  full_pragraph_text.value = readContent.full_pragraph_text; // 读取到的文本内容
-  speaking_text.value = readContent.speaking_text; // 读取到的文本内容
-  curPosition.value = readContent.position; // 读取到的文本位置
+  readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
+  readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
+  readContent.value.curPosition = input.position; // 读取到的文本位置
 });
-
-// 使用 VueUse 的 useStorage 来存储书籍进度
-const location = useStorage('book-progress', 0, undefined, {
-  serializer: {
-    read: (v: string) => JSON.parse(v),
-    write: (v: unknown) => JSON.stringify(v),
-  },
-})
 
 // 记录拖拽到右侧区域的文本
 const droppedText = ref('')
@@ -170,7 +203,7 @@ const handleDrop = (event: DragEvent) => {
 }
 
 onMounted(() => {
-  connection.start().then(() => connection.invoke("InitCache",bookId.value));        // 开始阅读任务 onShowReadingText s
+  connection.start().then(() => connection.invoke("InitCache",readContent.value.bookId));        // 开始阅读任务 onShowReadingText s
 })
 
 onBeforeUnmount(() => {
