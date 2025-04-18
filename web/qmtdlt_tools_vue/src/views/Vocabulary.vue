@@ -30,12 +30,12 @@
           :index="indexMethod"
         />
         <el-table-column prop="wordText" label="单词" width="100" />
-        <el-table-column prop="aiExplanation" label="AI释义" width="400"/>
+        <el-table-column prop="aiExplanation" label="AI释义"/>
         <el-table-column prop="aiTranslation" label="AI翻译" width="120"/>
-        <el-table-column prop="sentenceYouMade" label="你的造句" width="120"/>
+        <el-table-column prop="sentenceYouMade" label="你的造句" width="200"/>
         <el-table-column prop="ifUsageCorrect" label="是否正确" width="60"/>
-        <el-table-column prop="incorrectReason" label="错误原因" width="200"/>
-        <el-table-column prop="correctSentence" label="正确造句" width="120"/>
+        <el-table-column prop="incorrectReason" label="错误原因" width="300"/>
+        <el-table-column prop="correctSentence" label="正确造句" width="200"/>
         <!-- <el-table-column prop="createTime" label="创建时间" width="100">
           <template #default="{ row }">
             {{ formatDate(row.createTime) }}
@@ -83,8 +83,13 @@
     </el-card>
 
     <!-- 新增造句对话框 -->
-    <el-dialog v-model="sentenceDialogVisible" title="Make Some Sentence" width="900px">
-     
+    <el-dialog
+      v-model="sentenceDialogVisible"
+      title="Make Some Sentence"
+      width="900px"
+      @closed="fetchRecords"  
+    >
+      <!-- ... dialog content ... -->
       <el-row :gutter="20" align="middle">
         <el-col :span="16">
           <el-input v-model="currentSentence" placeholder="请输入您的句子"></el-input>
