@@ -74,33 +74,7 @@
       <el-row>
         <h3>{{ transResult.translation }}</h3>
       </el-row>
-      <el-row>
-        <h2>Make Some Sentence:</h2>
-      </el-row>
-      <el-row>
-        <el-col :span="16">
-          <el-input v-model="sentence1"></el-input>
-        </el-col>
-        <el-col :span="8">
-          <el-button @click="playTransVoice">What about my sentence</el-button>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col :span="16">
-          <el-input v-model="sentence2"></el-input>
-        </el-col>
-        <el-col :span="8">
-          <el-button @click="playTransVoice">What about my sentence</el-button>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col :span="16">
-          <el-input v-model="sentence3"></el-input>
-        </el-col>
-        <el-col :span="8">
-          <el-button @click="playTransVoice">What about my sentence</el-button>
-        </el-col>
-      </el-row>
+      
     </el-card>
   </el-row>
 
