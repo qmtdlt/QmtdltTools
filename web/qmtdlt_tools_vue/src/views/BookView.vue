@@ -191,7 +191,7 @@ const promptOneWord = () => {
 const showOrHidReader = () => {
   showLeft.value = !showLeft.value;
 }
-connection.on("onShowTrans", (result: string) => {
+connection.on("onShowTrans", (result: any) => {
   debugger
   dropTextDealing.value = false; // 停止处理拖拽文本
   console.log(result);
@@ -355,11 +355,7 @@ const handleListenWriteComplete = async () => {
   console.log("Listen and write completed!");
   ElMessage.success("听写完成!");
   
-  await request.post('/api/ToDo/DeleteDayToDoItem/DeleteDayToDoItem', null, {
-      params: {
-        Id: todo.id
-      }
-    })
+  
 }
 </script>
 

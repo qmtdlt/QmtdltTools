@@ -99,7 +99,7 @@ interface PageResult<T> {
   total: number
   pageIndex: number
   pageSize: number
-  items: T[]
+  pageList: T[]
 }
 
 interface ApiResponse<T> {
