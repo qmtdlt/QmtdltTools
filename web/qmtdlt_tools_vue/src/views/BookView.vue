@@ -1,96 +1,102 @@
 <template>
-  <el-card>
-    <el-row class="left-header" justify="start" align="middle">
-      <el-button-group>
-        <el-button @click="startRead" type="primary" icon="el-icon-caret-right">start</el-button>
-        <el-button @click="stopRead" type="danger" icon="el-icon-close">stop</el-button>
-        <el-button @click="goPrevious" icon="el-icon-arrow-left">previous</el-button>
-        <el-input v-model="jumpOffset" placeholder="偏移量" style="width: 90px; margin: 0 8px;" size="small"></el-input>
-        <el-button @click="goNext" icon="el-icon-arrow-right">next</el-button>
-      </el-button-group>
-    </el-row>
-    <el-row class="paragraph-row" justify="center">
-      <div class="paragraph-area">
-        <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text" />
-      </div>
-    </el-row>
-    <el-row style="margin-top: 10px;">
-      <el-col :span="20">
-        <el-tag type="success" effect="plain" size="small">
-          拖拽翻译
-        </el-tag>
-      </el-col>
-      <el-col :span="4" justify="end">
-        <el-tag type="info" effect="plain" size="small">
-          当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句
-        </el-tag>
-      </el-col>
-    </el-row>
-  </el-card>
-  <el-card>
-    <el-row class="dropped-row" justify="center">
-      <div class="dropped-text-area" @dragover.prevent="onDragOver" @drop="handleDrop">
-        <p style="min-height: 50px;">{{ droppedText }}</p>
-      </div>
-    </el-row>
-    <el-row>
-      <el-button @click="playTransVoice">play voice</el-button>
-    </el-row>
-    <el-row>
-      <h2>Explanation:</h2>
-    </el-row>
-    <el-row>
-      <h3>{{ transResult.explanation }}</h3>
-    </el-row>
-    <el-row>
-      <h2>Translation:</h2>
-    </el-row>
-    <el-row>
-      <h3>{{ transResult.translation }}</h3>
-    </el-row>
-    <el-row>
-      <h2>Make Some Sentence:</h2>
-    </el-row>
-    <el-row>
-      <el-col :span="16">
-        <el-input v-model="sentence1"></el-input>
-      </el-col>
-      <el-col :span="8">
-        <el-button @click="playTransVoice">What about my sentence</el-button>
-      </el-col>
-    </el-row>
-    <el-row>
-      <el-col :span="16">
-        <el-input v-model="sentence2"></el-input>
-      </el-col>
-      <el-col :span="8">
-        <el-button @click="playTransVoice">What about my sentence</el-button>
-      </el-col>
-    </el-row>
-    <el-row>
-      <el-col :span="16">
-        <el-input v-model="sentence1"></el-input>
-      </el-col>
-      <el-col :span="8">
-        <el-button @click="playTransVoice">What about my sentence</el-button>
-      </el-col>
-    </el-row>
-  </el-card>
-  <!--右侧区域-->
-  <el-card>
-    <div>
-      <el-row class="right-btn-group" justify="center" align="middle">
-        <el-button @click="onListenWriteClick" type="success" icon="el-icon-headset">speak highlight</el-button>
-        <el-button @click="promptOneWord" type="warning" icon="el-icon-lightning">prompt</el-button>
-        <el-button @click="showOrHidReader" type="info" icon="el-icon-view">
-          {{ showLeft ? '隐藏原文' : '显示原文' }}
-        </el-button>
+  <el-row>
+    <el-col :span="12">
+      <el-card style="height: 40vh;">
+        <el-row justify="start" align="middle">
+          <el-button-group>
+            <el-button @click="startRead" type="primary" icon="el-icon-caret-right">start</el-button>
+            <el-button @click="stopRead" type="danger" icon="el-icon-close">stop</el-button>
+            <el-button @click="goPrevious" icon="el-icon-arrow-left">previous</el-button>
+            <el-input v-model="jumpOffset" placeholder="偏移量" style="width: 90px; margin: 0 8px;"
+              size="small"></el-input>
+            <el-button @click="goNext" icon="el-icon-arrow-right">next</el-button>
+          </el-button-group>
+        </el-row>
+        <el-row class="paragraph-row" justify="center">
+          <div class="paragraph-area">
+            <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text" />
+          </div>
+        </el-row>
+        <el-row style="margin-top: 10px;" justify="right">
+          <el-col :span="4" justify="end">
+            <el-tag type="info" effect="plain" size="small">
+              当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句
+            </el-tag>
+          </el-col>
+        </el-row>
+      </el-card>
+    </el-col>
+    <el-col :span="12">
+      <!--右侧区域-->
+      <el-card style="height: 40vh;">
+        <div>
+          <el-row class="right-btn-group" justify="center" align="middle">
+            <el-button @click="onListenWriteClick" type="success" icon="el-icon-headset">speak highlight</el-button>
+            <el-button @click="promptOneWord" type="warning" icon="el-icon-lightning">prompt</el-button>
+            <el-button @click="showOrHidReader" type="info" icon="el-icon-view">
+              {{ showLeft ? '隐藏原文' : '显示原文' }}
+            </el-button>
+          </el-row>
+          <div class="listenwrite-card">
+            <ListenWrite :target-text="readContent.speaking_text" @completed="handleListenWriteComplete" />
+          </div>
+        </div>
+      </el-card>
+    </el-col>
+  </el-row>
+  <el-row>
+    <el-card v-loading="dropTextDealing" style="width: 100%;height: 40vh;">
+      <el-row >
+          <el-tag type="success" effect="plain" >
+            拖拽翻译
+          </el-tag>
+          <div class="dropped-text-area" @dragover.prevent="onDragOver" @drop="handleDrop">
+            <p style="min-height: 30px;">{{ droppedText }}</p>
+          </div>
       </el-row>
-      <div class="listenwrite-card">
-        <ListenWrite :target-text="readContent.speaking_text" @completed="handleListenWriteComplete" />
-      </div>
-    </div>
-  </el-card>
+      <el-row>
+        <h2>Explanation:</h2>
+        <el-button @click="playTransVoice" type="danger" icon="el-icon-delete" circle></el-button>
+      </el-row>
+      <el-row>
+        <h3>{{ transResult.explanation }}</h3>
+      </el-row>
+      <el-row>
+        <h2>Translation:</h2>
+      </el-row>
+      <el-row>
+        <h3>{{ transResult.translation }}</h3>
+      </el-row>
+      <el-row>
+        <h2>Make Some Sentence:</h2>
+      </el-row>
+      <el-row>
+        <el-col :span="16">
+          <el-input v-model="sentence1"></el-input>
+        </el-col>
+        <el-col :span="8">
+          <el-button @click="playTransVoice">What about my sentence</el-button>
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="16">
+          <el-input v-model="sentence2"></el-input>
+        </el-col>
+        <el-col :span="8">
+          <el-button @click="playTransVoice">What about my sentence</el-button>
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="16">
+          <el-input v-model="sentence3"></el-input>
+        </el-col>
+        <el-col :span="8">
+          <el-button @click="playTransVoice">What about my sentence</el-button>
+        </el-col>
+      </el-row>
+    </el-card>
+  </el-row>
+
 </template>
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
@@ -101,6 +107,8 @@ import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
 import { ElMessage } from 'element-plus';
 import ListenWrite from './ListenWrite.vue'; // Keep this import
+// import icon
+import { ElIcon } from 'element-plus'; // Import ElIcon if needed
 
 const route = useRoute() // 使用路由
 
@@ -178,12 +186,15 @@ const showOrHidReader = () => {
 }
 connection.on("onShowTrans", (result: string) => {
   debugger
+  dropTextDealing.value = false; // 停止处理拖拽文本
   console.log(result);
   transResult.value = result; // Store the translation result
   isReading.value = true;
   readBase64(transResult.value.voiceBuffer, true); // 读取到的音频内容
 });
 const playTransVoice = () => {
+  debugger
+  dropTextDealing.value = false; // 停止处理拖拽文本
   if (transResult.value.voiceBuffer) {
     isReading.value = true;
     readBase64(transResult.value.voiceBuffer, true); // 读取到的音频内容
@@ -192,6 +203,8 @@ const playTransVoice = () => {
   }
 }
 connection.on("onShowErrMsg", (msg: string) => {
+  debugger
+  dropTextDealing.value = false; // 停止处理拖拽文本
   console.error(msg);
   ElMessage.error(msg);
 });
@@ -284,6 +297,8 @@ const droppedText = ref('')
 
 // 接收拖拽到右侧区域的数据（使用原生拖拽事件，拖拽文本时默认类型为 text/plain）
 const handleDrop = (event: DragEvent) => {
+  debugger
+  dropTextDealing.value = true; // 开始处理拖拽文本
   event.preventDefault();
   // 兼容性处理，确保 dataTransfer 存在
   if (event.dataTransfer) {
@@ -398,7 +413,6 @@ const handleListenWriteComplete = () => {
 }
 
 .dropped-text-area {
-  width: 100%;
   min-width: 220px;
   min-height: 40px;
   background: linear-gradient(90deg, #e0f7fa 0%, #f1f8e9 100%);
