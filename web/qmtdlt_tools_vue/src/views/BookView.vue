@@ -1,7 +1,7 @@
 <template>
   <el-row>
     <el-col :span="12">
-      <el-card style="height: 40vh;">
+      <el-card style="height: 40vh;" v-if="showLeft">
         <el-row justify="start" align="middle">
           <el-button-group>
             <el-button @click="startRead" type="primary" icon="el-icon-caret-right">start</el-button>
@@ -31,9 +31,11 @@
       <el-card style="height: 40vh;">
         <div>
           <el-row class="right-btn-group" justify="center" align="middle">
-            <el-button @click="onListenWriteClick" type="success" icon="el-icon-headset">speak highlight</el-button>
-            <el-button @click="promptOneWord" type="warning" icon="el-icon-lightning">prompt</el-button>
-            <el-button @click="showOrHidReader" type="info" icon="el-icon-view">
+            <el-button @click="onListenWriteClick" type="success"><el-icon><Headset /></el-icon> Speak Highlight</el-button>
+            <el-button @click="promptOneWord" type="warning" ><el-icon><Lightning/></el-icon> Prompt</el-button>
+            <el-button @click="showOrHidReader" type="info">
+              <el-icon v-if="showLeft"><View /></el-icon>
+              <el-icon v-else><Hide /></el-icon>
               {{ showLeft ? '隐藏原文' : '显示原文' }}
             </el-button>
           </el-row>
@@ -56,7 +58,9 @@
       </el-row>
       <el-row>
         <h2>Explanation:</h2>
-        <el-button @click="playTransVoice" type="danger" icon="el-icon-delete" circle></el-button>
+        <el-button @click="playTransVoice" type="primary" plain circle>
+          <el-icon><Headset /></el-icon>
+        </el-button>
       </el-row>
       <el-row>
         <h3>{{ transResult.explanation }}</h3>
@@ -108,7 +112,7 @@ import * as signalR from '@microsoft/signalr'
 import { ElMessage } from 'element-plus';
 import ListenWrite from './ListenWrite.vue'; // Keep this import
 // import icon
-import { ElIcon } from 'element-plus'; // Import ElIcon if needed
+import { Headset,Lightning,View,Hide} from '@element-plus/icons-vue'
 
 const route = useRoute() // 使用路由
 
