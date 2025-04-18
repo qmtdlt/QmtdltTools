@@ -38,9 +38,9 @@ namespace QmtdltTools.Controllers
             };
         }
         [HttpPost("MakeSentence")]
-        public async Task MakeSentence([FromBody] MakeSentenceInputDto input)
+        public async Task<VocabularyRecord?> MakeSentence([FromBody] MakeSentenceInputDto input)
         {
-            await _service.MakeSentence(input);
+            return await _service.MakeSentence(input);
         }
         
         [HttpPost("AddVocabularyRecord")]
