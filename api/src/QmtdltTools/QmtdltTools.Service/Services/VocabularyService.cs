@@ -52,9 +52,9 @@ namespace QmtdltTools.Service.Services
             return list;
         }
 
-        public async Task MakeSentence(MakeSentenceInputDto input)
+        public async Task<VocabularyRecord> MakeSentence(MakeSentenceInputDto input)
         {
-            var entity = await _dc.VocabularyRecords.Where(t=>t.Id == input.Id).FirstOrDefaultAsync();
+            VocabularyRecord? entity = await _dc.VocabularyRecords.Where(t=>t.Id == input.Id).FirstOrDefaultAsync();
             if (entity != null)
             {
                 entity.SentenceYouMade = input.Sentence;
@@ -62,7 +62,10 @@ namespace QmtdltTools.Service.Services
                 entity.IfUsageCorrect = dtores.IfUsageCorrect;
                 entity.IncorrectReason = dtores.IncorrectReason;
                 entity.CorrectSentence = dtores.CorrectSentence;
+                _dc.VocabularyRecords.Update(entity);
+                await _dc.SaveChangesAsync();
             }
+            return entity; 
         }
     }
 }
