@@ -7,6 +7,11 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      path:'/vocabulary',
+      name: 'vocabulary',
+      component: () => import('../views/Vocabulary.vue'),
+    },
+    {
       path: '/',
       name: 'home',
       component: HomeView,

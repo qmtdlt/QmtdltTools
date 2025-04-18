@@ -17,6 +17,11 @@ onMounted(() => {
       </div>
       <nav class="main-nav">
         <RouterLink 
+          to="/vocabulary" 
+          @click="activeRoute = '/vocabulary'"
+          :class="{ active: activeRoute === '/vocabulary' }" 
+        >vocabulary</RouterLink>
+        <RouterLink 
           to="/" 
           @click="activeRoute = '/'" 
           :class="{ active: activeRoute === '/' }"
