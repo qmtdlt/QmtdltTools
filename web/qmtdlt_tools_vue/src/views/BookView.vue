@@ -1,8 +1,8 @@
 <template>
   <el-row>
     <el-col :span="12">
-      <el-card style="height: 40vh;" v-if="showLeft">
-        <el-row justify="start" align="middle">
+      <el-card style="height: 40vh;" >
+        <el-row justify="start" align="middle" v-if="showLeft">
           <el-button-group>
             <el-button @click="startRead" type="primary" icon="el-icon-caret-right">start</el-button>
             <el-button @click="stopRead" type="danger" icon="el-icon-close">stop</el-button>
@@ -12,12 +12,12 @@
             <el-button @click="goNext" icon="el-icon-arrow-right">next</el-button>
           </el-button-group>
         </el-row>
-        <el-row class="paragraph-row" justify="center">
+        <el-row class="paragraph-row" justify="center" v-if="showLeft">
           <div class="paragraph-area">
             <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text" />
           </div>
         </el-row>
-        <el-row style="margin-top: 10px;" justify="right">
+        <el-row style="margin-top: 10px;" justify="right" v-if="showLeft">
           <el-col :span="4" justify="end">
             <el-tag type="info" effect="plain" size="small">
               当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句
@@ -30,7 +30,7 @@
       <!--右侧区域-->
       <el-card style="height: 40vh;">
         <div>
-          <el-row class="right-btn-group" justify="center" align="middle">
+          <el-row>
             <el-button @click="onListenWriteClick" type="success"><el-icon><Headset /></el-icon> Speak Highlight</el-button>
             <el-button @click="promptOneWord" type="warning" ><el-icon><Lightning/></el-icon> Prompt</el-button>
             <el-button @click="showOrHidReader" type="info">
@@ -39,7 +39,7 @@
               {{ showLeft ? '隐藏原文' : '显示原文' }}
             </el-button>
           </el-row>
-          <div class="listenwrite-card">
+          <div>
             <ListenWrite :target-text="readContent.speaking_text" @completed="handleListenWriteComplete" />
           </div>
         </div>
@@ -49,7 +49,7 @@
   <el-row>
     <el-card v-loading="dropTextDealing" style="width: 100%;height: 40vh;">
       <el-row >
-          <el-tag type="success" effect="plain">
+          <el-tag type="success" effect="plain" style="min-height: 40px;">
             拖拽翻译
           </el-tag>
           <div class="dropped-text-area" @dragover.prevent="onDragOver" @drop="handleDrop">
@@ -60,6 +60,9 @@
         <h2>Explanation:</h2>
         <el-button @click="playTransVoice" type="primary" plain circle>
           <el-icon><Headset /></el-icon>
+        </el-button>
+        <el-button @click="stopRead" type="primary" plain circle>
+          <el-icon><VideoPause /></el-icon>
         </el-button>
       </el-row>
       <el-row>
@@ -112,7 +115,7 @@ import * as signalR from '@microsoft/signalr'
 import { ElMessage } from 'element-plus';
 import ListenWrite from './ListenWrite.vue'; // Keep this import
 // import icon
-import { Headset,Lightning,View,Hide} from '@element-plus/icons-vue'
+import { Headset,Lightning,View,Hide,VideoPause} from '@element-plus/icons-vue'
 
 const route = useRoute() // 使用路由
 

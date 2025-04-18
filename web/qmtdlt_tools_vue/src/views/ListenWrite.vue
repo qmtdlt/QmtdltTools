@@ -3,6 +3,7 @@
     <el-row>
       <el-input
         v-model="userInput"
+        type="textarea"
         placeholder="输入听到的内容"
         style="width: 100%;"
         clearable
@@ -86,7 +87,6 @@ const isComplete = computed(() => {
   box-shadow: 0 2px 12px 0 rgba(0,0,0,0.06);
   padding: 28px 18px 18px 18px;
   margin: 0 auto;
-  max-width: 600px;
   width: 100%;
   min-height: 120px;
   display: flex;
