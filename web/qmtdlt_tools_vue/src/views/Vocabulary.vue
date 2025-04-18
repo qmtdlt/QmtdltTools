@@ -1,7 +1,7 @@
 <template>
-  <div class="vocabulary-page">
+  <div>
     <el-card>
-      <div style="margin-bottom: 16px;">
+      <div>
         <el-select
           v-model="selectedBookId"
           placeholder="请选择书籍"
@@ -324,9 +324,7 @@ function indexMethod(index: number) {
 </script>
 
 <style scoped>
-.vocabulary-page {
-  padding: 24px;
-}
+
 /* 可选：为对话框按钮添加一些间距 */
 .dialog-footer {
   text-align: right;
