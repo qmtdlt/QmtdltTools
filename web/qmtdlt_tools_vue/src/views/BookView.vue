@@ -49,7 +49,7 @@
   <el-row>
     <el-card v-loading="dropTextDealing" style="width: 100%;height: 40vh;">
       <el-row >
-          <el-tag type="success" effect="plain" >
+          <el-tag type="success" effect="plain">
             拖拽翻译
           </el-tag>
           <div class="dropped-text-area" @dragover.prevent="onDragOver" @drop="handleDrop">
@@ -417,17 +417,19 @@ const handleListenWriteComplete = () => {
 }
 
 .dropped-text-area {
-  min-width: 220px;
-  min-height: 40px;
+  min-width: 400px;
   background: linear-gradient(90deg, #e0f7fa 0%, #f1f8e9 100%);
-  border-radius: 8px;
-  padding: 10px 16px;
+  border-radius: 5px;
+  padding: 5px 5px;
   color: #333;
   font-size: 1.08em;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.04);
   display: flex;
-  align-items: center;
-  margin: 0 auto;
+  align-items: left;
+  margin-left: 10px;
+  /* 虚线边框 */
+  border: 1px dashed #ccc;
+  transition: background 0.2s;
 }
 
 .right-btn-group {
