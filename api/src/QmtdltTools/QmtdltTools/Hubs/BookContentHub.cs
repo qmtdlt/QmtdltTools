@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -25,17 +26,44 @@ public class BookContentHub:AbpHub
     private readonly EpubManageService _epubManageService;
     private readonly ListenWriteService _listenWriteService;
     private readonly TranslationService _translationService;
+    private Stopwatch _sw;
     public BookContentHub(EpubManageService epubManageService, ListenWriteService listenWriteService, TranslationService translationService)
     {
         _epubManageService = epubManageService;
         _listenWriteService = listenWriteService;
         _translationService = translationService;
+        _sw = new Stopwatch();
     }
 
     public override Task OnConnectedAsync()
     {
         var connectionId = Context.ConnectionId;
         connectionStatusCache.AddOrUpdate(connectionId, true, (connectionId, old) => { return true; });         // set connection alive
+
+        var clientProxy = Clients.Caller;
+        Task.Run(async () =>
+        {
+            _sw.Start();
+            while (connectionStatusCache[connectionId])
+            {
+                double totalSeconds = _sw.Elapsed.TotalSeconds;
+
+                // totalSeconds format as x hour y min z sec
+
+                // 转换为小时、分钟和秒
+                int hours = (int)(totalSeconds / 3600);
+                int minutes = (int)((totalSeconds % 3600) / 60);
+                int seconds = (int)(totalSeconds % 60);
+
+                // 格式化为字符串
+                string formattedTime = $"{hours}hour {minutes}minitues {seconds}seconds";
+
+                await clientProxy.SendAsync("onUpdateWatch",formattedTime);
+
+                await Task.Delay(1000);
+            }
+        });
+
         return base.OnConnectedAsync();
     }
     public override Task OnDisconnectedAsync(Exception? exception)
@@ -43,8 +71,10 @@ public class BookContentHub:AbpHub
         var connectionId = Context.ConnectionId;
         connectionStatusCache.AddOrUpdate(connectionId, false, (connectionId, old) => { return false; });       // set connection dead
 
-        // clear cache ?? 
-        // 持久化 redis bookid position 进度
+        _sw.Stop();
+
+        // 从 connectionStatusCache 中移除 connectionId 对应数据
+        connectionStatusCache.TryRemove(connectionId, out _);
 
         return base.OnDisconnectedAsync(exception);
     }
@@ -56,7 +86,7 @@ public class BookContentHub:AbpHub
         var book = await _epubManageService.GetBookById(bookId);            // read book info from database
         if (book == null)
         {
-            await Clients.All.SendAsync("onShowErrMsg", "book not found in database");         // 
+            await Clients.Caller.SendAsync("onShowErrMsg", "book not found in database");         // 
             return;
         }
         
@@ -65,7 +95,7 @@ public class BookContentHub:AbpHub
             var ebook = EpubHelper.GetEbook(book.BookPath, out string message);     // get ebook
             if (ebook == null)
             {
-                await Clients.All.SendAsync("onShowErrMsg", message);               // show err
+                await Clients.Caller.SendAsync("onShowErrMsg", message);               // show err
             }
             else
             {
@@ -96,12 +126,12 @@ public class BookContentHub:AbpHub
                 success = CurReadInfoEnQueue(bookId);            // get queue data fail,make data(only for first time)
                 bookReadingCache[bookId].readQueue.TryDequeue(out UIReadInfo uiReadInfo);
 
-                await Clients.All.SendAsync("onSetBookPosition", uiReadInfo); // 
+                await Clients.Caller.SendAsync("onSetBookPosition", uiReadInfo); // 
             }
         }
         else
         {
-            await Clients.All.SendAsync("onShowErrMsg", "epub file doesn't exist"); // 
+            await Clients.Caller.SendAsync("onShowErrMsg", "epub file doesn't exist"); // 
         }
     }
     public async Task Trans(Guid bookId,string word)
@@ -109,7 +139,7 @@ public class BookContentHub:AbpHub
         var findRes = await _translationService.Find(bookId, bookReadingCache[bookId].position.PragraphIndex, bookReadingCache[bookId].position.SentenceIndex, word);
         if(findRes != null)
         {
-            await Clients.All.SendAsync("onShowTrans", new TranslateDto
+            await Clients.Caller.SendAsync("onShowTrans", new TranslateDto
             {
                 Explanation = findRes.AIExplanation,
                 Translation = findRes.AITranslation,
@@ -120,11 +150,10 @@ public class BookContentHub:AbpHub
         var res = await RestHelper.GetTranslateResult(word);
         if (res != null)
         {
-            await Clients.All.SendAsync("onShowTrans", res);
+            await Clients.Caller.SendAsync("onShowTrans", res);
             await _translationService.AddRecord(new Domain.Entitys.VocabularyRecord
             {
                 BookId = bookId,
-                PIndex = bookReadingCache[bookId].position.PragraphIndex,
                 WordText = word,
                 Pronunciation = res.VoiceBuffer,
                 AIExplanation = res.Explanation,
@@ -133,7 +162,7 @@ public class BookContentHub:AbpHub
         }
         else
         {
-            await Clients.All.SendAsync("onShowErrMsg", "翻译失败");
+            await Clients.Caller.SendAsync("onShowErrMsg", "翻译失败");
         }
     }
     public void Read(Guid bookId)
@@ -149,7 +178,7 @@ public class BookContentHub:AbpHub
                 bookReadingCache[bookId].readQueue.TryDequeue(out uiReadInfo);
             }
 
-            _ = Clients.All.SendAsync("UIReadInfo", uiReadInfo);            // call client speak
+            _ = Clients.Caller.SendAsync("UIReadInfo", uiReadInfo);            // call client speak
             RedisHelper.Set(bookId.ToString(), bookReadingCache[bookId].position);
 
             bookReadingCache[bookId].PositionNext();                // go next
