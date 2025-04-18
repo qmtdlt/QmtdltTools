@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using QmtdltTools.Domain.Dtos;
 using QmtdltTools.Domain.Entitys;
 using QmtdltTools.Domain.Models;
 using QmtdltTools.EFCore;
 using QmtdltTools.EFCore.Extensions;
+using QmtdltTools.Service.Utils;
 using Volo.Abp.DependencyInjection;
 
 namespace QmtdltTools.Service.Services
@@ -48,6 +50,19 @@ namespace QmtdltTools.Service.Services
         {
             List<VocabularyRecord> list = await _dc.VocabularyRecords.Where(x => x.CreateBy == uid).ToListAsync();
             return list;
+        }
+
+        public async Task MakeSentence(MakeSentenceInputDto input)
+        {
+            var entity = await _dc.VocabularyRecords.Where(t=>t.Id == input.Id).FirstOrDefaultAsync();
+            if (entity != null)
+            {
+                entity.SentenceYouMade = input.Sentence;
+                SentenceEvaluateDto? dtores = await RestHelper.GetSentenctevaluate(input.Sentence, entity.WordText);
+                entity.IfUsageCorrect = dtores.IfUsageCorrect;
+                entity.IncorrectReason = dtores.IncorrectReason;
+                entity.CorrectSentence = dtores.CorrectSentence;
+            }
         }
     }
 }

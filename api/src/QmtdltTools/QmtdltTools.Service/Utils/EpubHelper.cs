@@ -15,7 +15,6 @@ namespace QmtdltTools.Service.Utils
         public static string speechKey = ApplicationConst.SPEECH_KEY;
         public static string speechRegion = ApplicationConst.SPEECH_REGION;
 
-
         public static EpubBook GetEbook(string epubFilePath, out string message)
         {
             message = "";
