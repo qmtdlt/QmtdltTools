@@ -8,7 +8,7 @@ namespace QmtdltTools.Service.Utils
     public class RestHelper
     {
         //public static string grok_api_key = Environment.GetEnvironmentVariable("grok_api_key");
-        public static string grok_api_key = Environment.GetEnvironmentVariable("GROK_KEY");
+        public static string grok_api_key = ApplicationConst.GROK_KEY;
         public static string apiEndpoint = "https://api.x.ai/v1/chat/completions";
         public static string grok_model = "grok-3-mini-beta";
 
