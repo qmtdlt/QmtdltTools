@@ -32,16 +32,24 @@ namespace QmtdltTools.Domain.Entitys
         [StringLength(256)]
         public string? AITranslation { get; set; }
         /// <summary>
-        /// 你的第一个造句
+        /// 你的造句
         /// </summary>
-        public string? FirstSentenceYouMade { get; set; }
+        [StringLength(512)]
+        public string? SentenceYouMade { get; set; }
+       
         /// <summary>
-        /// 你的第二个造句
+        /// 造句是否正确
         /// </summary>
-        public string? SecondSentenceYouMade { get; set; }
+        public bool? IfUsageCorrect { get; set; }
         /// <summary>
-        /// 你的第三个造句
+        /// 不正确原因
         /// </summary>
-        public string? ThirdSentenceYouMade { get; set; }
+        [StringLength(1024)]
+        public string? IncorrectReason { get; set; }
+        /// <summary>
+        /// 纠正后的句子
+        /// </summary>
+        [StringLength(256)]
+        public string? CorrectSentence { get; set; }
     }
 }
