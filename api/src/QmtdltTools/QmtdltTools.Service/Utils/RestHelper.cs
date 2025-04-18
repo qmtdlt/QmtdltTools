@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Dtos;
-using QmtdltTools.Domain.Models;
 using RestSharp;
 
 namespace QmtdltTools.Service.Utils
@@ -62,7 +55,14 @@ namespace QmtdltTools.Service.Utils
                     var result = JsonConvert.DeserializeObject<TranslateDto>(assistantMessage);
                     if(null != result)
                     {
-                        result.VoiceBuffer = EpubHelper.GetSpeakStream(result.Explanation, ApplicationConst.DefaultVoiceName);
+                        try
+                        {
+                            result.VoiceBuffer = EpubHelper.GetSpeakStream(result.Explanation, ApplicationConst.DefaultVoiceName);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
                     }
                     return result;
                 }
