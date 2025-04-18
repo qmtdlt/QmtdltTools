@@ -1,66 +1,96 @@
 <template>
-  <el-row :gutter="32" class="main-row">
-    <el-col :span="12" v-if="showLeft">
-      <div class="divLeft card">
-        <el-row class="left-header" justify="start" align="middle">
-          <el-button-group>
-            <el-button @click="startRead" type="primary" icon="el-icon-caret-right">start</el-button>
-            <el-button @click="stopRead" type="danger" icon="el-icon-close">stop</el-button>
-            <el-button @click="goPrevious" icon="el-icon-arrow-left">previous</el-button>
-            <el-input v-model="jumpOffset" placeholder="偏移量" style="width: 90px; margin: 0 8px;" size="small"></el-input>
-            <el-button @click="goNext" icon="el-icon-arrow-right">next</el-button>
-          </el-button-group>
-        </el-row>
-        <el-row class="paragraph-row" justify="center">
-          <div class="paragraph-area">
-            <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text" />
-          </div>
-        </el-row>
-        <el-row style="margin-top: 10px;">
-          <el-col :span="20">
-            <el-tag type="success" effect="plain" size="small">
-              拖拽翻译
-            </el-tag>
-            </el-col>
-          <el-col :span="4" justify="end">
-            <el-tag type="info" effect="plain" size="small" >
-              当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句
-            </el-tag>
-          </el-col>
-        </el-row>
-        <el-row class="dropped-row" justify="center">
-          <div class="dropped-text-area" @dragover.prevent="onDragOver" @drop="handleDrop">
-            <p style="min-height: 50px;">{{ droppedText }}</p>
-          </div>
-        </el-row>
-        <el-row >
-          <p>explanation:</p>
-          <p>{{transResult.explanation}}</p>
-        </el-row>
-        <el-row >
-          <p>translation:</p>
-          <p>{{transResult.translation}}</p>
-        </el-row>
+  <el-card>
+    <el-row class="left-header" justify="start" align="middle">
+      <el-button-group>
+        <el-button @click="startRead" type="primary" icon="el-icon-caret-right">start</el-button>
+        <el-button @click="stopRead" type="danger" icon="el-icon-close">stop</el-button>
+        <el-button @click="goPrevious" icon="el-icon-arrow-left">previous</el-button>
+        <el-input v-model="jumpOffset" placeholder="偏移量" style="width: 90px; margin: 0 8px;" size="small"></el-input>
+        <el-button @click="goNext" icon="el-icon-arrow-right">next</el-button>
+      </el-button-group>
+    </el-row>
+    <el-row class="paragraph-row" justify="center">
+      <div class="paragraph-area">
+        <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text" />
       </div>
-    </el-col>
-    <el-col :span="12">
-      <div class="divRight card">
-        <el-row class="right-btn-group" justify="center" align="middle">
-          <el-button @click="onListenWriteClick" type="success" icon="el-icon-headset">speak highlight</el-button>
-          <el-button @click="promptOneWord" type="warning" icon="el-icon-lightning">prompt</el-button>
-          <el-button @click="showOrHidReader" type="info" icon="el-icon-view">
-            {{ showLeft ? '隐藏原文' : '显示原文' }}
-          </el-button>
-        </el-row>
-        <div class="listenwrite-card">
-          <ListenWrite
-            :target-text="readContent.speaking_text"
-            @completed="handleListenWriteComplete"
-          />
-        </div>
+    </el-row>
+    <el-row style="margin-top: 10px;">
+      <el-col :span="20">
+        <el-tag type="success" effect="plain" size="small">
+          拖拽翻译
+        </el-tag>
+      </el-col>
+      <el-col :span="4" justify="end">
+        <el-tag type="info" effect="plain" size="small">
+          当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句
+        </el-tag>
+      </el-col>
+    </el-row>
+  </el-card>
+  <el-card>
+    <el-row class="dropped-row" justify="center">
+      <div class="dropped-text-area" @dragover.prevent="onDragOver" @drop="handleDrop">
+        <p style="min-height: 50px;">{{ droppedText }}</p>
       </div>
-    </el-col>
-  </el-row>
+    </el-row>
+    <el-row>
+      <el-button @click="playTransVoice">play voice</el-button>
+    </el-row>
+    <el-row>
+      <h2>Explanation:</h2>
+    </el-row>
+    <el-row>
+      <h3>{{ transResult.explanation }}</h3>
+    </el-row>
+    <el-row>
+      <h2>Translation:</h2>
+    </el-row>
+    <el-row>
+      <h3>{{ transResult.translation }}</h3>
+    </el-row>
+    <el-row>
+      <h2>Make Some Sentence:</h2>
+    </el-row>
+    <el-row>
+      <el-col :span="16">
+        <el-input v-model="sentence1"></el-input>
+      </el-col>
+      <el-col :span="8">
+        <el-button @click="playTransVoice">What about my sentence</el-button>
+      </el-col>
+    </el-row>
+    <el-row>
+      <el-col :span="16">
+        <el-input v-model="sentence2"></el-input>
+      </el-col>
+      <el-col :span="8">
+        <el-button @click="playTransVoice">What about my sentence</el-button>
+      </el-col>
+    </el-row>
+    <el-row>
+      <el-col :span="16">
+        <el-input v-model="sentence1"></el-input>
+      </el-col>
+      <el-col :span="8">
+        <el-button @click="playTransVoice">What about my sentence</el-button>
+      </el-col>
+    </el-row>
+  </el-card>
+  <!--右侧区域-->
+  <el-card>
+    <div>
+      <el-row class="right-btn-group" justify="center" align="middle">
+        <el-button @click="onListenWriteClick" type="success" icon="el-icon-headset">speak highlight</el-button>
+        <el-button @click="promptOneWord" type="warning" icon="el-icon-lightning">prompt</el-button>
+        <el-button @click="showOrHidReader" type="info" icon="el-icon-view">
+          {{ showLeft ? '隐藏原文' : '显示原文' }}
+        </el-button>
+      </el-row>
+      <div class="listenwrite-card">
+        <ListenWrite :target-text="readContent.speaking_text" @completed="handleListenWriteComplete" />
+      </div>
+    </div>
+  </el-card>
 </template>
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
@@ -74,19 +104,23 @@ import ListenWrite from './ListenWrite.vue'; // Keep this import
 
 const route = useRoute() // 使用路由
 
-const  readContent = ref({
+const readContent = ref({
   full_pragraph_text: '', // 读取到的文本内容
   speaking_text: '', // 读取到的文本内容
-  curPosition: {}, // 读取到的文本位置
+  curPosition: { pragraphIndex: 0, sentenceIndex: 0 }, // 读取到的文本位置
   bookId: route.query.id as string, // 书籍 ID
   speaking_buffer: '' // 读取到的音频内容
 });
 
+const dropTextDealing = ref(false); // 拖拽到右侧区域的文本
+const sentence1 = ref(''); // 句子1
+const sentence2 = ref(''); // 句子1
+const sentence3 = ref(''); // 句子1
 const isReading = ref(false) // 是否正在阅读
 const jumpOffset = ref("1"); // 跳转偏移量
 const currentAudioSource = ref<AudioBufferSourceNode | null>(null); // Store the current audio source
 const showLeft = ref(true); // Control visibility of .divLeft
-const transResult = ref({explanation:"",translation:""}); // Store translation result
+const transResult = ref({ explanation: "", translation: "", voiceBuffer: "" }); // Store translation result pronunciation is base64 string
 
 var connection = new signalR.HubConnectionBuilder()
   .withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent`)
@@ -94,17 +128,17 @@ var connection = new signalR.HubConnectionBuilder()
   .build()
 
 const goPrevious = async () => {
-  resetPosition(0-parseInt(jumpOffset.value)); // Reset position to the previous one
+  resetPosition(0 - parseInt(jumpOffset.value)); // Reset position to the previous one
 }
 const goNext = async () => {
   resetPosition(parseInt(jumpOffset.value)); // Reset position to the next one
 }
 
-const resetPosition = (offset:number)=>{
+const resetPosition = (offset: number) => {
   debugger
   stopRead(); // Stop any current reading before starting a new one
 
-  connection.invoke("ResetPosition", readContent.value.bookId,offset).then(() => {
+  connection.invoke("ResetPosition", readContent.value.bookId, offset).then(() => {
     console.log("Position reset successfully.");
     startRead(); // Start reading again
   }).catch((err) => {
@@ -117,7 +151,7 @@ const startRead = async () => {
   isReading.value = true
   connection.invoke("Read", readContent.value.bookId);
 }
-const stopRead = async() => {
+const stopRead = async () => {
   isReading.value = false;
   if (currentAudioSource.value) {
     currentAudioSource.value.stop(); // Stop the current audio playback
@@ -126,27 +160,37 @@ const stopRead = async() => {
     console.log("Audio stopped by user.");
   }
 }
-const listenWrite = ()=>{
+const listenWrite = () => {
   stopRead(); // Stop any current reading before starting a new one
   isReading.value = true
-  readBase64(readContent.value.speaking_buffer,true); // 读取到的音频内容
+  readBase64(readContent.value.speaking_buffer, true); // 读取到的音频内容
 }
 const onListenWriteClick = () => {
   listenWrite();
 };
 
-const promptOneWord = ()=>{
+const promptOneWord = () => {
 
 }
 
-const showOrHidReader = ()=>{
+const showOrHidReader = () => {
   showLeft.value = !showLeft.value;
 }
 connection.on("onShowTrans", (result: string) => {
   debugger
   console.log(result);
   transResult.value = result; // Store the translation result
+  isReading.value = true;
+  readBase64(transResult.value.voiceBuffer, true); // 读取到的音频内容
 });
+const playTransVoice = () => {
+  if (transResult.value.voiceBuffer) {
+    isReading.value = true;
+    readBase64(transResult.value.voiceBuffer, true); // 读取到的音频内容
+  } else {
+    ElMessage.error("没有翻译语音!");
+  }
+}
 connection.on("onShowErrMsg", (msg: string) => {
   console.error(msg);
   ElMessage.error(msg);
@@ -157,10 +201,10 @@ connection.on("UIReadInfo", (input: any) => {
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置
   readContent.value.speaking_buffer = input.speaking_buffer; // 读取到的文本位置
-  readBase64(input.speaking_buffer,false); // 读取到的音频内容
+  readBase64(input.speaking_buffer, false); // 读取到的音频内容
 });
 
-const readBase64 = (base64string:string,isReadOnlyOneSentence:boolean)=>{
+const readBase64 = (base64string: string, isReadOnlyOneSentence: boolean) => {
   if (!isReading.value) {
     console.log("Reading stopped, skipping audio playback.");
     return; // Don't play if reading is stopped
@@ -184,17 +228,16 @@ const readBase64 = (base64string:string,isReadOnlyOneSentence:boolean)=>{
 
   audioContext.decodeAudioData(byteArray.buffer, (buffer) => {
     if (!isReading.value || currentAudioSource.value !== audioSource) {
-       // Check if reading stopped or a newer source was created before decoding finished
-       console.log("Reading stopped or new audio started before decoding finished.");
-       currentAudioSource.value = null; // Ensure it's cleared if it was this one
-       audioContext.close(); // Close the context if not needed
-       return;
+      // Check if reading stopped or a newer source was created before decoding finished
+      console.log("Reading stopped or new audio started before decoding finished.");
+      currentAudioSource.value = null; // Ensure it's cleared if it was this one
+      audioContext.close(); // Close the context if not needed
+      return;
     }
     audioSource.buffer = buffer;
     audioSource.connect(audioContext.destination);
     debugger
-    if(!isReadOnlyOneSentence)
-    {
+    if (!isReadOnlyOneSentence) {
       // not read only one sentence, so add onended event,and go to next sentence
       audioSource.onended = () => {
         console.log("Audio ended. isReading:", isReading.value);
@@ -211,7 +254,7 @@ const readBase64 = (base64string:string,isReadOnlyOneSentence:boolean)=>{
         audioContext.close().catch(e => console.warn("Error closing AudioContext:", e));
       };
     }
-    
+
     try {
       audioSource.start();      // start playing
       console.log("Audio started.");
@@ -223,7 +266,7 @@ const readBase64 = (base64string:string,isReadOnlyOneSentence:boolean)=>{
   }, (error) => {
     console.error("Error decoding audio data:", error);
     if (currentAudioSource.value === audioSource) {
-       currentAudioSource.value = null; // Clear ref on decoding error
+      currentAudioSource.value = null; // Clear ref on decoding error
     }
     audioContext.close(); // Close context on error
   })
@@ -245,7 +288,7 @@ const handleDrop = (event: DragEvent) => {
   // 兼容性处理，确保 dataTransfer 存在
   if (event.dataTransfer) {
     droppedText.value = event.dataTransfer.getData('text/plain') || '';
-    connection.invoke("Trans", readContent.value.bookId,droppedText.value);
+    connection.invoke("Trans", readContent.value.bookId, droppedText.value);
   }
 }
 
@@ -255,7 +298,7 @@ const onDragOver = (event: DragEvent) => {
 };
 
 onMounted(() => {
-  connection.start().then(() => connection.invoke("InitCache",readContent.value.bookId));        // 开始阅读任务 onShowReadingText s
+  connection.start().then(() => connection.invoke("InitCache", readContent.value.bookId));        // 开始阅读任务 onShowReadingText s
   // Add keyboard shortcut listener for ctrl+1
   window.addEventListener('keydown', handleKeyDown);
 })
@@ -300,7 +343,7 @@ const handleListenWriteComplete = () => {
 .card {
   background: #fff;
   border-radius: 14px;
-  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.07), 0 1.5px 6px 0 rgba(0,0,0,0.03);
+  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.07), 0 1.5px 6px 0 rgba(0, 0, 0, 0.03);
   padding: 32px 28px 24px 28px;
   min-height: 80vh;
   display: flex;
@@ -309,7 +352,8 @@ const handleListenWriteComplete = () => {
   box-sizing: border-box;
 }
 
-.divLeft, .divRight {
+.divLeft,
+.divRight {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -362,7 +406,7 @@ const handleListenWriteComplete = () => {
   padding: 10px 16px;
   color: #333;
   font-size: 1.08em;
-  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.04);
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.04);
   display: flex;
   align-items: center;
   margin: 0 auto;
@@ -379,7 +423,7 @@ const handleListenWriteComplete = () => {
   width: 100%;
   background: #f9fafc;
   border-radius: 10px;
-  box-shadow: 0 1px 6px 0 rgba(0,0,0,0.03);
+  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.03);
   padding: 18px 14px;
   margin-top: 10px;
   display: flex;
@@ -391,7 +435,7 @@ const handleListenWriteComplete = () => {
   margin-bottom: 0;
 }
 
-.el-button + .el-button {
+.el-button+.el-button {
   margin-left: 10px;
 }
 
@@ -399,17 +443,21 @@ const handleListenWriteComplete = () => {
   .main-row {
     padding: 0;
   }
+
   .card {
     padding: 12px 2vw 10px 2vw;
     min-height: unset;
   }
+
   .paragraph-area {
     padding: 10px 6px;
     min-height: 60px;
   }
+
   .listenwrite-card {
     padding: 10px 4px;
   }
+
   .dropped-text-area {
     min-width: 120px;
     padding: 6px 4px;

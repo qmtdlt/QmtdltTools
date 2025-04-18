@@ -7,4 +7,5 @@ public class ApplicationConst
         get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
             "Logs", $"{DateTime.Now:yyyyMMddHHmmss}logs.txt"); } 
     }
+    public const string DefaultVoiceName = "en-US-AvaMultilingualNeural";
 }

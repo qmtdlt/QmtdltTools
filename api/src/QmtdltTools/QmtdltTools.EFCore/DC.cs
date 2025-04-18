@@ -30,5 +30,5 @@ public class DC:AbpDbContext<DC>
     public DbSet<DayToDo> DayToDos { get; set; }
     public DbSet<YearToDo> YearToDos { get; set; }
     public DbSet<ListenWriteRecord> ListenWriteRecords { get; set; }
-    public DbSet<VocabularyRecord> VocabularyRecord { get; set; }
+    public DbSet<VocabularyRecord> VocabularyRecords { get; set; }
 }
