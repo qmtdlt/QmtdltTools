@@ -302,6 +302,7 @@ connection.on("onsetbookposition", (input: any) => {
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置
+  readContent.value.speaking_buffer = input.speaking_buffer; // 读取到的文本位置
 });
 
 // 记录拖拽到右侧区域的文本

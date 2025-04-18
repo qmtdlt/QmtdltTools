@@ -23,6 +23,12 @@
           style="width: 100%;"
           v-loading="loading"
         >
+          <el-table-column
+            label="序号"
+            type="index"
+            width="60"
+            :index="indexMethod"
+          />
           <el-table-column prop="wordText" label="单词" width="120" />
           <el-table-column prop="aiExplanation" label="AI释义" />
           <el-table-column prop="aiTranslation" label="AI翻译" width="300"/>
@@ -220,6 +226,11 @@ function playPronunciation(base64string?: string) {
     fetchBooks()
     fetchRecords()
   })
+
+  // 序号列方法，支持分页
+  function indexMethod(index: number) {
+    return (pageIndex.value - 1) * pageSize.value + index + 1
+  }
   </script>
   
   <style scoped>
