@@ -28,7 +28,6 @@ namespace QmtdltTools.Service.Services
         {
             var entity = await _dc.VocabularyRecords
                 .Where(x => x.BookId == bookId 
-                && x.PIndex == pIndex 
                 && !string.IsNullOrEmpty(x.WordText) 
                 && (x.WordText.Contains(word) || word.Contains(x.WordText)))
                 .FirstOrDefaultAsync();

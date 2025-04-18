@@ -20,7 +20,7 @@
         <el-row style="margin-top: 10px;" justify="right" v-if="showLeft">
           <el-col :span="4" justify="end">
             <el-tag type="info" effect="plain" size="small">
-              当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句
+              当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句 [{{formatTime}}]
             </el-tag>
           </el-col>
         </el-row>
@@ -216,6 +216,11 @@ connection.on("onShowErrMsg", (msg: string) => {
   ElMessage.error(msg);
 });
 
+const formatTime = ref(""); // 格式化时间
+connection.on("onUpdateWatch", (formatTimeStr: string) => {
+  formatTime.value = formatTimeStr; // 更新时间
+});
+
 connection.on("UIReadInfo", (input: any) => {
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
@@ -345,11 +350,15 @@ function handleKeyDown(e: KeyboardEvent) {
   }
 }
 
-const handleListenWriteComplete = () => {
+const handleListenWriteComplete = async () => {
   console.log("Listen and write completed!");
   ElMessage.success("听写完成!");
-  // Optionally trigger next action, e.g., goNext()
-  // goNext();
+  
+  await request.post('/api/ToDo/DeleteDayToDoItem/DeleteDayToDoItem', null, {
+      params: {
+        Id: todo.id
+      }
+    })
 }
 </script>
 

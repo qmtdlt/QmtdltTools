@@ -18,16 +18,21 @@ namespace QmtdltTools.Service.Services
             _dc = dc;
         }
 
-        public void AddRecord(ListenWriteRecord input)
+        public async Task AddRecord(ListenWriteRecord input)
         {
             input.Id = Guid.NewGuid();
             input.UpdateTime = DateTime.Now;
-            _dc.ListenWriteRecords.AddAsync(input);
-            _dc.SaveChangesAsync();
+            await _dc.ListenWriteRecords.AddAsync(input);
+            await _dc.SaveChangesAsync();
         }
         public async Task<List<ListenWriteRecord>> GetListByBookId(Guid BookId)
         {
             List<ListenWriteRecord> list = await _dc.ListenWriteRecords.Where(x => x.BookId == BookId).ToListAsync();
+            return list;
+        }
+        public async Task<List<ListenWriteRecord>> GetListByUserId(Guid? uid)
+        {
+            List<ListenWriteRecord> list = await _dc.ListenWriteRecords.Where(x => x.CreateBy == uid).ToListAsync();
             return list;
         }
     }
