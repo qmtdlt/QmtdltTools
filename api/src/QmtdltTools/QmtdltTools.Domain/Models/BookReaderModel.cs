@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using QmtdltTools.Domain.Data;
 using VersOne.Epub;
 
 namespace QmtdltTools.Domain.Models
@@ -101,7 +102,7 @@ namespace QmtdltTools.Domain.Models
     {
         public UIReadInfo()
         {
-            voice_name = "en-US-AvaMultilingualNeural";
+            voice_name = ApplicationConst.DefaultVoiceName;
         }
         public string voice_name { get; set; }
         public string full_pragraph_text { get; set; }

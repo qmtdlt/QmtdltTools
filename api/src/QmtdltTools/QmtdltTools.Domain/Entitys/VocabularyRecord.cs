@@ -12,7 +12,6 @@ namespace QmtdltTools.Domain.Entitys
     {
         public Guid BookId { get; set; }
         public int PIndex { get; set; }
-        public int SIndex { get; set; }
         /// <summary>
         /// 单词文本
         /// </summary>
@@ -25,6 +24,10 @@ namespace QmtdltTools.Domain.Entitys
         /// AI 解释
         /// </summary>
         public string? AIExplanation { get; set; }
+        /// <summary>
+        /// AI 翻译
+        /// </summary>
+        public string? AITranslation { get; set; }
         /// <summary>
         /// 你的第一个造句
         /// </summary>

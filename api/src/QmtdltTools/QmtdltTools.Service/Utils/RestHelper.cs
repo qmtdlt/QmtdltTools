@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
+using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Dtos;
+using QmtdltTools.Domain.Models;
 using RestSharp;
 
 namespace QmtdltTools.Service.Utils
@@ -58,6 +60,10 @@ namespace QmtdltTools.Service.Utils
                     string assistantMessage = jsonResponse.choices[0].message.content.ToString();
                     // Deserialize the message into the VibeResponse class
                     var result = JsonConvert.DeserializeObject<TranslateDto>(assistantMessage);
+                    if(null != result)
+                    {
+                        result.VoiceBuffer = EpubHelper.GetSpeakStream(result.Explanation, ApplicationConst.DefaultVoiceName);
+                    }
                     return result;
                 }
                 catch (JsonException ex)

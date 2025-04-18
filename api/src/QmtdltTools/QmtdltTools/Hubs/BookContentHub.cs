@@ -3,7 +3,9 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Autofac.Core.Resolving.Middleware;
+using Castle.Components.DictionaryAdapter.Xml;
 using Microsoft.AspNetCore.SignalR;
+using QmtdltTools.Domain.Dtos;
 using QmtdltTools.Domain.Models;
 using QmtdltTools.Service.Services;
 using QmtdltTools.Service.Utils;
@@ -21,9 +23,13 @@ public class BookContentHub:AbpHub
     static ConcurrentDictionary<string, bool> connectionStatusCache = new ConcurrentDictionary<string, bool>();
     // DI
     private readonly EpubManageService _epubManageService;
-    public BookContentHub(EpubManageService epubManageService)
+    private readonly ListenWriteService _listenWriteService;
+    private readonly TranslationService _translationService;
+    public BookContentHub(EpubManageService epubManageService, ListenWriteService listenWriteService, TranslationService translationService)
     {
         _epubManageService = epubManageService;
+        _listenWriteService = listenWriteService;
+        _translationService = translationService;
     }
 
     public override Task OnConnectedAsync()
@@ -100,10 +106,30 @@ public class BookContentHub:AbpHub
     }
     public async Task Trans(Guid bookId,string word)
     {
+        var findRes = await _translationService.Find(bookId, bookReadingCache[bookId].position.PragraphIndex, bookReadingCache[bookId].position.SentenceIndex, word);
+        if(findRes != null)
+        {
+            await Clients.All.SendAsync("onShowTrans", new TranslateDto
+            {
+                Explanation = findRes.AIExplanation,
+                Translation = findRes.AITranslation,
+                VoiceBuffer = findRes.Pronunciation
+            });
+            return;
+        }
         var res = await RestHelper.GetTranslateResult(word);
         if (res != null)
         {
             await Clients.All.SendAsync("onShowTrans", res);
+            await _translationService.AddRecord(new Domain.Entitys.VocabularyRecord
+            {
+                BookId = bookId,
+                PIndex = bookReadingCache[bookId].position.PragraphIndex,
+                WordText = word,
+                Pronunciation = res.VoiceBuffer,
+                AIExplanation = res.Explanation,
+                AITranslation = res.Translation,
+            });
         }
         else
         {

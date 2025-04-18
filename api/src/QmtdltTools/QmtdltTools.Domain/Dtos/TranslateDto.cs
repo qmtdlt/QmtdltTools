@@ -10,5 +10,6 @@ namespace QmtdltTools.Domain.Dtos
     {
         public string Explanation { get; set; }
         public string Translation { get; set; }
+        public byte[] VoiceBuffer { get; set; }
     }
 }
