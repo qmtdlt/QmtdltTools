@@ -1,7 +1,7 @@
 <template>
   <el-row>
     <el-col :span="12">
-      <el-card style="height: 40vh;" >
+      <el-card style="height: 50vh;" >
         <el-row justify="start" align="middle" v-if="showLeft">
           <el-button-group>
             <el-button @click="startRead" type="primary" icon="el-icon-caret-right">start</el-button>
@@ -28,7 +28,7 @@
     </el-col>
     <el-col :span="12">
       <!--右侧区域-->
-      <el-card style="height: 40vh;">
+      <el-card style="height: 50vh;">
         <div>
           <el-row>
             <el-button @click="onListenWriteClick" type="success"><el-icon><Headset /></el-icon> Speak Highlight</el-button>
@@ -74,33 +74,7 @@
       <el-row>
         <h3>{{ transResult.translation }}</h3>
       </el-row>
-      <el-row>
-        <h2>Make Some Sentence:</h2>
-      </el-row>
-      <el-row>
-        <el-col :span="16">
-          <el-input v-model="sentence1"></el-input>
-        </el-col>
-        <el-col :span="8">
-          <el-button @click="playTransVoice">What about my sentence</el-button>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col :span="16">
-          <el-input v-model="sentence2"></el-input>
-        </el-col>
-        <el-col :span="8">
-          <el-button @click="playTransVoice">What about my sentence</el-button>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col :span="16">
-          <el-input v-model="sentence3"></el-input>
-        </el-col>
-        <el-col :span="8">
-          <el-button @click="playTransVoice">What about my sentence</el-button>
-        </el-col>
-      </el-row>
+      
     </el-card>
   </el-row>
 
@@ -222,6 +196,7 @@ connection.on("onUpdateWatch", (formatTimeStr: string) => {
 });
 
 connection.on("UIReadInfo", (input: any) => {
+  debugger
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置
@@ -299,6 +274,7 @@ const readBase64 = (base64string: string, isReadOnlyOneSentence: boolean) => {
 
 connection.on("onsetbookposition", (input: any) => {
   // 设置书籍位置
+  debugger
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置

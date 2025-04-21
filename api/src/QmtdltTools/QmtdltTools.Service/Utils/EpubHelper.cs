@@ -4,6 +4,7 @@ using Microsoft.CognitiveServices.Speech;
 using Microsoft.CognitiveServices.Speech.Audio;
 using HtmlAgilityPack;
 using System.Text;
+using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Models;
 using Serilog;
 namespace QmtdltTools.Service.Utils
@@ -11,9 +12,8 @@ namespace QmtdltTools.Service.Utils
     
     public class EpubHelper
     {
-        public static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
-        public static string speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
-
+        public static string speechKey = ApplicationConst.SPEECH_KEY;
+        public static string speechRegion = ApplicationConst.SPEECH_REGION;
 
         public static EpubBook GetEbook(string epubFilePath, out string message)
         {
@@ -153,7 +153,7 @@ namespace QmtdltTools.Service.Utils
         static List<MyPragraph> GetParagraph(string chapterText)
         {
             List<MyPragraph> res = new List<MyPragraph>();
-            string[] splitPragraphs = chapterText.Split("\r\n");
+            string[] splitPragraphs = chapterText.Split("\n");          // wiwndow \r\n
             foreach (string pragraphs in splitPragraphs)
             {
                 if (!string.IsNullOrEmpty(pragraphs.Trim()))
