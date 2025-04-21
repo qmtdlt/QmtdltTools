@@ -26,10 +26,6 @@ namespace QmtdltTools.Service.Utils
 
             try
             {
-                // 根据 epub 文件生成 txt 文件路径（扩展名替换为 .txt）
-                string txtFilePath = Path.ChangeExtension(epubFilePath, ".txt");
-
-                Console.WriteLine(txtFilePath);
                 // 使用 VersOne.Epub 库读取 EPUB 文件
                 return EpubReader.ReadBook(epubFilePath);
 
