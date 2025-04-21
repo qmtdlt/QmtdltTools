@@ -224,7 +224,7 @@ public class BookContentHub:AbpHub
         if (!string.IsNullOrEmpty(uiReadInfo.speaking_text))
         {
             if(uiReadInfo.speaking_text.IsNullOrEmpty()) return false;
-            uiReadInfo.speaking_buffer = EpubHelper.GetSpeakStream(uiReadInfo.speaking_text, uiReadInfo.voice_name);       // make speak buffer
+            uiReadInfo.speaking_buffer = TTSHelperRest.GetSpeakStreamRest(uiReadInfo.speaking_text, uiReadInfo.voice_name);       // make speak buffer
             return true;
         }
         return false;

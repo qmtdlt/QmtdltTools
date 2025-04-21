@@ -28,8 +28,6 @@ namespace QmtdltTools.Service.Utils
             {
                 // 使用 VersOne.Epub 库读取 EPUB 文件
                 return EpubReader.ReadBook(epubFilePath);
-
-                
             }
             catch (Exception ex)
             {
