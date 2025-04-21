@@ -4,6 +4,7 @@ using QmtdltTools.Service.Services;
 using QmtdltTools.Domain.Entitys;
 using QmtdltTools.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
+using QmtdltTools.Domain.Dtos;
 using QmtdltTools.Extensions;
 
 namespace QmtdltTools.Controllers
@@ -36,6 +37,12 @@ namespace QmtdltTools.Controllers
                 code = 200,
             };
         }
+        [HttpPost("MakeSentence")]
+        public async Task<VocabularyRecord?> MakeSentence([FromBody] MakeSentenceInputDto input)
+        {
+            return await _service.MakeSentence(input);
+        }
+        
         [HttpPost("AddVocabularyRecord")]
         public async Task<Response<bool>> AddVocabularyRecord(VocabularyRecord content)
         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,7 @@ namespace QmtdltTools.Domain.Entitys
         /// <summary>
         /// 单词文本
         /// </summary>
+        [StringLength(256)]
         public string? WordText { get; set; }
         /// <summary>
         /// 发音
@@ -22,22 +24,32 @@ namespace QmtdltTools.Domain.Entitys
         /// <summary>
         /// AI 解释
         /// </summary>
+        [StringLength(1024)]
         public string? AIExplanation { get; set; }
         /// <summary>
         /// AI 翻译
         /// </summary>
+        [StringLength(256)]
         public string? AITranslation { get; set; }
         /// <summary>
-        /// 你的第一个造句
+        /// 你的造句
         /// </summary>
-        public string? FirstSentenceYouMade { get; set; }
+        [StringLength(512)]
+        public string? SentenceYouMade { get; set; }
+       
         /// <summary>
-        /// 你的第二个造句
+        /// 造句是否正确
         /// </summary>
-        public string? SecondSentenceYouMade { get; set; }
+        public bool? IfUsageCorrect { get; set; }
         /// <summary>
-        /// 你的第三个造句
+        /// 不正确原因
         /// </summary>
-        public string? ThirdSentenceYouMade { get; set; }
+        [StringLength(1024)]
+        public string? IncorrectReason { get; set; }
+        /// <summary>
+        /// 纠正后的句子
+        /// </summary>
+        [StringLength(256)]
+        public string? CorrectSentence { get; set; }
     }
 }

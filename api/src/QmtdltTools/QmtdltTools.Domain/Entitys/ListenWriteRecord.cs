@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,7 @@ namespace QmtdltTools.Domain.Entitys
         public Guid BookId { get; set; }
         public int PIndex { get; set; }
         public int SIndex { get; set; }
+        [StringLength(1024)]
         public string? SentenceText { get; set; }
     }
 }
