@@ -153,7 +153,7 @@ namespace QmtdltTools.Service.Utils
         static List<MyPragraph> GetParagraph(string chapterText)
         {
             List<MyPragraph> res = new List<MyPragraph>();
-            string[] splitPragraphs = chapterText.Split("\n");          // wiwndow \r\n
+            string[] splitPragraphs = chapterText.Replace("\r","").Split("\n");          // wiwndow \r\n
             foreach (string pragraphs in splitPragraphs)
             {
                 if (!string.IsNullOrEmpty(pragraphs.Trim()))

@@ -100,18 +100,21 @@ public class BookContentHub:AbpHub
             else
             {
                 List<MyPragraph> plist = EpubHelper.PrepareAllPragraphs(ebook);     // analyse book and get all pragraphs
-                // read book reading progress from redis or database
-                                                      
-                bool success = bookReadingCache.TryGetValue(bookId, out var bookInfo);
+
+                // make dictionary cache
+                bool success = bookReadingCache.TryGetValue(bookId, out var bookInfo);                              // try get from dictionary
 
                 if (!success)
                 {
-                    bookInfo = new BookReaderModel { plist = plist, position = new ReadPosition {
-                        PragraphIndex = 0, SentenceIndex = 0 
-                    } };
-                    bookReadingCache.AddOrUpdate(bookId, bookInfo, (bookId, old) => { return bookInfo; });
+                    bookInfo = new BookReaderModel
+                    {
+                        plist = plist,
+                        position = new ReadPosition { PragraphIndex = 0, SentenceIndex = 0 },
+                    };
+                    bookReadingCache.AddOrUpdate(bookId, bookInfo, (bookId, old) => { return bookInfo; });          // first add bookInfo to cache
                 }
 
+                // read book reading progress from redis or database
                 try
                 {
                     bookReadingCache[bookId].position = RedisHelper.Get<ReadPosition>(bookId.ToString());
@@ -119,14 +122,15 @@ public class BookContentHub:AbpHub
                 catch (Exception)
                 { }
 
-                if (null == bookReadingCache[bookId].position) 
+                if (null == bookReadingCache[bookId].position)
                     bookReadingCache[bookId].position = new ReadPosition();
 
-                // first time
-                success = CurReadInfoEnQueue(bookId);            // get queue data fail,make data(only for first time)
-                bookReadingCache[bookId].readQueue.TryDequeue(out UIReadInfo uiReadInfo);
+                
 
-                await Clients.Caller.SendAsync("onSetBookPosition", uiReadInfo); // 
+                success = CurReadInfoEnQueue(bookId, out UIReadInfo uiReadInfo);
+                
+                await Clients.Caller.SendAsync("onSetBookPosition", uiReadInfo); //      
+
             }
         }
         else
@@ -174,7 +178,7 @@ public class BookContentHub:AbpHub
             bool success = bookReadingCache[bookId].readQueue.TryDequeue(out UIReadInfo uiReadInfo);
             if (!success)
             {
-                success = CurReadInfoEnQueue(bookId);            // get queue data fail,make data(only for first time)
+                success = CurReadInfoEnQueue(bookId,out UIReadInfo enQueueInfo1);            // get queue data fail,make data(only for first time)
                 bookReadingCache[bookId].readQueue.TryDequeue(out uiReadInfo);
             }
 
@@ -182,7 +186,7 @@ public class BookContentHub:AbpHub
             RedisHelper.Set(bookId.ToString(), bookReadingCache[bookId].position);
 
             bookReadingCache[bookId].PositionNext();                // go next
-            success = CurReadInfoEnQueue(bookId);                   // en queue
+            success = CurReadInfoEnQueue(bookId, out UIReadInfo enQueueInfo2);                   // en queue
         }
     }
     public async Task ResetPosition(Guid bookId ,int offsetPos)
@@ -193,9 +197,9 @@ public class BookContentHub:AbpHub
         await InitCache(bookId);
     }
 
-    bool CurReadInfoEnQueue(Guid bookId)
+    bool CurReadInfoEnQueue(Guid bookId, out UIReadInfo uiReadInfo)
     {
-        bool success = GetCurUIReadInfo(bookId, out UIReadInfo uiReadInfo);
+        bool success = GetCurUIReadInfo(bookId, out uiReadInfo);
         if (success)
         {
             bookReadingCache[bookId].readQueue.Enqueue(uiReadInfo);
