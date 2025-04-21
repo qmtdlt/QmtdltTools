@@ -94,7 +94,6 @@ namespace QmtdltTools.Domain.Models
                 return null;
             }
         }
-
         public ConcurrentQueue<UIReadInfo> readQueue { get; set; } = new ConcurrentQueue<UIReadInfo>(); // 队列
     }
 
