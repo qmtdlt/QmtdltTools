@@ -1,0 +1,22 @@
+# 这是一个生成的文件。不用于手动编辑。
+services:
+  app:
+    build:
+      context: "/Users/zhanghao/myprj/GitHub/QmtdltTools/api/src/QmtdltTools"
+      dockerfile: "QmtdltTools/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net9.0/QmtdltTools.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_STATICWEBASSETS: "/app/bin/Debug/net9.0/QmtdltTools.staticwebassets.runtime.CT.json"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "qmtdlttools:dev"
+    ports: []
+    volumes:
+    - "/Users/zhanghao/.nuget/packages:/home/app/.nuget/packages"
+    - "/Users/zhanghao/myprj/GitHub/QmtdltTools/api/src/QmtdltTools/QmtdltTools:/app:rw"
+    - "/Users/zhanghao/myprj/GitHub/QmtdltTools/api/src/QmtdltTools:/src:rw"
+    working_dir: "/app"

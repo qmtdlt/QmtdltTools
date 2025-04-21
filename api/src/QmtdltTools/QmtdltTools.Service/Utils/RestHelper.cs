@@ -57,7 +57,7 @@ namespace QmtdltTools.Service.Utils
                     {
                         try
                         {
-                            result.VoiceBuffer = EpubHelper.GetSpeakStream(result.Explanation, ApplicationConst.DefaultVoiceName);
+                            result.VoiceBuffer = TTSHelperRest.GetSpeakStreamRest(result.Explanation, ApplicationConst.DefaultVoiceName);
                         }
                         catch (Exception ex)
                         {
