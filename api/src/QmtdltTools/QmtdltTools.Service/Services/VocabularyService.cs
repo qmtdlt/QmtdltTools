@@ -17,9 +17,11 @@ namespace QmtdltTools.Service.Services
     public class VocabularyService:ITransientDependency
     {
         private readonly DC _dc;
-        public VocabularyService(DC dc)
+        private readonly AiApiService _aiApiService;
+        public VocabularyService(DC dc, AiApiService aiApiService)
         {
             _dc = dc;
+            _aiApiService = aiApiService;
         }
 
         public async Task AddRecord(VocabularyRecord input)
@@ -58,7 +60,7 @@ namespace QmtdltTools.Service.Services
             if (entity != null)
             {
                 entity.SentenceYouMade = input.Sentence;
-                SentenceEvaluateDto? dtores = await DouBaoRestHelper.GetSentenctevaluate(input.Sentence, entity.WordText);
+                SentenceEvaluateDto? dtores = await _aiApiService.GetSentenctevaluate(input.Sentence, entity.WordText);
                 entity.IfUsageCorrect = dtores.IfUsageCorrect;
                 entity.IncorrectReason = dtores.IncorrectReason;
                 entity.CorrectSentence = dtores.CorrectSentence;
