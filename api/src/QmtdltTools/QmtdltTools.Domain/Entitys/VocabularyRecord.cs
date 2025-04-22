@@ -29,7 +29,7 @@ namespace QmtdltTools.Domain.Entitys
         /// <summary>
         /// AI 翻译
         /// </summary>
-        [StringLength(256)]
+        [StringLength(1024)]
         public string? AITranslation { get; set; }
         /// <summary>
         /// 你的造句
