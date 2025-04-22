@@ -13,4 +13,5 @@ public class ApplicationConst
     public static string GROK_KEY = "";
     public static string GEMINI_KEY = "";
     public static string DOU_BAO = "";
+    public static string QIAN_WEN = "";    
 }

@@ -27,12 +27,14 @@ public class BookContentHub:AbpHub
     private readonly ListenWriteService _listenWriteService;
     private readonly TranslationService _translationService;
     private Stopwatch _sw;
-    public BookContentHub(EpubManageService epubManageService, ListenWriteService listenWriteService, TranslationService translationService)
+    private readonly AiApiService _aiApiService;
+    public BookContentHub(EpubManageService epubManageService, ListenWriteService listenWriteService, TranslationService translationService, AiApiService aiApiService)
     {
         _epubManageService = epubManageService;
         _listenWriteService = listenWriteService;
         _translationService = translationService;
         _sw = new Stopwatch();
+        _aiApiService = aiApiService;
     }
 
     public override Task OnConnectedAsync()
@@ -158,7 +160,7 @@ public class BookContentHub:AbpHub
             });
             return;
         }
-        var res = await DouBaoRestHelper.GetTranslateResult(word);
+        var res = await _aiApiService.GetTranslateResult(word);
         if (res != null)
         {
             await Clients.Caller.SendAsync("onShowTrans", res);
