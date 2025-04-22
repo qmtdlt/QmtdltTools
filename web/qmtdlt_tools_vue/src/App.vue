@@ -20,17 +20,17 @@ onMounted(() => {
           to="/vocabulary" 
           @click="activeRoute = '/vocabulary'"
           :class="{ active: activeRoute === '/vocabulary' }" 
-        >vocabulary</RouterLink>
-        <RouterLink 
+        >Vocabulary</RouterLink>
+        <!-- <RouterLink 
           to="/" 
           @click="activeRoute = '/'" 
           :class="{ active: activeRoute === '/' }"
-        >DayToDo</RouterLink>
+        >DayToDo</RouterLink> -->
         <RouterLink 
           to="/library" 
           @click="activeRoute = '/library'" 
           :class="{ active: activeRoute === '/library' }"
-        >Books</RouterLink>
+        >Library</RouterLink>
         <RouterLink 
           to="/login" 
           @click="activeRoute = '/login'" 
@@ -48,29 +48,24 @@ onMounted(() => {
 
  
 .content {
-  flex: 1;
   padding: 1rem; /* 原为2rem */
   width: 100%;
   height: 100%;
-  margin: 0 auto;
   box-sizing: border-box;
   background-color: white;
   border-radius: 8px;
-  box-shadow: 0 2px 15px rgb(0 0 0 / 5%);
-  margin-top: 1rem;
   margin-bottom: 1rem;
 }
 
 .header {
-  height: 80px;
+  height: 60px;
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: linear-gradient(135deg, #3a7bd5, #3a6073);
   color: white;
-  padding: 2rem; /* 原为0 2rem */
-  box-shadow: 0 2px 10px rgb(0 0 0 / 10%);
+  padding: 1rem; /* 原为0 2rem */
   position: sticky;
   top: 0;
   z-index: 100;
@@ -85,7 +80,7 @@ onMounted(() => {
 
 .main-nav {
   display: flex;
-  gap: 1.5rem;
+  gap: 2rem; /* Increased gap for better spacing */
 }
 
 .main-nav a {
@@ -103,21 +98,8 @@ onMounted(() => {
   background-color: rgba(255, 255, 255, 0.15);
 }
 
-.content {
-  flex: 1;
-  padding: 2rem;
-  width: 100%; /* Ensure the content takes full width */
-  margin: 0 auto;
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-}
-
 .content-view {
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.6s ease-in-out;
 }
 
 @keyframes fadeIn {
