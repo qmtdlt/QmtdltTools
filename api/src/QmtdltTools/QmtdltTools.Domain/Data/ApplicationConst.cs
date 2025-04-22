@@ -11,4 +11,5 @@ public class ApplicationConst
     public static string SPEECH_KEY = "";
     public static string SPEECH_REGION = "";
     public static string GROK_KEY = "";
+    public static string GEMINI_KEY = "";
 }

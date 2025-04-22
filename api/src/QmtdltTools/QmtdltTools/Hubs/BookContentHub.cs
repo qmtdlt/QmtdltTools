@@ -158,7 +158,7 @@ public class BookContentHub:AbpHub
             });
             return;
         }
-        var res = await RestHelper.GetTranslateResult(word);
+        var res = await GeminiRestHelper.GetTranslateResult(word);
         if (res != null)
         {
             await Clients.Caller.SendAsync("onShowTrans", res);

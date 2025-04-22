@@ -58,7 +58,7 @@ namespace QmtdltTools.Service.Services
             if (entity != null)
             {
                 entity.SentenceYouMade = input.Sentence;
-                SentenceEvaluateDto? dtores = await RestHelper.GetSentenctevaluate(input.Sentence, entity.WordText);
+                SentenceEvaluateDto? dtores = await GeminiRestHelper.GetSentenctevaluate(input.Sentence, entity.WordText);
                 entity.IfUsageCorrect = dtores.IfUsageCorrect;
                 entity.IncorrectReason = dtores.IncorrectReason;
                 entity.CorrectSentence = dtores.CorrectSentence;
