@@ -58,7 +58,7 @@ const handleLogin = async () => {
     
     ElMessage.success('登录成功')
     // 登录成功后跳转到首页
-    router.push('/')
+    router.push('/vocabulary')
   } catch (error) {
     console.error(error)
     ElMessage.error('登录失败')
