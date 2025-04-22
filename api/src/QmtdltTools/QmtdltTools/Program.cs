@@ -48,6 +48,7 @@ ApplicationConst.SPEECH_KEY = configuration.GetSection("MySecret:SPEECH_KEY").Ge
 ApplicationConst.SPEECH_REGION = configuration.GetSection("MySecret:SPEECH_REGION").Get<string>();
 ApplicationConst.GROK_KEY = configuration.GetSection("MySecret:GROK_KEY").Get<string>();
 ApplicationConst.GEMINI_KEY = configuration.GetSection("MySecret:GEMINI_KEY").Get<string>();
+ApplicationConst.DOU_BAO = configuration.GetSection("MySecret:DOU_BAO").Get<string>();
 
 var Issuer = configuration.GetSection("Jwt:Issuer").Get<string>();
 var Audience = configuration.GetSection("Jwt:Audience").Get<string>(); 

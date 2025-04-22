@@ -21,28 +21,15 @@ public class TTSHelperRest
     /// <exception cref="Exception">Thrown if the REST API call fails.</exception>
     public static byte[] GetSpeakStreamRest(string text, string SpeechSynthesisVoiceName)
     {
-        // Using HttpClient in a using block for simplicity in this example.
-        // For production scenarios, consider using a single static HttpClient instance
-        // or IHttpClientFactory to avoid socket exhaustion.
         using (var client = new HttpClient())
         {
-            // Construct the SSML body. SSML is required to specify the voice name via REST API.
-            // Escape the text to prevent issues with XML special characters.
             var escapedText = HttpUtility.HtmlEncode(text);
-
-// Extract the language code from the voice name (e.g., "en-US" from "en-US-AvaMultilingualNeural")
-// This is a common pattern, but might need adjustment for specific voice names.
-// A more robust solution might involve passing the language code separately
-// or having a lookup table if voice names don't follow this strict pattern.
             string languageCode = "en-US"; // Default or extract from voice name if possible
-// Simple attempt to extract language code (e.g., "en-US" from "en-US-AvaMultilingualNeural")
-// This is a basic approach and might need refinement.
             var voiceNameParts = SpeechSynthesisVoiceName.Split('-');
             if (voiceNameParts.Length >= 2)
             {
                 languageCode = $"{voiceNameParts[0]}-{voiceNameParts[1]}";
             }
-
 
             var ssml = $@"<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xmlns:mstts='http://www.microsoft.com/css/local' xml:lang='{languageCode}'>
     <voice name='{SpeechSynthesisVoiceName}'>
@@ -65,8 +52,6 @@ public class TTSHelperRest
 
             try
             {
-                // Send the POST request synchronously (matching original SDK code pattern)
-                // In a real-world application, prefer using async/await with PostAsync
                 HttpResponseMessage response = client.PostAsync(endpoint, content).GetAwaiter().GetResult();
 
                 // Check if the request was successful
@@ -89,8 +74,6 @@ public class TTSHelperRest
             }
             catch (Exception ex)
             {
-                // Log exception (replace with your logging mechanism)
-                // Log.Error($"An error occurred during REST API call: {ex.Message}");
                 Console.Error.WriteLine($"An error occurred during REST API call: {ex.Message}"); // Example logging
                 throw new Exception("Failed to synthesize speech via REST API.", ex);
             }
