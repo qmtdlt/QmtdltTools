@@ -56,6 +56,8 @@ service.interceptors.response.use(
         case 401:
           message = 'Unauthorized, please login'
           // You might want to redirect to login page here
+          // 跳转到登录页
+          window.location.href = '/login'
           break
         case 403:
           message = 'Access forbidden'

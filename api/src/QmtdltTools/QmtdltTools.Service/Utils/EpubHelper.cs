@@ -7,6 +7,7 @@ using System.Text;
 using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Models;
 using Serilog;
+using System;
 namespace QmtdltTools.Service.Utils
 {
     
@@ -15,7 +16,7 @@ namespace QmtdltTools.Service.Utils
         public static string speechKey = ApplicationConst.SPEECH_KEY;
         public static string speechRegion = ApplicationConst.SPEECH_REGION;
 
-        public static EpubBook GetEbook(string epubFilePath, out string message)
+        public static EpubBook? GetEbook(string epubFilePath, out string message)
         {
             message = "";
             if (!File.Exists(epubFilePath))
@@ -23,7 +24,6 @@ namespace QmtdltTools.Service.Utils
                 message = "file not exists: " + epubFilePath;
                 return null;
             }
-
             try
             {
                 // 使用 VersOne.Epub 库读取 EPUB 文件
@@ -33,78 +33,7 @@ namespace QmtdltTools.Service.Utils
             {
                 message = "some exception occur: " + ex.Message;
             }
-
             return null;
-        }
-
-        /// <summary>
-        /// Generate by Grok:
-        /// </summary>
-        /// <param name="text"></param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
-        public static byte[] GetSpeakStream(string text,string SpeechSynthesisVoiceName)
-        {
-            // Create speech configuration
-            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-
-            speechConfig.SpeechSynthesisVoiceName = SpeechSynthesisVoiceName;
-
-            // Set the output format to MP3
-            speechConfig.SetSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3);
-
-            using (var memoryStream = new MemoryStream())
-            {
-                // Create our callback handler
-                var callback = new CustomPushAudioOutputStreamCallback(memoryStream);
-
-                // Create the push audio output stream with our callback
-                using (var pushStream = new PushAudioOutputStream(callback))
-                {
-                    using (var audioConfig = AudioConfig.FromStreamOutput(pushStream))
-                    {
-                        using (var synthesizer = new SpeechSynthesizer(speechConfig, audioConfig))
-                        {
-                            // Synthesize the text to speech
-                            var result = synthesizer.SpeakTextAsync(text).GetAwaiter().GetResult();
-
-                            if (result.Reason == ResultReason.SynthesizingAudioCompleted)
-                            {
-                                return memoryStream.ToArray();
-                            }
-                            else
-                            {
-                                Log.Error($"Speech synthesis failed: {result.Reason}");
-                                return new byte[0];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        /// <summary>
-        /// Generate by Grok: 
-        /// strem callback
-        /// </summary>
-        private class CustomPushAudioOutputStreamCallback : PushAudioOutputStreamCallback
-        {
-            private readonly MemoryStream _stream;
-
-            public CustomPushAudioOutputStreamCallback(MemoryStream stream)
-            {
-                _stream = stream;
-            }
-
-            public override uint Write(byte[] dataBuffer)
-            {
-                _stream.Write(dataBuffer, 0, dataBuffer.Length);
-                return (uint)dataBuffer.Length;
-            }
-
-            public override void Close()
-            {
-                // No additional cleanup needed as MemoryStream is managed by the using statement
-            }
         }
 
         public static List<MyPragraph> PrepareAllPragraphs(EpubBook book)
@@ -148,21 +77,51 @@ namespace QmtdltTools.Service.Utils
         {
             List<MyPragraph> res = new List<MyPragraph>();
             string[] splitPragraphs = chapterText.Replace("\r","").Split("\n");          // wiwndow \r\n
-            foreach (string pragraphs in splitPragraphs)
+            string pragraph = "";
+            for (int i = 0; i < splitPragraphs.Length; i++)
             {
-                if (!string.IsNullOrEmpty(pragraphs.Trim()))
+                pragraph = splitPragraphs[i].Trim();        
+                if (i+1<splitPragraphs.Length && isTooShort(splitPragraphs[i]))
+                {
+                    pragraph += splitPragraphs[i + 1].Trim();        // 合并段落
+                    i++;
+                    if(i+2 <  splitPragraphs.Length)
+                    {
+                        pragraph += splitPragraphs[i + 2].Trim();        // 合并段落
+                        i++;
+                    }
+                }
+                if (!string.IsNullOrEmpty(pragraph))
                 {
                     MyPragraph myPragraph = new MyPragraph
                     {
-                        PragraphText = pragraphs,
-                        Sentences = GetSentences(pragraphs)
+                        PragraphText = pragraph,
+                        Sentences = GetSentences(pragraph)
                     };
                     if (myPragraph.Sentences.Count <= 0)
                         continue;
+                    if(res.Count == 0)
+                    {
+                        myPragraph.isFirst = true;        // 第一段
+                    }
                     res.Add(myPragraph);
                 }
             }
             return res;
+        }
+        static bool isTooShort(string input)
+        {
+            if(input.Length<=1)
+            {
+                // 单个字符
+                return true;
+            }
+            var words = input.Split(',','.');
+            if(words.Length <= 3)
+            {
+                return true;        // 单词数小于登录3
+            }
+            return false;
         }
 
         static char[] splitSymbols = new List<char> { '；', ';', ':', '：', '。', '.' }.ToArray();

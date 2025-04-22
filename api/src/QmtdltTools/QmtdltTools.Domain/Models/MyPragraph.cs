@@ -8,6 +8,7 @@ namespace QmtdltTools.Domain.Models
 {
     public class MyPragraph
     {
+        public bool isFirst { get; set; } = false;
         // 段落文本
         public string PragraphText { get; set; }
         // 段落句子
