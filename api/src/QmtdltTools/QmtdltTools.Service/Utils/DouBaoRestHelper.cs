@@ -5,11 +5,11 @@ using RestSharp;
 
 namespace QmtdltTools.Service.Utils
 {
-    public class GrokRestHelper
+    public class DouBaoRestHelper
     {
-        public static string grok_api_key = ApplicationConst.GROK_KEY;
-        public static string apiEndpoint = "https://api.x.ai/v1/chat/completions";
-        public static string grok_model = "grok-3-mini-beta";
+        public static string doubao_api_key = ApplicationConst.DOU_BAO;
+        public static string apiEndpoint = "https://ark.cn-beijing.volces.com/api/v3/chat/completions";
+        public static string doubao_model = "doubao-1-5-lite-32k-250115";
 
         public static async Task<TranslateDto> GetTranslateResult(string word)
         {
@@ -18,12 +18,9 @@ namespace QmtdltTools.Service.Utils
             {
                 messages = new[]
                 {
-                    new { role = "system", content = "You are a helpful assistant." },
-                    new { role = "user", content = $@"Please provide an explanation of the word ""{word}"" and its translation into Chinese. Format your response as a JSON object with two fields: ""Explanation"" and ""Translation""." }
+                    new { role = "system", content = $@"Please provide an explanation of the word ""{word}"" and its translation into Chinese. Format your response as a JSON object with two fields: ""Explanation"" and ""Translation""." },                    
                 },
-                model = grok_model,
-                stream = false,
-                temperature = 0
+                model = doubao_model
             };
             var result = await GetResult<TranslateDto>(requestBody);
 
@@ -47,11 +44,9 @@ namespace QmtdltTools.Service.Utils
             {
                 messages = new[]
                 {
-                    new { role = "system", content = "You are a helpful assistant." },
-                    new { role = "user", content = $@"Check this sentence ""{sentence}"" for {word}, is the usage of {word} correct? If not, give the reason and the corrected sentence. 
+                    new { role = "system", content = $@"Check this sentence ""{sentence}"" for {word}, is the usage of {word} correct? If not, give the reason and the corrected sentence. 
             Format your response as a JSON object with three fields: IfUsageCorrect , IncorrectReason and CorrectSentence." }
                 },
-                model = grok_model,
                 stream = false,
                 temperature = 0
             };
@@ -64,7 +59,7 @@ namespace QmtdltTools.Service.Utils
             var request = new RestRequest(apiEndpoint, Method.Post);
             // Set headers
             request.AddHeader("Content-Type", "application/json");
-            request.AddHeader("Authorization", $"Bearer {grok_api_key}");
+            request.AddHeader("Authorization", $"Bearer {doubao_api_key}");
 
 
             // Add JSON body to the request
