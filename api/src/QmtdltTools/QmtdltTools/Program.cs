@@ -101,7 +101,7 @@ app.UseEndpoints(endpoints =>
 app.UseHttpsRedirection();
 await app.InitializeApplicationAsync();             // init app
 
-RedisHelper.Initialization(new CSRedis.CSRedisClient("redis:6379"));
+RedisHelper.Initialization(new CSRedis.CSRedisClient("127.0.0.1:6379"));
 
 app.Run();
 
