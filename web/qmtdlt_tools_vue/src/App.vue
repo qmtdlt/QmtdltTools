@@ -48,7 +48,7 @@ onMounted(() => {
 
  
 .content {
-  padding: 1rem; /* 原为2rem */
+  padding: 0rem; /* 原为2rem */
   width: 100%;
   height: 100%;
   box-sizing: border-box;

@@ -17,23 +17,14 @@
           />
         </el-select>
       </div>
-      <el-table
-        :data="records"
-        border
-        style="width: 100%;"
-        v-loading="loading"
-      >
+      <el-table height="80vh" :data="records" border v-loading="loading" >
         <el-table-column
-          label="序号"
-          type="index"
-          width="60"
-          :index="indexMethod"
-        />
+          label="序号" type="index" width="55" :index="indexMethod" />
         <el-table-column prop="wordText" label="单词" width="100" />
         <el-table-column prop="aiExplanation" label="AI释义"/>
-        <el-table-column prop="aiTranslation" label="AI翻译" width="120"/>
+        <el-table-column prop="aiTranslation" label="AI翻译" width="160"/>
         <el-table-column prop="sentenceYouMade" label="你的造句" width="200"/>
-        <el-table-column prop="ifUsageCorrect" label="是否正确" width="60"/>
+        <el-table-column prop="ifUsageCorrect" label="是否正确" width="55"/>
         <el-table-column prop="incorrectReason" label="错误原因" width="300"/>
         <el-table-column prop="correctSentence" label="正确造句" width="200"/>
         <!-- <el-table-column prop="createTime" label="创建时间" width="100">
@@ -54,7 +45,7 @@
           </template>
         </el-table-column>
         <!-- 新增操作列 -->
-        <el-table-column label="操作" width="100">
+        <el-table-column label="操作" width="80">
           <template #default="{ row }">
             <el-button
               size="small"
@@ -311,7 +302,6 @@ async function submitSentence() {
   }
 }
 // --- 结束新增方法 ---
-
 onMounted(() => {
   fetchBooks()
   fetchRecords()
