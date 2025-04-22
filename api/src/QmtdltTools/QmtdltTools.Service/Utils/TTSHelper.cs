@@ -1,10 +1,9 @@
-using System;
-using System.IO;
-using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
-using QmtdltTools.Domain.Data; // Required for HttpUtility.HtmlEncode
+using Microsoft.CognitiveServices.Speech.Audio;
+using Microsoft.CognitiveServices.Speech;
+using QmtdltTools.Domain.Data;
+using Serilog; // Required for HttpUtility.HtmlEncode
 
 public class TTSHelperRest
 {
@@ -97,11 +96,75 @@ public class TTSHelperRest
             }
         }
     }
-}
 
-// Note: You need to replace ApplicationConst.SPEECH_KEY and ApplicationConst.SPEECH_REGION
-// with your actual constants or configuration values.
-//
-// You also need to add a reference to System.Web for HttpUtility.HtmlEncode
-// if you are not in a web project. In .NET Core/.NET 5+, you might need to add
-// the NuGet package Microsoft.AspNetCore.WebUtilities or use System.Net.WebUtility.HtmlEncode.
+    /// <summary>
+    /// Generate by Grok:
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public static byte[] GetSpeakStream(string text, string SpeechSynthesisVoiceName)
+    {
+        // Create speech configuration
+        var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+
+        speechConfig.SpeechSynthesisVoiceName = SpeechSynthesisVoiceName;
+
+        // Set the output format to MP3
+        speechConfig.SetSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3);
+
+        using (var memoryStream = new MemoryStream())
+        {
+            // Create our callback handler
+            var callback = new CustomPushAudioOutputStreamCallback(memoryStream);
+
+            // Create the push audio output stream with our callback
+            using (var pushStream = new PushAudioOutputStream(callback))
+            {
+                using (var audioConfig = AudioConfig.FromStreamOutput(pushStream))
+                {
+                    using (var synthesizer = new SpeechSynthesizer(speechConfig, audioConfig))
+                    {
+                        // Synthesize the text to speech
+                        var result = synthesizer.SpeakTextAsync(text).GetAwaiter().GetResult();
+
+                        if (result.Reason == ResultReason.SynthesizingAudioCompleted)
+                        {
+                            return memoryStream.ToArray();
+                        }
+                        else
+                        {
+                            Log.Error($"Speech synthesis failed: {result.Reason}");
+                            return new byte[0];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Generate by Grok: 
+    /// strem callback
+    /// </summary>
+    private class CustomPushAudioOutputStreamCallback : PushAudioOutputStreamCallback
+    {
+        private readonly MemoryStream _stream;
+
+        public CustomPushAudioOutputStreamCallback(MemoryStream stream)
+        {
+            _stream = stream;
+        }
+
+        public override uint Write(byte[] dataBuffer)
+        {
+            _stream.Write(dataBuffer, 0, dataBuffer.Length);
+            return (uint)dataBuffer.Length;
+        }
+
+        public override void Close()
+        {
+            // No additional cleanup needed as MemoryStream is managed by the using statement
+        }
+    }
+}
