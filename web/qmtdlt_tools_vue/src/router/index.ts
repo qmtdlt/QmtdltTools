@@ -11,12 +11,12 @@ const router = createRouter({
       name: 'vocabulary',
       component: () => import('../views/Vocabulary.vue'),
     },
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView,
-      meta: { requiresAuth: true }
-    },
+    // {
+    //   path: '/',
+    //   name: 'home',
+    //   component: HomeView,
+    //   meta: { requiresAuth: true }
+    // },
     {
       path: '/library',
       name: 'library',
@@ -26,7 +26,7 @@ const router = createRouter({
       component: () => import('../views/Library.vue'),
     },
     {
-      path: '/login',
+      path: '/',
       name: 'login',
       component: LoginView
     },
