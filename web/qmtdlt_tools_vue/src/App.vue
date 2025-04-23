@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import { ref, onMounted } from 'vue'
+import { isMobbile } from './utils/myutil'
 
+const isMobileRef = ref(isMobbile())
 const activeRoute = ref('')
 
 onMounted(() => {
@@ -11,8 +13,8 @@ onMounted(() => {
 
 <template>
   <div class="container">
-    <header class="header">
-      <div class="logo">
+    <header class="header" >
+      <div class="logo" v-if="!isMobileRef">
         <h1>QmtdltTools</h1>
       </div>
       <nav class="main-nav">

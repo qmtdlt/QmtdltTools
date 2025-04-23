@@ -69,5 +69,15 @@ namespace QmtdltTools.Controllers
                 };
             }
         }
+        [HttpGet("GetOneWord")]
+        public async Task<VocabularyRecord?> GetOneWord()
+        {
+            return await _service.GetOneWord(HttpContext.GetUserId());
+        }
+        [HttpPost("IgnoreInTimeRange")]
+        public void IgnoreInTimeRange(Guid id)
+        {
+            _service.IgnoreInTimeRange(HttpContext.GetUserId(), id);
+        }
     }
 }
