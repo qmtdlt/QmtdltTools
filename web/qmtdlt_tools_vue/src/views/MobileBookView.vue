@@ -1,7 +1,7 @@
 <template>
   <el-row>
     <el-col>
-      <el-card style="height: 85vh;" >
+      <el-card style="height: 85vh;">
         <el-row justify="start" align="middle" v-if="showLeft">
           <el-button-group>
             <el-button @click="startRead" type="primary" icon="el-icon-caret-right">start</el-button>
@@ -14,13 +14,15 @@
         </el-row>
         <el-row class="paragraph-row" justify="center" v-if="showLeft">
           <div class="paragraph-area">
-            <HighlightedTextMobile :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text"  @phaseSelect="handlePhaseSelect"/>
+            <HighlightedTextMobile :full-text="readContent.full_pragraph_text"
+              :highlight-text="readContent.speaking_text" @phaseSelect="handlePhaseSelect" />
           </div>
         </el-row>
         <el-row style="margin-top: 10px;" justify="right" v-if="showLeft">
           <el-col :span="4" justify="end">
             <el-tag type="info" effect="plain" size="small">
-              当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句 [{{formatTime}}]
+              当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句
+              [{{ formatTime }}]
             </el-tag>
           </el-col>
         </el-row>
@@ -28,15 +30,19 @@
     </el-col>
   </el-row>
   <!--弹出翻译结果显示-->
-  <el-dialog>
-    <el-card v-loading="dropTextDealing" style="width: 100%;height: 40vh;">
+  <el-dialog v-model="showTransDialog" title="翻译结果" width="85%" >
+    <div v-loading="dropTextDealing">
       <el-row>
         <h2>Explanation:</h2>
         <el-button @click="playTransVoice" type="primary" plain circle>
-          <el-icon><Headset /></el-icon>
+          <el-icon>
+            <Headset />
+          </el-icon>
         </el-button>
         <el-button @click="stopRead" type="primary" plain circle>
-          <el-icon><VideoPause /></el-icon>
+          <el-icon>
+            <VideoPause />
+          </el-icon>
         </el-button>
       </el-row>
       <el-row>
@@ -48,7 +54,7 @@
       <el-row>
         <h3>{{ transResult.translation }}</h3>
       </el-row>
-    </el-card>
+    </div>
   </el-dialog>
 
 </template>
@@ -59,12 +65,12 @@ import HighlightedTextMobile from './HighLightedTextMobile.vue' // Import your H
 import request from '@/utils/request' // Import your request utility
 import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
-import { ElMessage } from 'element-plus';
-import ListenWrite from './ListenWrite.vue'; // Keep this import
+import { ElMessage, ElMessageBox } from 'element-plus';
 // import icon
-import { Headset,Lightning,View,Hide,VideoPause} from '@element-plus/icons-vue'
+import { Headset, Lightning, View, Hide, VideoPause } from '@element-plus/icons-vue'
 
 const route = useRoute() // 使用路由
+const showTransDialog = ref(false) // 控制翻译弹窗显示
 
 const readContent = ref({
   full_pragraph_text: '', // 读取到的文本内容
@@ -75,9 +81,6 @@ const readContent = ref({
 });
 
 const dropTextDealing = ref(false); // 拖拽到右侧区域的文本
-const sentence1 = ref(''); // 句子1
-const sentence2 = ref(''); // 句子1
-const sentence3 = ref(''); // 句子1
 const isReading = ref(false) // 是否正在阅读
 const jumpOffset = ref("1"); // 跳转偏移量
 const currentAudioSource = ref<AudioBufferSourceNode | null>(null); // Store the current audio source
@@ -97,7 +100,7 @@ const goNext = async () => {
 }
 
 const resetPosition = (offset: number) => {
-  
+
   stopRead(); // Stop any current reading before starting a new one
 
   connection.invoke("ResetPosition", readContent.value.bookId, offset).then(() => {
@@ -129,7 +132,7 @@ const listenWrite = () => {
 }
 
 connection.on("onShowTrans", (result: any) => {
-  
+
   dropTextDealing.value = false; // 停止处理拖拽文本
   console.log(result);
   transResult.value = result; // Store the translation result
@@ -137,7 +140,6 @@ connection.on("onShowTrans", (result: any) => {
   readBase64(transResult.value.voiceBuffer, true); // 读取到的音频内容
 });
 const playTransVoice = () => {
-  
   dropTextDealing.value = false; // 停止处理拖拽文本
   if (transResult.value.voiceBuffer) {
     isReading.value = true;
@@ -147,7 +149,7 @@ const playTransVoice = () => {
   }
 }
 connection.on("onShowErrMsg", (msg: string) => {
-  
+
   dropTextDealing.value = false; // 停止处理拖拽文本
   console.error(msg);
   ElMessage.error(msg);
@@ -159,7 +161,7 @@ connection.on("onUpdateWatch", (formatTimeStr: string) => {
 });
 
 connection.on("UIReadInfo", (input: any) => {
-  
+
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置
@@ -199,7 +201,7 @@ const readBase64 = (base64string: string, isReadOnlyOneSentence: boolean) => {
     }
     audioSource.buffer = buffer;
     audioSource.connect(audioContext.destination);
-    
+
     if (!isReadOnlyOneSentence) {
       // not read only one sentence, so add onended event,and go to next sentence
       audioSource.onended = () => {
@@ -237,17 +239,12 @@ const readBase64 = (base64string: string, isReadOnlyOneSentence: boolean) => {
 
 connection.on("onsetbookposition", (input: any) => {
   // 设置书籍位置
-  
+
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置
   readContent.value.speaking_buffer = input.speaking_buffer; // 读取到的文本位置
 });
-
-// 修正拖拽事件，确保事件能被触发
-const onDragOver = (event: DragEvent) => {
-  event.preventDefault();
-};
 
 onMounted(() => {
   connection.start().then(() => connection.invoke("InitCache", readContent.value.bookId));        // 开始阅读任务 onShowReadingText s
@@ -274,11 +271,33 @@ function handleKeyDown(e: KeyboardEvent) {
     e.preventDefault();
   }
 }
+const isFirstTime = ref(true); // 使用 VueUse 的 useStorage 来存储是否第一次使用
+const handlePhaseSelect = async (phaseText: string) => {
+  if (isFirstTime.value) {
+    isFirstTime.value = false; // 设置为 false，表示已经处理过一次
+    try {
 
-const handlePhaseSelect = async (phaseText:string) => {
-  ElMessage.success("选中内容: " + phaseText);  
-  // connection.invoke("Trans", readContent.value.bookId, droppedText.value); // 发送拖拽文本到服务器进行翻译
-  // 显示dialog
+      await ElMessageBox.confirm(
+        `是否处理新单词: "${phaseText}"?`,
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'info',
+        }
+      )
+      // 用户点击确定，调用翻译接口
+      dropTextDealing.value = true
+      connection.invoke("Trans", readContent.value.bookId, phaseText)
+      showTransDialog.value = true
+      isFirstTime.value = true; // 重置为 true，表示可以再次处理
+    } catch {
+      // 用户点击取消
+      ElMessage.info('已取消')
+      isFirstTime.value = true; // 重置为 true，表示可以再次处理
+    }
+  }
+
 }
 </script>
 

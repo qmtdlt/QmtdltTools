@@ -48,6 +48,7 @@ function handleSelection() {
     containerRef.value.contains(selection.anchorNode)
   ) {
     emit('phaseSelect', selection.toString())
+    selection.removeAllRanges()
   }
 }
 

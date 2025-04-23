@@ -81,13 +81,19 @@ namespace QmtdltTools.Service.Utils
             for (int i = 0; i < splitPragraphs.Length; i++)
             {
                 pragraph = splitPragraphs[i].Trim();        
-                if (i+1<splitPragraphs.Length && isTooShort(splitPragraphs[i]))
+                if (i+1<splitPragraphs.Length)
                 {
-                    pragraph += splitPragraphs[i + 1].Trim();        // 合并段落
-                    i++;
-                    if(i+2 <  splitPragraphs.Length)
+                    var isTooShortResult = isTooShort(splitPragraphs[i]);
+                    if (1 == isTooShortResult)
                     {
-                        pragraph += splitPragraphs[i + 2].Trim();        // 合并段落
+                        // 单个字符
+                        pragraph += splitPragraphs[i + 1].Trim();        // 合并段落
+                        i++;
+                    }
+                    else if (2 == isTooShortResult)
+                    {
+                        // 特别短的段落
+                        pragraph += (" " + splitPragraphs[i + 1].Trim());        // 合并段落,中间需要空格
                         i++;
                     }
                 }
@@ -109,19 +115,19 @@ namespace QmtdltTools.Service.Utils
             }
             return res;
         }
-        static bool isTooShort(string input)
+        static int isTooShort(string input)
         {
             if(input.Length<=1)
             {
                 // 单个字符
-                return true;
+                return 1;
             }
             var words = input.Split(',','.');
             if(words.Length <= 3)
             {
-                return true;        // 单词数小于登录3
+                return 2;        // 单词数小于登录3
             }
-            return false;
+            return -1;
         }
 
         static char[] splitSymbols = new List<char> { '；', ';', ':', '：', '。', '.' }.ToArray();

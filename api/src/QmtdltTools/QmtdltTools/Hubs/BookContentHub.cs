@@ -214,6 +214,10 @@ public class BookContentHub:AbpHub
             bookReadingCache[bookId].readQueue.Enqueue(uiReadInfo);
             return true;
         }
+        else
+        {
+            RedisHelper.Set(bookId.ToString(), bookReadingCache[bookId].position);
+        }
         return false;
     }
     bool GetCurUIReadInfo(Guid bookId,out UIReadInfo uiReadInfo)

@@ -91,6 +91,8 @@ namespace QmtdltTools.Domain.Models
             }
             else
             {
+                // 位置越界
+                position = new ReadPosition() { PragraphIndex = 0, SentenceIndex = 0};
                 return null;
             }
         }

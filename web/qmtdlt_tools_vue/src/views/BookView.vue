@@ -166,7 +166,6 @@ const showOrHidReader = () => {
   showLeft.value = !showLeft.value;
 }
 connection.on("onShowTrans", (result: any) => {
-  debugger
   dropTextDealing.value = false; // 停止处理拖拽文本
   console.log(result);
   transResult.value = result; // Store the translation result
@@ -184,7 +183,6 @@ const playTransVoice = () => {
   }
 }
 connection.on("onShowErrMsg", (msg: string) => {
-  debugger
   dropTextDealing.value = false; // 停止处理拖拽文本
   console.error(msg);
   ElMessage.error(msg);
@@ -286,7 +284,6 @@ const droppedText = ref('')
 
 // 接收拖拽到右侧区域的数据（使用原生拖拽事件，拖拽文本时默认类型为 text/plain）
 const handleDrop = (event: DragEvent) => {
-  debugger
   dropTextDealing.value = true; // 开始处理拖拽文本
   event.preventDefault();
   // 兼容性处理，确保 dataTransfer 存在
