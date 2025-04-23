@@ -14,7 +14,7 @@
         </el-row>
         <el-row class="paragraph-row" justify="center" v-if="showLeft">
           <div class="paragraph-area">
-            <HighlightedTextMobile :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text" />
+            <HighlightedTextMobile :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text"  @phaseSelect="handlePhaseSelect"/>
           </div>
         </el-row>
         <el-row style="margin-top: 10px;" justify="right" v-if="showLeft">
@@ -126,17 +126,7 @@ const listenWrite = () => {
   isReading.value = true
   readBase64(readContent.value.speaking_buffer, true); // 读取到的音频内容
 }
-const onListenWriteClick = () => {
-  listenWrite();
-};
 
-const promptOneWord = () => {
-
-}
-
-const showOrHidReader = () => {
-  showLeft.value = !showLeft.value;
-}
 connection.on("onShowTrans", (result: any) => {
   
   dropTextDealing.value = false; // 停止处理拖拽文本
@@ -256,23 +246,6 @@ connection.on("onsetbookposition", (input: any) => {
 // 记录拖拽到右侧区域的文本
 const droppedText = ref('')
 
-// 接收拖拽到右侧区域的数据（使用原生拖拽事件，拖拽文本时默认类型为 text/plain）
-const handleDrop = (event: DragEvent) => {
-  
-  dropTextDealing.value = true; // 开始处理拖拽文本
-  event.preventDefault();
-  // 兼容性处理，确保 dataTransfer 存在
-  if (event.dataTransfer) {
-    droppedText.value = event.dataTransfer.getData('text/plain') || '';
-    connection.invoke("Trans", readContent.value.bookId, droppedText.value);
-  }
-}
-
-// 修正拖拽事件，确保事件能被触发
-const onDragOver = (event: DragEvent) => {
-  event.preventDefault();
-};
-
 onMounted(() => {
   connection.start().then(() => connection.invoke("InitCache", readContent.value.bookId));        // 开始阅读任务 onShowReadingText s
   // Add keyboard shortcut listener for ctrl+1
@@ -299,11 +272,8 @@ function handleKeyDown(e: KeyboardEvent) {
   }
 }
 
-const handleListenWriteComplete = async () => {
-  console.log("Listen and write completed!");
-  ElMessage.success("听写完成!");
-  
-  
+const handlePhaseSelect = async (phaseText:string) => {
+  ElMessage.success("选中内容111: " + phaseText);  
 }
 </script>
 
