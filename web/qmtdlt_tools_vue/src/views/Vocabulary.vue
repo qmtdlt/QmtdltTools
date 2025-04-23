@@ -1,85 +1,115 @@
 <template>
-  <div>
+  <div v-if="isMobileRef">
+    <el-card style="height: 85vh;">
+      <el-row>
+        <el-col :span="8">
+          <el-span>
+            <!--单词-->
+            {{ curWordRef?.wordText }}
+          </el-span>
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-span>
+          <!--AI 解释-->
+          {{ curWordRef?.aiExplanation }}
+        </el-span>
+      </el-row>
+      <el-row>
+        <el-span>
+          <!--翻译-->
+          {{ curWordRef?.aiTranslation }}
+        </el-span>
+      </el-row>
+      <el-row>
+        <el-span>
+          <!--你的造句-->
+          {{ curWordRef?.sentenceYouMade }}
+        </el-span>
+      </el-row>
+      <el-row>
+        <el-span>
+          <!--造句是否正确-->
+          {{ curWordRef?.ifUsageCorrect }}
+        </el-span>
+      </el-row>
+      <el-row>
+        <el-span>
+          <!--错误原因-->
+          {{ curWordRef?.incorrectReason }}
+        </el-span>
+      </el-row>
+      <el-row>
+        <el-col :span="12">
+          <el-button size="small" type="primary" title="ignore in three days" @click="ignoreInTimeRange">
+            ignore in three days
+          </el-button>
+        </el-col>
+        <el-col :span="8">
+          <el-button size="small" type="primary" title="next" @click="getWord">
+            next
+          </el-button>
+        </el-col>
+        <el-col :span="2">
+          <el-button v-if="curWordRef?.pronunciation" size="small" circle
+            @click="playPronunciation(curWordRef?.pronunciation)" title="播放发音">
+            <el-icon>
+              <Headset />
+            </el-icon>
+          </el-button>
+        </el-col>
+      </el-row>
+    </el-card>
+  </div>
+  <div v-else>
     <el-card>
       <div>
-        <el-select
-          v-model="selectedBookId"
-          placeholder="请选择书籍"
-          clearable
-          style="width: 300px"
-          @change="onBookChange"
-        >
-          <el-option
-            v-for="book in books"
-            :key="book.id"
-            :label="book.title"
-            :value="book.id"
-          />
+        <el-select v-model="selectedBookId" placeholder="请选择书籍" clearable style="width: 300px" @change="onBookChange">
+          <el-option v-for="book in books" :key="book.id" :label="book.title" :value="book.id" />
         </el-select>
       </div>
-      <el-table height="80vh" :data="records" border v-loading="loading" >
-        <el-table-column
-          label="序号" type="index" width="55" :index="indexMethod" />
+      <el-table height="80vh" :data="records" border v-loading="loading">
+        <el-table-column label="序号" type="index" width="55" :index="indexMethod" />
         <el-table-column prop="wordText" label="单词" width="100" />
-        <el-table-column prop="aiExplanation" label="AI释义"/>
-        <el-table-column prop="aiTranslation" label="AI翻译" width="160"/>
-        <el-table-column prop="sentenceYouMade" label="你的造句" width="200"/>
-        <el-table-column prop="ifUsageCorrect" label="是否正确" width="55"/>
-        <el-table-column prop="incorrectReason" label="错误原因" width="300"/>
-        <el-table-column prop="correctSentence" label="正确造句" width="200"/>
+        <el-table-column prop="aiExplanation" label="AI释义" />
+        <el-table-column prop="aiTranslation" label="AI翻译" width="160" />
+        <el-table-column prop="sentenceYouMade" label="你的造句" width="200" />
+        <el-table-column prop="ifUsageCorrect" label="是否正确" width="55" />
+        <el-table-column prop="incorrectReason" label="错误原因" width="300" />
+        <el-table-column prop="correctSentence" label="正确造句" width="200" />
         <!-- <el-table-column prop="createTime" label="创建时间" width="100">
           <template #default="{ row }">
             {{ formatDate(row.createTime) }}
           </template>
-        </el-table-column> -->
+</el-table-column> -->
         <el-table-column label="发音" width="60">
           <template #default="{ row }">
-            <el-button
-              v-if="row.pronunciation"
-              size="small"
-              circle
-              @click="playPronunciation(row.pronunciation)"
+            <el-button v-if="row.pronunciation" size="small" circle @click="playPronunciation(row.pronunciation)"
               title="播放发音">
-              <el-icon><Headset /></el-icon>
+              <el-icon>
+                <Headset />
+              </el-icon>
             </el-button>
           </template>
         </el-table-column>
         <!-- 新增操作列 -->
         <el-table-column label="操作" width="80">
           <template #default="{ row }">
-            <el-button
-              size="small"
-              type="primary"
-              @click="openMakeSentenceDialog(row.id)"
-              title="造句">
+            <el-button size="small" type="primary" @click="openMakeSentenceDialog(row.id)" title="造句">
               造句
             </el-button>
           </template>
         </el-table-column>
       </el-table>
       <div style="margin-top: 16px; text-align: right;">
-        <el-pagination
-          background
-          layout=" prev, pager, next, sizes,jumper, ->, total"
-          :total="total"
-          :page-size="pageSize"
-          :current-page="pageIndex"
-          @current-change="onPageChange"
-          @size-change="onSizeChange"
-          :page-sizes="[5, 10, 20]"
-          :pager-count="5"
-          :hide-on-single-page="false"
-        />
+        <el-pagination background layout=" prev, pager, next, sizes,jumper, ->, total" :total="total"
+          :page-size="pageSize" :current-page="pageIndex" @current-change="onPageChange" @size-change="onSizeChange"
+          :page-sizes="[5, 10, 20]" :pager-count="5" :hide-on-single-page="false" />
       </div>
     </el-card>
 
     <!-- 新增造句对话框 -->
-    <el-dialog
-      v-model="sentenceDialogVisible"
-      title="Make Some Sentence"
-      width="900px"
-      @closed="fetchRecords"  
-    >
+    <el-dialog v-model="sentenceDialogVisible" title="Make Some Sentence" width="900px" @closed="fetchRecords">
       <!-- ... dialog content ... -->
       <el-row :gutter="20" align="middle">
         <el-col :span="16">
@@ -97,16 +127,20 @@
         </span>
       </template>
     </el-dialog>
-
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import request from '@/utils/request'
-import { ElMessage, ElDialog, ElInput } from 'element-plus' // 确保导入 ElDialog, ElInput
+import { ElMessage, ElDialog, ElInput, ElMessageBox } from 'element-plus' // 确保导入 ElDialog, ElInput
 // import icon
 import { Headset } from '@element-plus/icons-vue' // 移除未使用的图标
+import { isMobbile } from '@/utils/myutil'
+
+
+const isMobileRef = ref(isMobbile());
+const curWordRef = ref<VocabularyRecord>();
 
 interface EBookMain {
   id: string
@@ -118,9 +152,10 @@ interface VocabularyRecord {
   wordText?: string
   aiExplanation?: string
   aiTranslation?: string
-  firstSentenceYouMade?: string
-  secondSentenceYouMade?: string
-  thirdSentenceYouMade?: string
+  sentenceYouMade?: string
+  ifUsageCorrect?: boolean
+  incorrectReason?: string
+
   createTime?: string,
   pronunciation?: string // 新增字段
 }
@@ -172,13 +207,8 @@ async function fetchBooks() {
 function playPronunciation(base64string?: string) {
   if (!base64string) return
   // 停止前一个音频
-  if (currentAudioSource.value) {
-    try {
-      currentAudioSource.value.stop()
-      currentAudioSource.value.disconnect()
-    } catch { }
-    currentAudioSource.value = null
-  }
+  stopPronunciation();
+  
   const byteArray = new Uint8Array(atob(base64string).split('').map(char => char.charCodeAt(0)))
   const audioContext = new AudioContext()
   const audioSource = audioContext.createBufferSource()
@@ -201,7 +231,15 @@ function playPronunciation(base64string?: string) {
     audioContext.close().catch(() => { })
   })
 }
-
+const stopPronunciation = () => {
+  if (currentAudioSource.value) {
+    try {
+      currentAudioSource.value.stop()
+      currentAudioSource.value.disconnect()
+    } catch { }
+    currentAudioSource.value = null
+  }
+}
 async function fetchRecords() {
   loading.value = true
   try {
@@ -228,7 +266,6 @@ async function fetchRecords() {
         }
       )
     }
-    debugger
     if (res && res.data) {
       records.value = res.data.pageList
       total.value = res.data.total
@@ -287,7 +324,6 @@ async function submitSentence() {
       sentence: currentSentence.value,
     }
     // 假设 MakeSentenceInputDto 只需要 id 和 sentence
-    debugger
     let result = await request.post('/api/Vocabulary/MakeSentence', payload)
     makeSentenceResult.value = result;
     ElMessage.success('造句提交成功')
@@ -305,7 +341,34 @@ async function submitSentence() {
 onMounted(() => {
   fetchBooks()
   fetchRecords()
+  if (isMobileRef.value) {
+    getWord()
+  }
 })
+
+const getWord = async () => {
+  stopPronunciation();
+  const res = await request.get<VocabularyRecord>('/api/Vocabulary/GetOneWord')
+  curWordRef.value = res
+  console.log(curWordRef.value)
+}
+const ignoreInTimeRange = async () => {
+  if (!curWordRef.value) return
+  let wordId = curWordRef.value.id
+  // 弹出确认？
+  ElMessageBox.confirm('Are you sure to ignore this word in three days?', 'Warning', {
+    confirmButtonText: 'OK',
+    cancelButtonText: 'Cancel',
+    type: 'warning',
+  }).then(async () => {
+    // 确认后执行忽略操作
+    await request.post('/api/Vocabulary/IgnoreInTimeRange', { id: wordId })
+    getWord()
+  }).catch(() => {
+    // 取消操作
+  })
+
+}
 
 // 序号列方法，支持分页
 function indexMethod(index: number) {
@@ -314,7 +377,6 @@ function indexMethod(index: number) {
 </script>
 
 <style scoped>
-
 /* 可选：为对话框按钮添加一些间距 */
 .dialog-footer {
   text-align: right;

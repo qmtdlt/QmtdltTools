@@ -17,14 +17,10 @@
     <div class="books-grid" v-loading="loading" element-loading-text="加载中...">
       <el-empty v-if="books.length === 0 && !loading" description="暂无电子书" />
       <div v-else class="grid-container">
-        <div class="book-item" v-for="book in books" :key="book.id" >
-          <img @click="readBook(book)"
-            :src="book.coverImage
-              ? 'data:image/jpeg;base64,' + book.coverImage
-              : 'default-cover.jpg'"
-            alt="book cover"
-            class="cover"
-          />
+        <div class="book-item" v-for="book in books" :key="book.id">
+          <img @click="readBook(book)" :src="book.coverImage
+            ? 'data:image/jpeg;base64,' + book.coverImage
+            : 'default-cover.jpg'" alt="book cover" class="cover" />
           <!-- <div class="title">{{ book.title }}</div> -->
           <div class="actions">
             <el-button size="mini" type="danger" @click="deleteBook(book.id)">删除</el-button>
@@ -40,33 +36,20 @@
     </div>
 
     <!-- 上传电子书的弹窗 -->
-    <el-dialog
-      v-model="dialogVisible"
-      title="上传电子书"
-      width="30%"
-      :close-on-click-modal="false"
-    >
+    <el-dialog v-model="dialogVisible" title="上传电子书" width="30%" :close-on-click-modal="false">
       <div class="upload-section">
-        <el-upload
-          class="epub-uploader"
-          :multiple="false"
-          :show-file-list="false"
-          :before-upload="beforeUpload"
-          :http-request="customUploadRequest"
-        >
+        <el-upload class="epub-uploader" :multiple="false" :show-file-list="false" :before-upload="beforeUpload"
+          :http-request="customUploadRequest">
           <el-button type="primary">
-            <el-icon><Upload /></el-icon>
+            <el-icon>
+              <Upload />
+            </el-icon>
             选择EPUB文件
           </el-button>
         </el-upload>
 
-        <el-progress
-          v-if="uploading"
-          :percentage="uploadProgress"
-          :stroke-width="8"
-          status="success"
-          class="upload-progress"
-        />
+        <el-progress v-if="uploading" :percentage="uploadProgress" :stroke-width="8" status="success"
+          class="upload-progress" />
       </div>
 
       <template #footer>
@@ -84,12 +67,14 @@ import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Upload } from '@element-plus/icons-vue';
 import request from '@/utils/request'; // 自行替换为你的请求工具
+import { isMobbile } from '@/utils/myutil'; // 自行替换为你的工具函数
 
+const isMobileRef = ref(isMobbile())
 interface Book {
   id: string;
   title: string;
   author?: string;
-  coverImage?: string; 
+  coverImage?: string;
   createTime?: string;
 }
 
@@ -189,8 +174,14 @@ export default defineComponent({
     // 阅读电子书
     const readBook = (book: Book): void => {
       currentBook.value = book;
-      // 使用 path 跳转到 /bookview 并携带查询参数
-      router.push({ path: '/bookview', query: { id: book.id, title: book.title } });
+      if (isMobileRef.value) {
+        // 在移动端使用 replace 跳转到 /bookview 并携带查询参数
+        router.push({ path: '/mobilebookview', query: { id: book.id, title: book.title } });
+      } else {
+        // 在桌面端使用 push 跳转到 /bookview 并携带查询参数
+        // 使用 path 跳转到 /bookview 并携带查询参数
+        router.push({ path: '/bookview', query: { id: book.id, title: book.title } });
+      }
       console.log('阅读电子书:', book);
     };
 
@@ -251,12 +242,14 @@ export default defineComponent({
   align-items: center;
   margin-bottom: 24px;
 }
+
 .left-actions,
 .right-actions {
   display: flex;
   align-items: center;
   gap: 16px;
 }
+
 .left-actions h2 {
   margin: 0;
 }
@@ -286,7 +279,7 @@ export default defineComponent({
   height: 180px;
   object-fit: cover;
   border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* 书名 */
@@ -312,6 +305,7 @@ export default defineComponent({
   background-color: #f9fafc;
   border-radius: 4px;
 }
+
 .tag-section h3 {
   margin: 0 0 8px;
 }
