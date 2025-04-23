@@ -1,8 +1,8 @@
 <template>
   <el-row>
     <el-col>
-      <el-card style="height: 85vh;">
-        <el-row justify="start" align="middle" v-if="showLeft">
+      <el-card style="height: 80vh;">
+        <el-row justify="start" align="middle">
           <el-button-group>
             <el-button @click="startRead" type="primary" icon="el-icon-caret-right">start</el-button>
             <el-button @click="stopRead" type="danger" icon="el-icon-close">stop</el-button>
@@ -12,29 +12,26 @@
             <el-button @click="goNext" icon="el-icon-arrow-right">next</el-button>
           </el-button-group>
         </el-row>
-        <el-row class="paragraph-row" justify="center" v-if="showLeft">
+        <el-row class="paragraph-row" justify="center">
           <div class="paragraph-area">
             <HighlightedTextMobile :full-text="readContent.full_pragraph_text"
               :highlight-text="readContent.speaking_text" @phaseSelect="handlePhaseSelect" />
           </div>
         </el-row>
-        <el-row style="margin-top: 10px;" justify="right" v-if="showLeft">
+        <el-row style="margin-top: 10px;" justify="right">
           <el-col :span="4" justify="end">
             <el-tag type="info" effect="plain" size="small">
               当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句
               [{{ formatTime }}]
             </el-tag>
           </el-col>
-        </el-row>
-        <el-row>
-          {{ whatsNow }}
-        </el-row>
+        </el-row>       
       </el-card>
     </el-col>
   </el-row>
   <!--弹出翻译结果显示-->
   <el-dialog v-model="showTransDialog" title="翻译结果" width="85%">
-    <div v-loading="dropTextDealing">
+    <div v-loading="translating">
       <el-row>
         <h2>Explanation:</h2>
         <el-button @click="playTransVoice" type="primary" plain circle>
@@ -59,22 +56,16 @@
       </el-row>
     </div>
   </el-dialog>
-
 </template>
 <script setup lang="ts">
-import { useStorage } from '@vueuse/core'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import HighlightedTextMobile from './HighLightedTextMobile.vue' // Import your HighlightedText component; 
-import request from '@/utils/request' // Import your request utility
 import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
 import { ElMessage, ElMessageBox } from 'element-plus';
-// import icon
-import { Headset, Lightning, View, Hide, VideoPause } from '@element-plus/icons-vue'
-
+import { Headset, VideoPause } from '@element-plus/icons-vue'
+import { startPlayBase64Audio,stopPlayBase64Audio } from '@/utils/audioplay';
 const route = useRoute() // 使用路由
-const showTransDialog = ref(false) // 控制翻译弹窗显示
-
 const readContent = ref({
   full_pragraph_text: '', // 读取到的文本内容
   speaking_text: '', // 读取到的文本内容
@@ -83,12 +74,9 @@ const readContent = ref({
   speaking_buffer: '' // 读取到的音频内容
 });
 
-const whatsNow = ref("");
-const dropTextDealing = ref(false); // 拖拽到右侧区域的文本
-const isReading = ref(false) // 是否正在阅读
+const showTransDialog = ref(false) // 控制翻译弹窗显示
+const translating = ref(false); // 拖拽到右侧区域的文本
 const jumpOffset = ref("1"); // 跳转偏移量
-const currentAudioSource = ref<AudioBufferSourceNode | null>(null); // Store the current audio source
-const showLeft = ref(true); // Control visibility of .divLeft
 const transResult = ref({ explanation: "", translation: "", voiceBuffer: "" }); // Store translation result pronunciation is base64 string
 
 var connection = new signalR.HubConnectionBuilder()
@@ -106,7 +94,6 @@ const goNext = async () => {
 const resetPosition = (offset: number) => {
   stopRead(); // Stop any current reading before starting a new one
   connection.invoke("ResetPosition", readContent.value.bookId, offset).then(() => {
-    console.log("Position reset successfully.");
     startRead(); // Start reading again
   }).catch((err) => {
     console.error("Error resetting position:", err);
@@ -114,44 +101,31 @@ const resetPosition = (offset: number) => {
 }
 
 const startRead = async () => {
-  // 开始阅读任务
-  isReading.value = true
   connection.invoke("Read", readContent.value.bookId);
 }
 const stopRead = async () => {
-  isReading.value = false;
-  if (currentAudioSource.value) {
-    currentAudioSource.value.stop(); // Stop the current audio playback
-    currentAudioSource.value.disconnect(); // Disconnect to free up resources
-    currentAudioSource.value = null; // Clear the reference
-    console.log("Audio stopped by user.");
-  }
-}
-const listenWrite = () => {
-  stopRead(); // Stop any current reading before starting a new one
-  isReading.value = true
-  readBase64(readContent.value.speaking_buffer, true); // 读取到的音频内容
+  stopPlayBase64Audio(); // Stop any current audio playback
 }
 
 connection.on("onShowTrans", (result: any) => {
-  dropTextDealing.value = false; // 停止处理拖拽文本
-  console.log(result);
+  translating.value = false; 
   transResult.value = result; // Store the translation result
-  isReading.value = true;
-  readBase64(transResult.value.voiceBuffer, true); // 读取到的音频内容
+  startPlayBase64Audio(transResult.value.voiceBuffer,()=>{
+    console.log("onShowTrans playback finished.");
+  });
 });
 const playTransVoice = () => {
-  dropTextDealing.value = false; // 停止处理拖拽文本
+  translating.value = false;
   if (transResult.value.voiceBuffer) {
-    isReading.value = true;
-    readBase64(transResult.value.voiceBuffer, true); // 读取到的音频内容
+    startPlayBase64Audio(transResult.value.voiceBuffer,()=>{
+      console.log("playTransVoice playback finished.");
+    });
   } else {
     ElMessage.error("没有翻译语音!");
   }
 }
 connection.on("onShowErrMsg", (msg: string) => {
-  dropTextDealing.value = false; // 停止处理拖拽文本
-  console.error(msg);
+  translating.value = false;
   ElMessage.error(msg);
 });
 
@@ -161,87 +135,16 @@ connection.on("onUpdateWatch", (formatTimeStr: string) => {
 });
 
 connection.on("UIReadInfo", (input: any) => {
-  whatsNow.value += "\r\n" + "1 UIReadInfo start"; // 更新时间
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置
   readContent.value.speaking_buffer = input.speaking_buffer; // 读取到的文本位置
-  readBase64(input.speaking_buffer, false); // 读取到的音频内容
+  let conn = connection; // 这里是为了避免在回调函数中使用 this
+  startPlayBase64Audio(input.speaking_buffer,()=>{
+    console.log("Audio playback finished.");
+    conn.invoke("Read", readContent.value.bookId);
+  });
 });
-
-const readBase64 = (base64string: string, isReadOnlyOneSentence: boolean) => {
-  whatsNow.value += "\r\n" + "2 readBase64 start"; // 更新时间
-  if (!isReading.value) {
-    whatsNow.value += "\r\n" + "3 Reading stopped, skipping audio playback."; // 更新时间
-    console.log("Reading stopped, skipping audio playback.");
-    return; // Don't play if reading is stopped
-  }
-
-  // Stop and clean up any previous source
-  if (currentAudioSource.value) {
-    try {
-      currentAudioSource.value.stop();
-      currentAudioSource.value.disconnect();
-    } catch (error) {
-      whatsNow.value += "\r\n" + "4 Error stopping previous audio source."; // 更新时间
-    }
-    currentAudioSource.value = null;
-  }
-
-  whatsNow.value += "\r\n" + "5 base64string len:" + base64string.length; // 更新时间
-  var byteArray = new Uint8Array(atob(base64string).split('').map(char => char.charCodeAt(0)));
-  const audioContext = new AudioContext();
-  const audioSource = audioContext.createBufferSource();
-  currentAudioSource.value = audioSource; // Store the new source
-
-  audioContext.decodeAudioData(byteArray.buffer, (buffer) => {
-    if (!isReading.value || currentAudioSource.value !== audioSource) {
-      whatsNow.value += "\r\n" + "6 Reading stopped or source changed, skipping audio playback."; // 更新时间
-      currentAudioSource.value = null; // Ensure it's cleared if it was this one
-      audioContext.close(); // Close the context if not needed
-      return;
-    }
-    audioSource.buffer = buffer;
-    audioSource.connect(audioContext.destination);
-
-    if (!isReadOnlyOneSentence) {
-      whatsNow.value += "\r\n" + "7 isReadOnlyOneSentence false"; // 更新时间
-      // not read only one sentence, so add onended event,and go to next sentence
-      audioSource.onended = () => {
-        whatsNow.value = "20 Audio ended. isReading :" + isReading.value; // 更新时间
-        // Only proceed if this specific source finished naturally AND reading is still active
-        if (isReading.value && currentAudioSource.value === audioSource) {
-          currentAudioSource.value = null; // Clear ref after natural end          
-          whatsNow.value += "\r\n" + "21 Invoking next Read."; // 更新时间
-          connection.invoke("Read", readContent.value.bookId);
-        } else if (currentAudioSource.value === audioSource) {
-          // If it ended but reading was stopped, just clear the ref
-          currentAudioSource.value = null;
-        }
-        // Close the context after playback finishes or is stopped
-        audioContext.close().catch(e => console.warn("Error closing AudioContext:", e));
-      };
-    }
-    else {
-      whatsNow.value += "\r\n" + "8 isReadOnlyOneSentence true"; // 更新时间
-    }
-    try {
-      audioSource.start();      // start playing
-      whatsNow.value += "\r\n" + "9 Audio started. buffer len" + buffer.length; // 更新时间
-    } catch (error) {
-      whatsNow.value += "\r\n" + "10 Error starting audio playback."; // 更新时间
-      currentAudioSource.value = null; // Clear ref on error
-      audioContext.close(); // Close context on error
-    }
-  }, (error) => {
-    whatsNow.value += "\r\n" + "11 Error decoding audio data."; // 更新时间
-    if (currentAudioSource.value === audioSource) {
-      currentAudioSource.value = null; // Clear ref on decoding error
-    }
-    audioContext.close(); // Close context on error
-  })
-  whatsNow.value += "\r\n" + "12 go end."; // 更新时间
-}
 
 connection.on("onsetbookposition", (input: any) => {
   // 设置书籍位置
@@ -253,29 +156,17 @@ connection.on("onsetbookposition", (input: any) => {
 
 onMounted(() => {
   connection.start().then(() => connection.invoke("InitCache", readContent.value.bookId));        // 开始阅读任务 onShowReadingText s
-  // Add keyboard shortcut listener for ctrl+1
-  window.addEventListener('keydown', handleKeyDown);
 })
 
 onBeforeUnmount(() => {
-  // Ensure reading stops and audio cleans up when component unmounts
   stopRead(); // Call stopRead to handle audio cleanup
-  // Disconnect signalR
   connection.stop().then(() => {
     console.log("SignalR Connection stopped.")
   }).catch((err) => {
     console.error("Error stopping SignalR connection:", err)
   })
-  window.removeEventListener('keydown', handleKeyDown);
 })
 
-// 快捷键监听 ctrl+1
-function handleKeyDown(e: KeyboardEvent) {
-  if (e.ctrlKey && e.key === '1') {
-    listenWrite();
-    e.preventDefault();
-  }
-}
 const isFirstTime = ref(true); // 使用 VueUse 的 useStorage 来存储是否第一次使用
 const handlePhaseSelect = async (phaseText: string) => {
   if (isFirstTime.value) {
@@ -292,7 +183,7 @@ const handlePhaseSelect = async (phaseText: string) => {
         }
       )
       // 用户点击确定，调用翻译接口
-      dropTextDealing.value = true
+      translating.value = true
       connection.invoke("Trans", readContent.value.bookId, phaseText)
       showTransDialog.value = true
       isFirstTime.value = true; // 重置为 true，表示可以再次处理
