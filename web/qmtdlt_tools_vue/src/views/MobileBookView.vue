@@ -27,6 +27,7 @@
       </el-card>
     </el-col>
   </el-row>
+  <!--弹出翻译结果显示-->
   <el-dialog>
     <el-card v-loading="dropTextDealing" style="width: 100%;height: 40vh;">
       <el-row>
@@ -243,8 +244,10 @@ connection.on("onsetbookposition", (input: any) => {
   readContent.value.speaking_buffer = input.speaking_buffer; // 读取到的文本位置
 });
 
-// 记录拖拽到右侧区域的文本
-const droppedText = ref('')
+// 修正拖拽事件，确保事件能被触发
+const onDragOver = (event: DragEvent) => {
+  event.preventDefault();
+};
 
 onMounted(() => {
   connection.start().then(() => connection.invoke("InitCache", readContent.value.bookId));        // 开始阅读任务 onShowReadingText s
@@ -273,7 +276,9 @@ function handleKeyDown(e: KeyboardEvent) {
 }
 
 const handlePhaseSelect = async (phaseText:string) => {
-  ElMessage.success("选中内容111: " + phaseText);  
+  ElMessage.success("选中内容: " + phaseText);  
+  // connection.invoke("Trans", readContent.value.bookId, droppedText.value); // 发送拖拽文本到服务器进行翻译
+  // 显示dialog
 }
 </script>
 
