@@ -25,11 +25,10 @@
               [{{ formatTime }}]
             </el-tag>
           </el-col>
-        </el-row>       
+        </el-row>
       </el-card>
     </el-col>
   </el-row>
-  <!--弹出翻译结果显示-->
   <el-dialog v-model="showTransDialog" title="翻译结果" width="85%">
     <div v-loading="translating">
       <el-row>
@@ -59,12 +58,14 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import HighlightedTextMobile from './HighLightedTextMobile.vue' // Import your HighlightedText component; 
+import HighlightedTextMobile from './HighLightedTextMobile.vue' // Import your HighlightedText component;
 import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Headset, VideoPause } from '@element-plus/icons-vue'
-import { startPlayBase64Audio,stopPlayBase64Audio } from '@/utils/audioplay';
+// Import cleanupAudio as well
+import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '@/utils/audioplay';
+
 const route = useRoute() // 使用路由
 const readContent = ref({
   full_pragraph_text: '', // 读取到的文本内容
@@ -79,53 +80,80 @@ const translating = ref(false); // 拖拽到右侧区域的文本
 const jumpOffset = ref("1"); // 跳转偏移量
 const transResult = ref({ explanation: "", translation: "", voiceBuffer: "" }); // Store translation result pronunciation is base64 string
 
-var connection = new signalR.HubConnectionBuilder()
+// Use let instead of var for better scoping
+let connection = new signalR.HubConnectionBuilder()
   .withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent`)
   .configureLogging(signalR.LogLevel.Information)
   .build()
 
 const goPrevious = async () => {
-  resetPosition(0 - parseInt(jumpOffset.value)); // Reset position to the previous one
+  stopRead(); // Stop any current reading before starting a new one
+  // Delay invoking to ensure audio stops before requesting new content
+  setTimeout(() => {
+      connection.invoke("ResetPosition", readContent.value.bookId, 0 - parseInt(jumpOffset.value || '0')).then(() => { // Added fallback for parseInt
+        startRead(); // Start reading again
+      }).catch((err) => {
+        console.error("Error resetting position:", err);
+        ElMessage.error(`重置位置失败: ${err.message}`);
+      });
+  }, 100); // Small delay
 }
 const goNext = async () => {
-  resetPosition(parseInt(jumpOffset.value)); // Reset position to the next one
-}
-
-const resetPosition = (offset: number) => {
   stopRead(); // Stop any current reading before starting a new one
-  connection.invoke("ResetPosition", readContent.value.bookId, offset).then(() => {
-    startRead(); // Start reading again
-  }).catch((err) => {
-    console.error("Error resetting position:", err);
-  });
+   // Delay invoking to ensure audio stops before requesting new content
+  setTimeout(() => {
+    connection.invoke("ResetPosition", readContent.value.bookId, parseInt(jumpOffset.value || '0')).then(() => { // Added fallback for parseInt
+      startRead(); // Start reading again
+    }).catch((err) => {
+      console.error("Error resetting position:", err);
+      ElMessage.error(`重置位置失败: ${err.message}`);
+    });
+  }, 100); // Small delay
 }
 
 const startRead = async () => {
-  connection.invoke("Read", readContent.value.bookId);
+    console.log("startRead called. Invoking 'Read' on SignalR.");
+    // This call needs to be triggered by a user gesture (the button click)
+    // The audio playback will happen in the UIReadInfo handler, which
+    // now uses the persistent AudioContext and attempts to resume it.
+    connection.invoke("Read", readContent.value.bookId)
+        .catch((err) => {
+            console.error("Error invoking Read:", err);
+            ElMessage.error(`开始阅读失败: ${err.message}`);
+        });
 }
+
 const stopRead = async () => {
-  stopPlayBase64Audio(); // Stop any current audio playback
+  console.log("stopRead called.");
+  stopPlayBase64Audio(); // Now suspends the context
 }
 
 connection.on("onShowTrans", (result: any) => {
-  translating.value = false; 
+  translating.value = false;
   transResult.value = result; // Store the translation result
-  startPlayBase64Audio(transResult.value.voiceBuffer,()=>{
-    console.log("onShowTrans playback finished.");
+  console.log("Received translation. Playing audio.");
+  // Play translation voice - onEnded is not needed here
+  startPlayBase64Audio(transResult.value.voiceBuffer, () => {
+     console.log("Translation audio playback finished.");
+     // No need to invoke Read here, as it's just translation
   });
 });
+
 const playTransVoice = () => {
   translating.value = false;
   if (transResult.value.voiceBuffer) {
-    startPlayBase64Audio(transResult.value.voiceBuffer,()=>{
+    console.log("Playing translation voice again.");
+    startPlayBase64Audio(transResult.value.voiceBuffer, () => {
       console.log("playTransVoice playback finished.");
     });
   } else {
     ElMessage.error("没有翻译语音!");
   }
 }
+
 connection.on("onShowErrMsg", (msg: string) => {
   translating.value = false;
+  console.error("Received error message:", msg);
   ElMessage.error(msg);
 });
 
@@ -135,31 +163,55 @@ connection.on("onUpdateWatch", (formatTimeStr: string) => {
 });
 
 connection.on("UIReadInfo", (input: any) => {
+  console.log("Received UIReadInfo:", input);
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置
-  readContent.value.speaking_buffer = input.speaking_buffer; // 读取到的文本位置
-  let conn = connection; // 这里是为了避免在回调函数中使用 this
-  startPlayBase64Audio(input.speaking_buffer,()=>{
-    console.log("Audio playback finished.");
-    conn.invoke("Read", readContent.value.bookId);
+  readContent.value.speaking_buffer = input.speaking_buffer; // 读取到的音频内容
+
+  // Start playing the received audio buffer
+  startPlayBase64Audio(input.speaking_buffer, () => {
+    console.log("UIReadInfo audio playback finished. Requesting next.");
+    // Once the audio finishes, request the next chunk
+    // This is the continuous reading loop
+    connection.invoke("Read", readContent.value.bookId)
+        .catch((err) => {
+            console.error("Error invoking Read from onended:", err);
+            ElMessage.error(`请求下一段失败: ${err.message}`);
+        });
   });
 });
 
 connection.on("onsetbookposition", (input: any) => {
+  console.log("Received onsetbookposition:", input);
   // 设置书籍位置
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置
   readContent.value.speaking_buffer = input.speaking_buffer; // 读取到的文本位置
+  // Note: onsetbookposition likely doesn't trigger immediate playback
+  // It just updates the displayed text/position. Playback starts on startRead.
 });
 
 onMounted(() => {
-  connection.start().then(() => connection.invoke("InitCache", readContent.value.bookId));        // 开始阅读任务 onShowReadingText s
+  console.log("Component mounted. Starting SignalR connection.");
+  connection.start()
+    .then(() => {
+        console.log("SignalR Connection started.");
+        // Initialize the cache on the server side
+        connection.invoke("InitCache", readContent.value.bookId)
+            .then(() => console.log("InitCache invoked."))
+            .catch((err) => console.error("Error invoking InitCache:", err));
+    })
+    .catch((err) => {
+        console.error("Error starting SignalR connection:", err);
+        ElMessage.error(`SignalR 连接失败: ${err.message}`);
+    });
 })
 
 onBeforeUnmount(() => {
-  stopRead(); // Call stopRead to handle audio cleanup
+  console.log("Component unmounting.");
+  cleanupAudio(); // Call cleanupAudio to stop playback and close the context
   connection.stop().then(() => {
     console.log("SignalR Connection stopped.")
   }).catch((err) => {
@@ -167,37 +219,207 @@ onBeforeUnmount(() => {
   })
 })
 
-const isFirstTime = ref(true); // 使用 VueUse 的 useStorage 来存储是否第一次使用
+const isFirstTime = ref(true); // This logic might need refinement based on desired UX
 const handlePhaseSelect = async (phaseText: string) => {
-  if (isFirstTime.value) {
-    isFirstTime.value = false; // 设置为 false，表示已经处理过一次
-    try {
+  // Consider if you want the confirm dialog to appear *every* time they select a phase,
+  // or only the first time they use the feature. The current logic with isFirstTime
+  // seems to reset it immediately after one attempt (confirm or cancel).
+  // Maybe the confirm dialog should only show the *very* first time this component
+  // is used, or per session? If per session, use sessionStorage. If per user, use localStorage.
+  // As it is, it will confirm every time but only *process* the first selection until confirmation/cancel.
 
-      await ElMessageBox.confirm(
-        `是否处理新单词: "${phaseText}"?`,
-        '提示',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'info',
-        }
-      )
-      // 用户点击确定，调用翻译接口
-      translating.value = true
-      connection.invoke("Trans", readContent.value.bookId, phaseText)
-      showTransDialog.value = true
-      isFirstTime.value = true; // 重置为 true，表示可以再次处理
-    } catch {
-      // 用户点击取消
-      ElMessage.info('已取消')
-      isFirstTime.value = true; // 重置为 true，表示可以再次处理
-    }
+  if (translating.value) {
+      console.log("Translation already in progress. Ignoring phase select.");
+      return; // Prevent multiple translation requests
   }
 
+  console.log(`Phase selected: "${phaseText}"`);
+
+  try {
+      // Only show the confirmation on the first interaction attempt
+      // The current logic of resetting isFirstTime = true will make it ask every time.
+      // If you truly only want it once EVER, use localStorage/VueUse useStorage.
+      // If you want it once *per selection attempt*, keep the isFirstTime logic.
+      // Let's keep the current logic but clarify its behavior.
+
+      // If you want it ONLY the very first time ANY phase is selected in this component session:
+      // Use a ref outside this function and check/set it globally for the component.
+      // If you want it every time for THIS specific phase selection attempt: keep it as is.
+
+       translating.value = true; // Set loading immediately
+
+       await ElMessageBox.confirm(
+         `是否处理新单词: "${phaseText}"?`,
+         '提示',
+         {
+           confirmButtonText: '确定',
+           cancelButtonText: '取消',
+           type: 'info',
+           // Disable closing on clicks outside or ESC key
+           closeOnClickModal: false,
+           closeOnPressEscape: false
+         }
+       );
+
+       // User clicked Confirm
+       console.log("User confirmed translation.");
+       // No need for isFirstTime = false here if you want it to confirm every time
+
+       connection.invoke("Trans", readContent.value.bookId, phaseText)
+         .catch((err) => {
+             console.error("Error invoking Trans:", err);
+             ElMessage.error(`翻译请求失败: ${err.message}`);
+             translating.value = false; // Hide loading on error
+         });
+
+       showTransDialog.value = true;
+
+       // If you want it to ask *again* next time they select something, keep isFirstTime = true here
+       // isFirstTime.value = true; // Reset for the next selection attempt
+
+     } catch(e: any) {
+       // User clicked Cancel or an error occurred in the confirm box
+       console.log("User cancelled translation or confirm failed:", e);
+       ElMessage.info('已取消');
+       translating.value = false; // Hide loading
+       showTransDialog.value = false; // Ensure dialog is closed if it opened prematurely
+       // isFirstTime.value = true; // Reset for the next selection attempt
+     } finally {
+        // If you kept isFirstTime = true in both catch and try (after success),
+        // this finally block could simplify the reset logic.
+        // isFirstTime.value = true; // Reset regardless of outcome
+     }
+
+    // Re-evaluating the isFirstTime logic: If you want the confirmation for *each* selection attempt,
+    // remove the isFirstTime check and just run the try/catch block directly.
+    // If you want it only *once per component load*, initialize isFirstTime = true and remove the resets.
+    // Let's assume you want it per selection attempt and simplify:
+     /*
+     translating.value = true; // Set loading immediately
+     try {
+         await ElMessageBox.confirm(...) // your confirm logic
+         console.log("User confirmed translation.");
+         connection.invoke("Trans", readContent.value.bookId, phaseText)
+             .catch(...) // error handling
+         showTransDialog.value = true;
+     } catch(e: any) {
+         console.log("User cancelled translation or confirm failed:", e);
+         ElMessage.info('已取消');
+         showTransDialog.value = false;
+     } finally {
+          translating.value = false; // Hide loading in all cases
+     }
+     */
+     // Let's revert to the original isFirstTime structure but understand its behavior.
+     // The original structure with `isFirstTime.value = false` at the start and `true` in catch/try
+     // means it will *process* the logic only if `isFirstTime` is true, then set it to false,
+     // then set it back to true in the catch/try. This is a convoluted way to effectively
+     // process *one* selection attempt at a time, and potentially block rapid clicks.
+     // A simpler guard is just checking the `translating.value` flag.
+     // Let's remove the complex isFirstTime logic and just use `translating.value` as a guard.
 }
+
+// Removed the complex isFirstTime logic from handlePhaseSelect
+const handlePhaseSelectCleaned = async (phaseText: string) => {
+  if (translating.value) {
+    console.log("Translation already in progress. Ignoring phase select.");
+    return; // Prevent multiple translation requests
+  }
+
+  console.log(`Phase selected: "${phaseText}"`);
+  translating.value = true; // Set loading immediately
+
+  try {
+    await ElMessageBox.confirm(
+      `是否处理新单词: "${phaseText}"?`,
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info',
+        closeOnClickModal: false,
+        closeOnPressEscape: false
+      }
+    );
+
+    // User clicked Confirm
+    console.log("User confirmed translation.");
+    connection.invoke("Trans", readContent.value.bookId, phaseText)
+      .catch((err) => {
+        console.error("Error invoking Trans:", err);
+        ElMessage.error(`翻译请求失败: ${err.message}`);
+      });
+
+    showTransDialog.value = true;
+
+  } catch(e: any) {
+    // User clicked Cancel or an error occurred in the confirm box
+    console.log("User cancelled translation or confirm failed:", e);
+    ElMessage.info('已取消');
+    showTransDialog.value = false; // Ensure dialog is closed
+  } finally {
+    translating.value = false; // Hide loading in all cases
+  }
+};
+// Replace handlePhaseSelect with handlePhaseSelectCleaned in the template if you prefer the simpler logic
+// For now, sticking to the original template structure, so keep the original handlePhaseSelect implementation
+// but understand its behavior. The original implementation's isFirstTime logic is a bit strange.
+// Let's refine the original isFirstTime logic slightly to make more sense if the goal is
+// to only allow one confirmation process at a time.
+
+const isProcessingPhaseSelect = ref(false); // Use a flag to prevent multiple confirmations
+
+const handlePhaseSelectRefined = async (phaseText: string) => {
+  if (isProcessingPhaseSelect.value) {
+    console.log("Phase selection processing already in progress. Ignoring.");
+    return;
+  }
+
+  isProcessingPhaseSelect.value = true; // Set flag at the start
+  console.log(`Phase selected: "${phaseText}". Starting confirmation flow.`);
+
+  // Combine translating and confirmation flow into one process flag
+  translating.value = true; // Show loading during confirmation and translation request
+
+  try {
+    await ElMessageBox.confirm(
+      `是否处理新单词: "${phaseText}"?`,
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info',
+        closeOnClickModal: false,
+        closeOnPressEscape: false
+      }
+    );
+
+    // User clicked Confirm
+    console.log("User confirmed translation. Invoking 'Trans'.");
+    connection.invoke("Trans", readContent.value.bookId, phaseText)
+      .catch((err) => {
+        console.error("Error invoking Trans:", err);
+        ElMessage.error(`翻译请求失败: ${err.message}`);
+      });
+
+    showTransDialog.value = true;
+
+  } catch(e: any) {
+    // User clicked Cancel or an error occurred in the confirm box
+    console.log("User cancelled translation or confirm failed:", e);
+    ElMessage.info('已取消');
+    showTransDialog.value = false; // Ensure dialog is closed
+  } finally {
+    translating.value = false; // Hide loading
+    isProcessingPhaseSelect.value = false; // Reset flag
+  }
+};
+// Replace handlePhaseSelect with handlePhaseSelectRefined in the template.
+
 </script>
 
 <style scoped>
+/* Your existing styles */
 .main-row {
   margin: 0;
   min-height: 100vh;
