@@ -115,9 +115,8 @@ public class BookContentHub:AbpHub
                     };
                     bookReadingCache.AddOrUpdate(bookId, bookInfo, (bookId, old) => { return bookInfo; });          // first add bookInfo to cache
                 }
-
-                // read book reading progress from redis or database
-                Console.WriteLine("read book reading progress from redis or database");
+                bookReadingCache[bookId].readQueue.Clear();
+                bookReadingCache[bookId].readQueue = new ConcurrentQueue<UIReadInfo>();
                 try
                 {
                     bookReadingCache[bookId].position = RedisHelper.Get<ReadPosition>(bookId.ToString());
@@ -125,26 +124,35 @@ public class BookContentHub:AbpHub
                 catch (Exception)
                 { }
 
-                if (null == bookReadingCache[bookId].position)
-                    bookReadingCache[bookId].position = new ReadPosition();
+                if (null == bookReadingCache[bookId].position) bookReadingCache[bookId].position = new ReadPosition();
 
-                Console.WriteLine("start CurReadInfoEnQueue");
-                try
-                {
-                    success = CurReadInfoEnQueue(bookId, out UIReadInfo uiReadInfo);
-                    Console.WriteLine("onSetBookPosition");
-                    await Clients.Caller.SendAsync("onSetBookPosition", uiReadInfo); //    
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-                Console.WriteLine("init cache end");
+                success = CurReadInfoEnQueue(bookId, out UIReadInfo uiReadInfo);
+                await Clients.Caller.SendAsync("onSetBookPosition", uiReadInfo);
             }
         }
         else
         {
             await Clients.Caller.SendAsync("onShowErrMsg", "epub file doesn't exist"); // 
+        }
+    }
+    public void Read(Guid bookId)
+    {
+        var connectionId = Context.ConnectionId;            // connectionId
+
+        if (bookReadingCache[bookId].PositionInbook() && connectionStatusCache[connectionId])
+        {
+            bool success = bookReadingCache[bookId].readQueue.TryDequeue(out UIReadInfo uiReadInfo);
+            if (!success)
+            {
+                success = CurReadInfoEnQueue(bookId, out UIReadInfo enQueueInfo1);            // get queue data fail,make data(only for first time)
+                bookReadingCache[bookId].readQueue.TryDequeue(out uiReadInfo);
+            }
+
+            _ = Clients.Caller.SendAsync("UIReadInfo", uiReadInfo);            // call client speak
+            RedisHelper.Set(bookId.ToString(), bookReadingCache[bookId].position);
+
+            bookReadingCache[bookId].PositionNext();                // go next
+            success = CurReadInfoEnQueue(bookId, out UIReadInfo enQueueInfo2);                   // en queue
         }
     }
     public async Task Trans(Guid bookId,string word)
@@ -178,26 +186,7 @@ public class BookContentHub:AbpHub
             await Clients.Caller.SendAsync("onShowErrMsg", "∑≠“Î ß∞‹");
         }
     }
-    public void Read(Guid bookId)
-    {
-        var connectionId = Context.ConnectionId;            // connectionId
-
-        if (bookReadingCache[bookId].PositionInbook() && connectionStatusCache[connectionId])
-        {
-            bool success = bookReadingCache[bookId].readQueue.TryDequeue(out UIReadInfo uiReadInfo);
-            if (!success)
-            {
-                success = CurReadInfoEnQueue(bookId,out UIReadInfo enQueueInfo1);            // get queue data fail,make data(only for first time)
-                bookReadingCache[bookId].readQueue.TryDequeue(out uiReadInfo);
-            }
-
-            _ = Clients.Caller.SendAsync("UIReadInfo", uiReadInfo);            // call client speak
-            RedisHelper.Set(bookId.ToString(), bookReadingCache[bookId].position);
-
-            bookReadingCache[bookId].PositionNext();                // go next
-            success = CurReadInfoEnQueue(bookId, out UIReadInfo enQueueInfo2);                   // en queue
-        }
-    }
+   
     public async Task ResetPosition(Guid bookId ,int offsetPos)
     {
         bookReadingCache[bookId].readQueue.Clear();
