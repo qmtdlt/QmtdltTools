@@ -134,7 +134,8 @@ namespace QmtdltTools.Service.Utils
         // 段落分句子
         static List<string> GetSentences(string pragraphs)
         {
-            return pragraphs.Split(splitSymbols).Where(t => !string.IsNullOrEmpty(t)).ToList();
+            var sts = pragraphs.Split(splitSymbols).Select(t=>t.Trim()).Where(t => !string.IsNullOrEmpty(t)).ToList();
+            return sts;
         }
     }
 }

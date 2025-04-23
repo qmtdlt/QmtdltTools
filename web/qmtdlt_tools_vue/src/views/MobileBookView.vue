@@ -26,11 +26,14 @@
             </el-tag>
           </el-col>
         </el-row>
+        <el-row>
+          {{ whatsNow }}
+        </el-row>
       </el-card>
     </el-col>
   </el-row>
   <!--弹出翻译结果显示-->
-  <el-dialog v-model="showTransDialog" title="翻译结果" width="85%" >
+  <el-dialog v-model="showTransDialog" title="翻译结果" width="85%">
     <div v-loading="dropTextDealing">
       <el-row>
         <h2>Explanation:</h2>
@@ -80,6 +83,7 @@ const readContent = ref({
   speaking_buffer: '' // 读取到的音频内容
 });
 
+const whatsNow = ref("");
 const dropTextDealing = ref(false); // 拖拽到右侧区域的文本
 const isReading = ref(false) // 是否正在阅读
 const jumpOffset = ref("1"); // 跳转偏移量
@@ -100,9 +104,7 @@ const goNext = async () => {
 }
 
 const resetPosition = (offset: number) => {
-
   stopRead(); // Stop any current reading before starting a new one
-
   connection.invoke("ResetPosition", readContent.value.bookId, offset).then(() => {
     console.log("Position reset successfully.");
     startRead(); // Start reading again
@@ -132,7 +134,6 @@ const listenWrite = () => {
 }
 
 connection.on("onShowTrans", (result: any) => {
-
   dropTextDealing.value = false; // 停止处理拖拽文本
   console.log(result);
   transResult.value = result; // Store the translation result
@@ -149,7 +150,6 @@ const playTransVoice = () => {
   }
 }
 connection.on("onShowErrMsg", (msg: string) => {
-
   dropTextDealing.value = false; // 停止处理拖拽文本
   console.error(msg);
   ElMessage.error(msg);
@@ -161,7 +161,7 @@ connection.on("onUpdateWatch", (formatTimeStr: string) => {
 });
 
 connection.on("UIReadInfo", (input: any) => {
-
+  whatsNow.value += "\r\n" + "1 UIReadInfo start"; // 更新时间
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置
@@ -170,7 +170,9 @@ connection.on("UIReadInfo", (input: any) => {
 });
 
 const readBase64 = (base64string: string, isReadOnlyOneSentence: boolean) => {
+  whatsNow.value += "\r\n" + "2 readBase64 start"; // 更新时间
   if (!isReading.value) {
+    whatsNow.value += "\r\n" + "3 Reading stopped, skipping audio playback."; // 更新时间
     console.log("Reading stopped, skipping audio playback.");
     return; // Don't play if reading is stopped
   }
@@ -181,11 +183,12 @@ const readBase64 = (base64string: string, isReadOnlyOneSentence: boolean) => {
       currentAudioSource.value.stop();
       currentAudioSource.value.disconnect();
     } catch (error) {
-      console.warn("Error stopping previous audio source:", error);
+      whatsNow.value += "\r\n" + "4 Error stopping previous audio source."; // 更新时间
     }
     currentAudioSource.value = null;
   }
 
+  whatsNow.value += "\r\n" + "5 base64string len:" + base64string.length; // 更新时间
   var byteArray = new Uint8Array(atob(base64string).split('').map(char => char.charCodeAt(0)));
   const audioContext = new AudioContext();
   const audioSource = audioContext.createBufferSource();
@@ -193,8 +196,7 @@ const readBase64 = (base64string: string, isReadOnlyOneSentence: boolean) => {
 
   audioContext.decodeAudioData(byteArray.buffer, (buffer) => {
     if (!isReading.value || currentAudioSource.value !== audioSource) {
-      // Check if reading stopped or a newer source was created before decoding finished
-      console.log("Reading stopped or new audio started before decoding finished.");
+      whatsNow.value += "\r\n" + "6 Reading stopped or source changed, skipping audio playback."; // 更新时间
       currentAudioSource.value = null; // Ensure it's cleared if it was this one
       audioContext.close(); // Close the context if not needed
       return;
@@ -203,13 +205,14 @@ const readBase64 = (base64string: string, isReadOnlyOneSentence: boolean) => {
     audioSource.connect(audioContext.destination);
 
     if (!isReadOnlyOneSentence) {
+      whatsNow.value += "\r\n" + "7 isReadOnlyOneSentence false"; // 更新时间
       // not read only one sentence, so add onended event,and go to next sentence
       audioSource.onended = () => {
-        console.log("Audio ended. isReading:", isReading.value);
+        whatsNow.value = "20 Audio ended. isReading :" + isReading.value; // 更新时间
         // Only proceed if this specific source finished naturally AND reading is still active
         if (isReading.value && currentAudioSource.value === audioSource) {
-          currentAudioSource.value = null; // Clear ref after natural end
-          console.log("Invoking next Read.");
+          currentAudioSource.value = null; // Clear ref after natural end          
+          whatsNow.value += "\r\n" + "21 Invoking next Read."; // 更新时间
           connection.invoke("Read", readContent.value.bookId);
         } else if (currentAudioSource.value === audioSource) {
           // If it ended but reading was stopped, just clear the ref
@@ -219,27 +222,29 @@ const readBase64 = (base64string: string, isReadOnlyOneSentence: boolean) => {
         audioContext.close().catch(e => console.warn("Error closing AudioContext:", e));
       };
     }
-
+    else {
+      whatsNow.value += "\r\n" + "8 isReadOnlyOneSentence true"; // 更新时间
+    }
     try {
       audioSource.start();      // start playing
-      console.log("Audio started.");
+      whatsNow.value += "\r\n" + "9 Audio started. buffer len" + buffer.length; // 更新时间
     } catch (error) {
-      console.error("Error starting audio playback:", error);
+      whatsNow.value += "\r\n" + "10 Error starting audio playback."; // 更新时间
       currentAudioSource.value = null; // Clear ref on error
       audioContext.close(); // Close context on error
     }
   }, (error) => {
-    console.error("Error decoding audio data:", error);
+    whatsNow.value += "\r\n" + "11 Error decoding audio data."; // 更新时间
     if (currentAudioSource.value === audioSource) {
       currentAudioSource.value = null; // Clear ref on decoding error
     }
     audioContext.close(); // Close context on error
   })
+  whatsNow.value += "\r\n" + "12 go end."; // 更新时间
 }
 
 connection.on("onsetbookposition", (input: any) => {
   // 设置书籍位置
-
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置
