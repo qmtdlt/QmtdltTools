@@ -102,7 +102,7 @@ const isComplete = computed(() => {
 
 .feedback-display {
   width: 100%;
-  min-height: 28px;
+  min-height: 100px;
   padding: 8px 10px;
   border: 1px solid #e3e6eb;
   margin-top: 5px;
@@ -158,10 +158,6 @@ const isComplete = computed(() => {
   .listenwrite-wrapper {
     padding: 12px 4px 10px 4px;
     max-width: 100vw;
-  }
-  .feedback-display {
-    font-size: 1em;
-    padding: 6px 4px;
   }
 }
 </style>

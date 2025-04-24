@@ -1,8 +1,16 @@
 <template>
   <div style="height: 70vh;">
-    <el-row justify="center" style="height: 55vh;">
-      <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text"
-      @phaseSelect="handlePhaseSelect" />
+    <el-row justify="center" style="height: 75vh;">
+      <HighlightedText v-if="!showListenWrite" :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text"
+        @phaseSelect="handlePhaseSelect" />
+        <div v-if="showListenWrite" class="lwdiv">
+          <el-row>
+            <el-button @click="listenWriteClick" type="success"><el-icon><Headset /></el-icon>&nbsp; Ctrl+1</el-button>
+          </el-row>
+          <div>
+            <ListenWrite :target-text="listenwrite_text" @completed="handleListenWriteComplete" />
+          </div>
+        </div>
     </el-row>
     <el-row style="margin-top: 10px;margin-bottom: 10px;" justify="right">
       <el-col :span="4" justify="end">
@@ -22,26 +30,13 @@
       <el-button @click="goPrevious"><el-icon>
           <ArrowLeft />
         </el-icon></el-button>
-      <el-input v-model="jumpOffset" placeholder="偏移量" style="width: 90px; margin: 0 8px;" size="small"></el-input>
+      <el-input v-model="jumpOffset" placeholder="偏移量" style="width: 90px; height: 30px; margin: 0 8px;" size="small"></el-input>
       <el-button @click="goNext"><el-icon>
           <ArrowRight />
         </el-icon></el-button>
-        <el-button @click="listenWriteClick"><el-icon>
-          听写
-        </el-icon></el-button>
+        <el-button @click="listenWriteClick"> {{ lwbtnText }}</el-button>
     </el-row>
   </div>
-  <el-dialog v-model="showListenWrite" title="听写" style="width: 100vw;height: 99vh; margin-top: 0px;">
-      <!--右侧区域-->
-        <div>
-          <el-row>
-            <el-button @click="listenWriteClick" type="success"><el-icon><Headset /></el-icon>&nbsp; Ctrl+1</el-button>
-          </el-row>
-          <div>
-            <ListenWrite :target-text="listenwrite_text" @completed="handleListenWriteComplete" />
-          </div>
-        </div>
-    </el-dialog>
   <el-dialog v-model="showTransDialog" title="翻译结果" width="85%">
     <div v-loading="translating">
       <el-row>
@@ -102,13 +97,21 @@ const listenwrite_text = ref(''); // 音频数据
 
 const showLeft = ref(true); // Control visibility of .divLeft
 
-
+const lwbtnText = ref('听写'); // 按钮文本
 const listenWriteClick = () => {
-  showListenWrite.value = true;
-  stopPlayBase64Audio();
-  startPlayBase64Audio(listenwrite_buffer.value, ()=>{
-    console.log("播放完成");
-  }); // 读取到的音频内容
+  showListenWrite.value = !showListenWrite.value;
+  if(showListenWrite.value)
+  {
+    lwbtnText.value = '关闭听写';
+    stopPlayBase64Audio();
+    startPlayBase64Audio(listenwrite_buffer.value, ()=>{
+      console.log("播放完成");
+    }); // 读取到的音频内容
+  }
+  else{
+    lwbtnText.value = '听写';
+    stopPlayBase64Audio();
+  }
 }
 
 const promptOneWord = () => {
@@ -359,5 +362,11 @@ const handlePhaseSelect = async (phaseText: string) => {
 <style scoped>
 .el-button+.el-button {
   margin-left: 10px;
+}
+.lwdiv {
+  width: 100vw;height: 100%; 
+  padding: 1rem;
+  background-image: url('../assets/background1.png');
+  border-radius: 5px;
 }
 </style>
