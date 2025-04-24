@@ -1,3 +1,182 @@
+<template>
+  <div class="todo-container">
+    <h1>Daily Tasks</h1>
+    
+    <!-- Add new todo form -->
+    <div class="add-todo-form">
+      <el-input
+        v-model="newTodoContent"
+        placeholder="What needs to be done?"
+        class="todo-input"
+        @keyup.enter="addTodo"
+      />
+      <el-button 
+        type="primary" 
+        :loading="loading" 
+        @click="addTodo"
+      >
+        Add Todo
+      </el-button>
+    </div>
+    
+    <!-- Current Unfinished tasks list -->
+    <div class="todo-list">
+      <el-card class="todo-card" shadow="hover">
+        <template #header>
+          <div class="card-header">
+            <span>Current Unfinished Tasks</span>
+            <el-button type="primary" :loading="loading" @click="fetchTodos" circle>
+              <el-icon><Refresh /></el-icon>
+            </el-button>
+          </div>
+        </template>
+        
+        <el-table
+          v-loading="loading"
+          :data="todoList"
+          style="width: 100%"
+          empty-text="No current unfinished tasks. Everything done! 🎉"
+        >
+          <el-table-column prop="content" label="Task" min-width="200" />
+          <el-table-column label="Created" width="180">
+            <template #default="scope">
+              {{ formatDate(scope.row.createTime) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="Actions" width="180" align="center">
+            <template #default="scope">
+              <el-tooltip content="Move to non-current" placement="top">
+                <el-button 
+                  type="warning" 
+                  circle 
+                  size="small"
+                  @click="moveToNonCurrent(scope.row)"
+                >
+                  <el-icon><ArrowRight /></el-icon>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip content="Mark as complete" placement="top">
+                <el-button 
+                  type="success" 
+                  circle 
+                  size="small"
+                  @click="markAsComplete(scope.row)"
+                >
+                  <el-icon><Check /></el-icon>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip content="Delete" placement="top">
+                <el-button 
+                  type="danger" 
+                  circle 
+                  size="small"
+                  @click="deleteTodo(scope.row)"
+                >
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+    </div>
+    
+    <!-- Non-Current Unfinished tasks list -->
+    <div class="todo-list">
+      <el-card class="todo-card non-current-card" shadow="hover">
+        <template #header>
+          <div class="card-header">
+            <span>Non-Current Unfinished Tasks</span>
+            <el-button type="primary" :loading="nonCurrentLoading" @click="fetchNonCurrentTodos" circle>
+              <el-icon><Refresh /></el-icon>
+            </el-button>
+          </div>
+        </template>
+        
+        <el-table
+          v-loading="nonCurrentLoading"
+          :data="nonCurrentTodoList"
+          style="width: 100%"
+          empty-text="No non-current unfinished tasks."
+        >
+          <el-table-column prop="content" label="Task" min-width="200" />
+          <el-table-column label="Created" width="180">
+            <template #default="scope">
+              {{ formatDate(scope.row.createTime) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="Actions" width="120" align="center">
+            <template #default="scope">
+              <el-tooltip content="Move to current" placement="top">
+                <el-button 
+                  type="primary" 
+                  circle 
+                  size="small"
+                  @click="moveToCurrent(scope.row)"
+                >
+                  <el-icon><ArrowLeft /></el-icon>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip content="Delete" placement="top">
+                <el-button 
+                  type="danger" 
+                  circle 
+                  size="small"
+                  @click="deleteTodo(scope.row)"
+                >
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+    </div>
+    
+    <!-- Finished tasks list -->
+    <div class="todo-list">
+      <el-card class="todo-card finished-card" shadow="hover">
+        <template #header>
+          <div class="card-header">
+            <span>Completed Tasks</span>
+            <el-button type="primary" :loading="finishedLoading" @click="fetchFinishedTodos" circle>
+              <el-icon><Refresh /></el-icon>
+            </el-button>
+          </div>
+        </template>
+        
+        <el-table
+          v-loading="finishedLoading"
+          :data="finishedList"
+          style="width: 100%"
+          empty-text="No completed tasks yet. Start by completing a task above!"
+        >
+          <el-table-column prop="content" label="Task" min-width="200" />
+          <el-table-column label="Completed" width="180">
+            <template #default="scope">
+              {{ formatDate(scope.row.finishTime) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="Actions" width="120" align="center">
+            <template #default="scope">
+              <el-tooltip content="Delete" placement="top">
+                <el-button 
+                  type="danger" 
+                  circle 
+                  size="small"
+                  @click="deleteTodo(scope.row)"
+                >
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -260,184 +439,6 @@ onMounted(() => {
 })
 </script>
 
-<template>
-  <div class="todo-container">
-    <h1>Daily Tasks</h1>
-    
-    <!-- Add new todo form -->
-    <div class="add-todo-form">
-      <el-input
-        v-model="newTodoContent"
-        placeholder="What needs to be done?"
-        class="todo-input"
-        @keyup.enter="addTodo"
-      />
-      <el-button 
-        type="primary" 
-        :loading="loading" 
-        @click="addTodo"
-      >
-        Add Todo
-      </el-button>
-    </div>
-    
-    <!-- Current Unfinished tasks list -->
-    <div class="todo-list">
-      <el-card class="todo-card" shadow="hover">
-        <template #header>
-          <div class="card-header">
-            <span>Current Unfinished Tasks</span>
-            <el-button type="primary" :loading="loading" @click="fetchTodos" circle>
-              <el-icon><Refresh /></el-icon>
-            </el-button>
-          </div>
-        </template>
-        
-        <el-table
-          v-loading="loading"
-          :data="todoList"
-          style="width: 100%"
-          empty-text="No current unfinished tasks. Everything done! 🎉"
-        >
-          <el-table-column prop="content" label="Task" min-width="200" />
-          <el-table-column label="Created" width="180">
-            <template #default="scope">
-              {{ formatDate(scope.row.createTime) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="Actions" width="180" align="center">
-            <template #default="scope">
-              <el-tooltip content="Move to non-current" placement="top">
-                <el-button 
-                  type="warning" 
-                  circle 
-                  size="small"
-                  @click="moveToNonCurrent(scope.row)"
-                >
-                  <el-icon><ArrowRight /></el-icon>
-                </el-button>
-              </el-tooltip>
-              <el-tooltip content="Mark as complete" placement="top">
-                <el-button 
-                  type="success" 
-                  circle 
-                  size="small"
-                  @click="markAsComplete(scope.row)"
-                >
-                  <el-icon><Check /></el-icon>
-                </el-button>
-              </el-tooltip>
-              <el-tooltip content="Delete" placement="top">
-                <el-button 
-                  type="danger" 
-                  circle 
-                  size="small"
-                  @click="deleteTodo(scope.row)"
-                >
-                  <el-icon><Delete /></el-icon>
-                </el-button>
-              </el-tooltip>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-card>
-    </div>
-    
-    <!-- Non-Current Unfinished tasks list -->
-    <div class="todo-list">
-      <el-card class="todo-card non-current-card" shadow="hover">
-        <template #header>
-          <div class="card-header">
-            <span>Non-Current Unfinished Tasks</span>
-            <el-button type="primary" :loading="nonCurrentLoading" @click="fetchNonCurrentTodos" circle>
-              <el-icon><Refresh /></el-icon>
-            </el-button>
-          </div>
-        </template>
-        
-        <el-table
-          v-loading="nonCurrentLoading"
-          :data="nonCurrentTodoList"
-          style="width: 100%"
-          empty-text="No non-current unfinished tasks."
-        >
-          <el-table-column prop="content" label="Task" min-width="200" />
-          <el-table-column label="Created" width="180">
-            <template #default="scope">
-              {{ formatDate(scope.row.createTime) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="Actions" width="120" align="center">
-            <template #default="scope">
-              <el-tooltip content="Move to current" placement="top">
-                <el-button 
-                  type="primary" 
-                  circle 
-                  size="small"
-                  @click="moveToCurrent(scope.row)"
-                >
-                  <el-icon><ArrowLeft /></el-icon>
-                </el-button>
-              </el-tooltip>
-              <el-tooltip content="Delete" placement="top">
-                <el-button 
-                  type="danger" 
-                  circle 
-                  size="small"
-                  @click="deleteTodo(scope.row)"
-                >
-                  <el-icon><Delete /></el-icon>
-                </el-button>
-              </el-tooltip>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-card>
-    </div>
-    
-    <!-- Finished tasks list -->
-    <div class="todo-list">
-      <el-card class="todo-card finished-card" shadow="hover">
-        <template #header>
-          <div class="card-header">
-            <span>Completed Tasks</span>
-            <el-button type="primary" :loading="finishedLoading" @click="fetchFinishedTodos" circle>
-              <el-icon><Refresh /></el-icon>
-            </el-button>
-          </div>
-        </template>
-        
-        <el-table
-          v-loading="finishedLoading"
-          :data="finishedList"
-          style="width: 100%"
-          empty-text="No completed tasks yet. Start by completing a task above!"
-        >
-          <el-table-column prop="content" label="Task" min-width="200" />
-          <el-table-column label="Completed" width="180">
-            <template #default="scope">
-              {{ formatDate(scope.row.finishTime) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="Actions" width="120" align="center">
-            <template #default="scope">
-              <el-tooltip content="Delete" placement="top">
-                <el-button 
-                  type="danger" 
-                  circle 
-                  size="small"
-                  @click="deleteTodo(scope.row)"
-                >
-                  <el-icon><Delete /></el-icon>
-                </el-button>
-              </el-tooltip>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-card>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .todo-container {
