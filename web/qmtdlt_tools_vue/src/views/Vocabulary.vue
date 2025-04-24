@@ -71,7 +71,7 @@
       <el-table height="80vh" :data="records" border v-loading="loading">
         <el-table-column label="序号" type="index" width="55" :index="indexMethod" />
         
-        <el-table-column label="单词" width="100">
+        <el-table-column label="单词" width="150">
             <template #default="{ row }">
               {{ row.wordText }}
               <el-button v-if="row.wordPronunciation" size="small" circle @click="playPronunciation(row.wordPronunciation)"
@@ -79,6 +79,9 @@
               <el-icon>
                 <Headset />
               </el-icon>
+            </el-button>
+            <el-button size="small" type="primary" @click="openMakeSentenceDialog(row.id)" title="造句">
+              造句
             </el-button>
             </template>
         </el-table-column>
@@ -93,9 +96,9 @@
             </el-button>
           </template>
         </el-table-column>
-        <el-table-column prop="aiTranslation" label="AI翻译" width="160" />
+        <el-table-column prop="aiTranslation" label="AI翻译" width="200" />
         <el-table-column prop="sentenceYouMade" label="你的造句" width="200" />
-        <el-table-column prop="ifUsageCorrect" label="是否正确" width="60" />
+        <el-table-column prop="ifUsageCorrect" label="正误" width="60" />
         <el-table-column prop="incorrectReason" label="错误原因" width="300" />
         <el-table-column prop="correctSentence" label="正确造句" width="200" />
         <!-- <el-table-column prop="createTime" label="创建时间" width="100">
@@ -104,13 +107,6 @@
           </template>
 </el-table-column> -->
         <!-- 新增操作列 -->
-        <el-table-column label="操作" width="80">
-          <template #default="{ row }">
-            <el-button size="small" type="primary" @click="openMakeSentenceDialog(row.id)" title="造句">
-              造句
-            </el-button>
-          </template>
-        </el-table-column>
       </el-table>
       <div style="margin-top: 16px; text-align: right;">
         <el-pagination background layout=" prev, pager, next, sizes,jumper, ->, total" :total="total"
