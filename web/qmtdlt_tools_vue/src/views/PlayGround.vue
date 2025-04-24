@@ -17,7 +17,7 @@
             </el-button>
           </el-row>
           <div>
-            <ListenWrite :target-text="speaking_buffer" @completed="handleListenWriteComplete" />
+            <ListenWrite :target-text="listenwrite_text" @completed="handleListenWriteComplete" />
           </div>
         </div>
       </el-card>
@@ -36,16 +36,15 @@ import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '@/utils
 import { Headset,Lightning,View,Hide,VideoPause} from '@element-plus/icons-vue'
 
 
-const speaking_buffer = ref(''); // 音频数据
+const listenwrite_buffer = ref(''); // 音频数据
+const listenwrite_text = ref(''); // 音频数据
 
 const showLeft = ref(true); // Control visibility of .divLeft
 
 
 const listenWrite = () => {
-  
   stopPlayBase64Audio();
-  cleanupAudio();
-  startPlayBase64Audio(speaking_buffer.value, ()=>{
+  startPlayBase64Audio(listenwrite_buffer.value, ()=>{
     console.log("播放完成");
   }); // 读取到的音频内容
 }
@@ -80,9 +79,10 @@ const handleListenWriteComplete = async () => {
   ElMessage.success("听写完成!");
 }
 
-const handleReadContentChange = (data:string)=>{
+const handleReadContentChange = (data:string,text:string)=>{
   debugger
-  speaking_buffer.value = data;
+  listenwrite_buffer.value = data;
+  listenwrite_text.value = text;
 }
 </script>
 
