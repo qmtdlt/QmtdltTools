@@ -48,6 +48,7 @@ function normalizeAndTokenize(text: string): string[] {
 
 // 反馈每个单词的正确与否
 const feedbackWords = computed(() => {
+  debugger
   const inputWordsRaw = userInput.value.split(/\s+/);
   const inputWordsNormalized = normalizeAndTokenize(userInput.value);
   const targetWordsNormalized = normalizeAndTokenize(props.targetText);
