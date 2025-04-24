@@ -15,9 +15,11 @@ namespace QmtdltTools.Controllers
     public class VocabularyController : AbpController
     {
         private readonly VocabularyService _service;
-        public VocabularyController(VocabularyService listenWriteService)
+        private readonly TranslationService _translationService;
+        public VocabularyController(VocabularyService service, TranslationService translationService)
         {
-            _service = listenWriteService;
+            _translationService = translationService;
+            _service = service;
         }
         [HttpGet("GetUserRecordsPage")]
         public async Task<Response<PageResult<VocabularyRecord>>> GetUserRecordsPage(int pageindex,int pagesize)
@@ -68,6 +70,12 @@ namespace QmtdltTools.Controllers
                     message = e.Message
                 };
             }
+        }
+        [HttpGet("Trans")]
+        public async Task<VocabularyRecord?> Trans(Guid bookId, string word)
+        {
+            VocabularyRecord? findRes = await _translationService.Find(bookId, 0, 0, word);
+            return findRes;
         }
         [HttpGet("GetOneWord")]
         public async Task<VocabularyRecord?> GetOneWord()

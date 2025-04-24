@@ -222,7 +222,6 @@ onBeforeUnmount(() => {
   })
 })
 const transSource = ref(''); // Store the selected text for translation
-const isFirstTime = ref(true); // This logic might need refinement based on desired UX
 const handlePhaseSelect = async (phaseText: string) => {
 
   if (translating.value) {
@@ -275,6 +274,7 @@ const handlePhaseSelect = async (phaseText: string) => {
     // this finally block could simplify the reset logic.
     // isFirstTime.value = true; // Reset regardless of outcome
   }
+  
 }
 </script>
 <style scoped>

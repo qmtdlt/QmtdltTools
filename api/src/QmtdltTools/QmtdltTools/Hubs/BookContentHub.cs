@@ -7,6 +7,7 @@ using Autofac.Core.Resolving.Middleware;
 using Castle.Components.DictionaryAdapter.Xml;
 using Microsoft.AspNetCore.SignalR;
 using QmtdltTools.Domain.Dtos;
+using QmtdltTools.Domain.Entitys;
 using QmtdltTools.Domain.Models;
 using QmtdltTools.Service.Services;
 using QmtdltTools.Service.Utils;
@@ -156,7 +157,7 @@ public class BookContentHub:AbpHub
     }
     public async Task Trans(Guid bookId,string word)
     {
-        var findRes = await _translationService.Find(bookId, bookReadingCache[bookId].position.PragraphIndex, bookReadingCache[bookId].position.SentenceIndex, word);
+        VocabularyRecord? findRes = await _translationService.Find(bookId, bookReadingCache[bookId].position.PragraphIndex, bookReadingCache[bookId].position.SentenceIndex, word);
         if(findRes != null)
         {
             await Clients.Caller.SendAsync("onShowTrans", new TranslateDto
