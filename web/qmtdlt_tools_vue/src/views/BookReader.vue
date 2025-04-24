@@ -1,10 +1,8 @@
 <template>
   <div style="height: 70vh;">
-    <el-row class="paragraph-row" justify="center" style="height: 55vh;">
-      <div class="paragraph-area">
-        <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text"
-          @phaseSelect="handlePhaseSelect" />
-      </div>
+    <el-row justify="center" style="height: 55vh;">
+      <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text"
+      @phaseSelect="handlePhaseSelect" />
     </el-row>
     <el-row style="margin-top: 10px;margin-bottom: 10px;" justify="right">
       <el-col :span="4" justify="end">
@@ -28,8 +26,22 @@
       <el-button @click="goNext"><el-icon>
           <ArrowRight />
         </el-icon></el-button>
+        <el-button @click="listenWriteClick"><el-icon>
+          听写
+        </el-icon></el-button>
     </el-row>
   </div>
+  <el-dialog v-model="showListenWrite" title="听写" style="width: 100vw;height: 99vh; margin-top: 0px;">
+      <!--右侧区域-->
+        <div>
+          <el-row>
+            <el-button @click="listenWriteClick" type="success"><el-icon><Headset /></el-icon>&nbsp; Ctrl+1</el-button>
+          </el-row>
+          <div>
+            <ListenWrite :target-text="listenwrite_text" @completed="handleListenWriteComplete" />
+          </div>
+        </div>
+    </el-dialog>
   <el-dialog v-model="showTransDialog" title="翻译结果" width="85%">
     <div v-loading="translating">
       <el-row>
@@ -64,24 +76,77 @@
       </el-row>
     </div>
   </el-dialog>
+ 
 </template>
 <script setup lang="ts">
 
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import HighlightedText from './HighLightedText.vue' // Import your HighlightedText component;
+import ListenWrite from './ListenWrite.vue'; // Keep this import
 import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Headset, VideoPause, CaretRight, Close, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 // Import cleanupAudio as well
-import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '@/utils/audioplay';
-import IconStop from '@/components/icons/IconStop.vue';
-import IconPlay from '@/components/icons/IconPlay.vue';
+import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '../utils/audioplay';
+import IconStop from '../components/icons/IconStop.vue';
+import IconPlay from '../components/icons/IconPlay.vue';
+
+
 const route = useRoute() // 使用路由
 
-const readContentChange = defineEmits<{
-  (e: 'readContentChange', data: string, str: string): void
-}>()
+const showListenWrite = ref(false); // 控制听写弹窗显示
+
+const listenwrite_buffer = ref(''); // 音频数据
+const listenwrite_text = ref(''); // 音频数据
+
+const showLeft = ref(true); // Control visibility of .divLeft
+
+
+const listenWriteClick = () => {
+  showListenWrite.value = true;
+  stopPlayBase64Audio();
+  startPlayBase64Audio(listenwrite_buffer.value, ()=>{
+    console.log("播放完成");
+  }); // 读取到的音频内容
+}
+
+const promptOneWord = () => {
+
+}
+
+const showOrHidReader = () => {
+  showLeft.value = !showLeft.value;
+}
+
+onMounted(() => {
+  // Add keyboard shortcut listener for ctrl+1
+  window.addEventListener('keydown', handleKeyDown);
+})
+
+onBeforeUnmount(() => {
+  cleanupAudio();
+  window.removeEventListener('keydown', handleKeyDown);
+})
+
+// 快捷键监听 ctrl+1
+function handleKeyDown(e: KeyboardEvent) {
+  if (e.ctrlKey && e.key === '1') {
+    listenWriteClick();
+    e.preventDefault();
+  }
+}
+
+const handleListenWriteComplete = async () => {
+  ElMessage.success("听写完成!");
+}
+
+const handleReadContentChange = (data:string,text:string)=>{
+  debugger
+  listenwrite_buffer.value = data;
+  listenwrite_text.value = text;
+}
+
 
 const readContent = ref({
   full_pragraph_text: '', // 读取到的文本内容
@@ -178,7 +243,7 @@ connection.on("onUpdateWatch", (formatTimeStr: string) => {
 });
 
 connection.on("UIReadInfo", (input: any) => {
-  readContentChange("readContentChange", input.speaking_buffer, input.speaking_text); // Emit the read content change event
+  handleReadContentChange(input.speaking_buffer, input.speaking_text); // Emit the read content change event
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置
@@ -205,7 +270,7 @@ connection.on("onsetbookposition", (input: any) => {
   readContent.value.curPosition = input.position; // 读取到的文本位置
   readContent.value.speaking_buffer = input.speaking_buffer; // 读取到的文本位置
   debugger
-  readContentChange("readContentChange", input.speaking_buffer, input.speaking_text);
+  handleReadContentChange(input.speaking_buffer, input.speaking_text);
   // Note: onsetbookposition likely doesn't trigger immediate playback
   // It just updates the displayed text/position. Playback starts on startRead.
 });
@@ -292,72 +357,7 @@ const handlePhaseSelect = async (phaseText: string) => {
 }
 </script>
 <style scoped>
-.main-row {
-  margin: 0;
-  min-height: 100vh;
-  background: #f6f8fa;
-  padding: 32px 0 0 0;
-  box-sizing: border-box;
-}
-
-.card {
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.07), 0 1.5px 6px 0 rgba(0, 0, 0, 0.03);
-  padding: 32px 28px 24px 28px;
-  min-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  box-sizing: border-box;
-}
-
-.paragraph-row {
-  margin-bottom: 12px;
-  justify-content: center;
-}
-
-.paragraph-area {
-  width: 100%;
-  font-size: 1.18em;
-  color: #222;
-  line-height: 2;
-  background: #f7fafd;
-  border-radius: 8px;
-  padding: 18px 16px;
-  min-height: 120px;
-  box-sizing: border-box;
-  word-break: break-all;
-  margin-bottom: 0;
-  margin-top: 15px;
-}
-
-.position-row {
-  margin-bottom: 12px;
-  justify-content: flex-end;
-}
-
-.el-row {
-  margin-bottom: 0;
-}
-
 .el-button+.el-button {
   margin-left: 10px;
-}
-
-@media (max-width: 900px) {
-  .main-row {
-    padding: 0;
-  }
-
-  .card {
-    padding: 12px 2vw 10px 2vw;
-    min-height: unset;
-  }
-
-  .paragraph-area {
-    padding: 10px 6px;
-    min-height: 60px;
-  }
 }
 </style>

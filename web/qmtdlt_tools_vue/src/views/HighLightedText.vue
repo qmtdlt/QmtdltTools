@@ -1,6 +1,6 @@
 <!-- filepath: e:\work\QmtdltTools\web\qmtdlt_tools_vue\src\components\HighlightedText.vue -->
 <template>
-  <div style="min-height: 200px;" ref="containerRef">
+  <div class="highlightdiv" ref="containerRef">
     <p>
       <span>{{ beforeText }}</span>
       <span class="highlight">{{ highlightedText }}</span>
@@ -61,8 +61,20 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.highlightdiv {
+  padding: 1rem;
+  height: 100%;
+  width: 99vw;
+  /* ../assets/background.png; 拉伸铺满*/
+  background: url('../assets/background2.png') no-repeat center center;
+  background-size: cover;
+  border-radius: 8px;
+  font-size: 2.5rem;
+  overscroll-behavior-y: scroll;
+  color: #c0c0c0;
+}
 .highlight {
-  background-color: yellow;
+  color: #ffffff;
   font-weight: bold;
 }
 </style>

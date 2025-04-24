@@ -50,7 +50,7 @@ onMounted(() => {
 
  
 .content {
-  padding: 1rem; /* 原为2rem */
+  padding: 0.5rem; /* 原为2rem */
   width: 100%;
   height: calc(100vh - 61px);
   background: red;
