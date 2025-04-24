@@ -17,15 +17,17 @@ namespace QmtdltTools.Domain.Entitys
         /// </summary>
         [StringLength(256)]
         public string? WordText { get; set; }
-        /// <summary>
-        /// 发音
-        /// </summary>
-        public byte[]? Pronunciation { get; set; }
+        public byte[]? WordPronunciation { get; set; }
+        
         /// <summary>
         /// AI 解释
         /// </summary>
         [StringLength(1024)]
         public string? AIExplanation { get; set; }
+        /// <summary>
+        /// 发音
+        /// </summary>
+        public byte[]? Pronunciation { get; set; }
         /// <summary>
         /// AI 翻译
         /// </summary>
@@ -36,6 +38,7 @@ namespace QmtdltTools.Domain.Entitys
         /// </summary>
         [StringLength(512)]
         public string? SentenceYouMade { get; set; }
+        public byte[]? SentencePronunciation { get; set; }
        
         /// <summary>
         /// 造句是否正确

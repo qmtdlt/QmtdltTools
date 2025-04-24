@@ -45,10 +45,9 @@ namespace QmtdltTools.Service.Utils
                 messages = new[]
                 {
                     new { role = "system", content = $@"Check this sentence ""{sentence}"" for {word}, is the usage of {word} correct? If not, give the reason and the corrected sentence. 
-            Format your response as a JSON object with three fields: IfUsageCorrect , IncorrectReason and CorrectSentence." }
+            Format your response as a JSON object with three fields: IfUsageCorrect , IncorrectReason and CorrectSentence.Make sure the json object format correct and with no other string" }
                 },
-                stream = false,
-                temperature = 0
+                model = model
             };
             var result = await GetResult<SentenceEvaluateDto>(requestBody);                    
             return result;
