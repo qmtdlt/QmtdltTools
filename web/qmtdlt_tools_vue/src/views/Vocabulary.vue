@@ -70,20 +70,21 @@
       </div>
       <el-table height="80vh" :data="records" border v-loading="loading">
         <el-table-column label="序号" type="index" width="55" :index="indexMethod" />
-        <el-table-column prop="wordText" label="单词" width="100" />
-        <el-table-column prop="aiExplanation" label="AI释义" />
-        <el-table-column prop="aiTranslation" label="AI翻译" width="160" />
-        <el-table-column prop="sentenceYouMade" label="你的造句" width="200" />
-        <el-table-column prop="ifUsageCorrect" label="是否正确" width="55" />
-        <el-table-column prop="incorrectReason" label="错误原因" width="300" />
-        <el-table-column prop="correctSentence" label="正确造句" width="200" />
-        <!-- <el-table-column prop="createTime" label="创建时间" width="100">
+        
+        <el-table-column label="单词" width="100">
+            <template #default="{ row }">
+              {{ row.wordText }}
+              <el-button v-if="row.wordPronunciation" size="small" circle @click="playPronunciation(row.wordPronunciation)"
+              title="播放发音">
+              <el-icon>
+                <Headset />
+              </el-icon>
+            </el-button>
+            </template>
+        </el-table-column>
+        <el-table-column label="AI释义" >
           <template #default="{ row }">
-            {{ formatDate(row.createTime) }}
-          </template>
-</el-table-column> -->
-        <el-table-column label="发音" width="60">
-          <template #default="{ row }">
+            {{ row.aiExplanation }}
             <el-button v-if="row.pronunciation" size="small" circle @click="playPronunciation(row.pronunciation)"
               title="播放发音">
               <el-icon>
@@ -92,6 +93,16 @@
             </el-button>
           </template>
         </el-table-column>
+        <el-table-column prop="aiTranslation" label="AI翻译" width="160" />
+        <el-table-column prop="sentenceYouMade" label="你的造句" width="200" />
+        <el-table-column prop="ifUsageCorrect" label="是否正确" width="60" />
+        <el-table-column prop="incorrectReason" label="错误原因" width="300" />
+        <el-table-column prop="correctSentence" label="正确造句" width="200" />
+        <!-- <el-table-column prop="createTime" label="创建时间" width="100">
+          <template #default="{ row }">
+            {{ formatDate(row.createTime) }}
+          </template>
+</el-table-column> -->
         <!-- 新增操作列 -->
         <el-table-column label="操作" width="80">
           <template #default="{ row }">
