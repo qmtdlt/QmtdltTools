@@ -2,7 +2,7 @@
   <div style="height: 70vh;">
     <el-row class="paragraph-row" justify="center" style="height: 55vh;">
       <div class="paragraph-area">
-        <HighlightedTextMobile :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text"
+        <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text"
           @phaseSelect="handlePhaseSelect" />
       </div>
     </el-row>
@@ -62,7 +62,7 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import HighlightedTextMobile from './HighLightedTextMobile.vue' // Import your HighlightedText component;
+import HighlightedText from './HighLightedText.vue' // Import your HighlightedText component;
 import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
 import { ElMessage, ElMessageBox } from 'element-plus';

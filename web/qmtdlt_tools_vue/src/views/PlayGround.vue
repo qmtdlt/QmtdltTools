@@ -42,8 +42,9 @@ const showLeft = ref(true); // Control visibility of .divLeft
 
 
 const listenWrite = () => {
-  debugger
+  
   stopPlayBase64Audio();
+  cleanupAudio();
   startPlayBase64Audio(speaking_buffer.value, ()=>{
     console.log("播放完成");
   }); // 读取到的音频内容
