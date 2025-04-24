@@ -1,7 +1,7 @@
 <template>
   <el-row>
     <el-col :span="12">
-      <MobileBookView @readContentChange="handleReadContentChange"/>
+      <BookReader @readContentChange="handleReadContentChange"/>
     </el-col>
     <el-col :span="12">
       <!--右侧区域-->
@@ -27,7 +27,7 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import MobileBookView from './MobileBookView.vue'
+import BookReader from './BookReader.vue'
 import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import { ElMessage } from 'element-plus';
 import ListenWrite from './ListenWrite.vue'; // Keep this import

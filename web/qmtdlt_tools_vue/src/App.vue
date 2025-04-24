@@ -34,9 +34,9 @@ onMounted(() => {
           :class="{ active: activeRoute === '/library' }"
         >Library</RouterLink>
         <RouterLink 
-          to="/login" 
-          @click="activeRoute = '/login'" 
-          :class="{ active: activeRoute === '/login' }"
+          to="/" 
+          @click="activeRoute = '/'" 
+          :class="{ active: activeRoute === '/' }"
         >Login</RouterLink>
       </nav>
     </header>
