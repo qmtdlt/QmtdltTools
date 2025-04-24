@@ -103,7 +103,7 @@ const handleRegister = async () => {
         
         const response = await request.post('/api/Auth/Register/Register', registerData)
         ElMessage.success('注册成功，请登录')
-        router.push('/login')
+        router.push('/')
       } catch (error: any) {
         console.error(error)
         ElMessage.error(error?.message || '注册失败，请稍后再试')
@@ -118,7 +118,7 @@ const handleRegister = async () => {
 }
 
 const goToLogin = () => {
-  router.push('/login')
+  router.push('/')
 }
 </script>
 

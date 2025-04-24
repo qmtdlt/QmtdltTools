@@ -26,7 +26,7 @@ const getAudioContext = async () => {
 
 export const startPlayBase64Audio = async (base64string: string, onEnded: () => void) => {
     console.log("Attempting to play audio...");
-
+    
     // Stop any currently playing audio source from the same context
     if (currentSource) {
         currentSource.stop();
