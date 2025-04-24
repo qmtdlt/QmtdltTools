@@ -27,14 +27,13 @@ public class BookContentHub:AbpHub
     private readonly ListenWriteService _listenWriteService;
     private readonly TranslationService _translationService;
     private Stopwatch _sw;
-    private readonly AiApiService _aiApiService;
-    public BookContentHub(EpubManageService epubManageService, ListenWriteService listenWriteService, TranslationService translationService, AiApiService aiApiService)
+    public BookContentHub(EpubManageService epubManageService, ListenWriteService listenWriteService, 
+        TranslationService translationService)
     {
         _epubManageService = epubManageService;
         _listenWriteService = listenWriteService;
         _translationService = translationService;
         _sw = new Stopwatch();
-        _aiApiService = aiApiService;
     }
 
     public override Task OnConnectedAsync()
@@ -164,27 +163,12 @@ public class BookContentHub:AbpHub
             {
                 Explanation = findRes.AIExplanation,
                 Translation = findRes.AITranslation,
-                VoiceBuffer = findRes.Pronunciation
+                VoiceBuffer = findRes.Pronunciation,
+                WordVoiceBuffer = findRes.WordPronunciation
             });
             return;
         }
-        var res = await _aiApiService.GetTranslateResult(word);
-        if (res != null)
-        {
-            await Clients.Caller.SendAsync("onShowTrans", res);
-            await _translationService.AddRecord(new Domain.Entitys.VocabularyRecord
-            {
-                BookId = bookId,
-                WordText = word,
-                Pronunciation = res.VoiceBuffer,
-                AIExplanation = res.Explanation,
-                AITranslation = res.Translation,
-            });
-        }
-        else
-        {
-            await Clients.Caller.SendAsync("onShowErrMsg", "∑≠“Î ß∞‹");
-        }
+        await Clients.Caller.SendAsync("onShowErrMsg", "∑≠“Î ß∞‹");
     }
    
     public async Task ResetPosition(Guid bookId ,int offsetPos)
