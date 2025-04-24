@@ -28,7 +28,7 @@ namespace QmtdltTools.Service.Utils
             {
                 try
                 {
-                    result.VoiceBuffer = TTSHelperRest.GetSpeakStreamRest(result.Explanation, ApplicationConst.DefaultVoiceName);
+                    result.VoiceBuffer = MsTTSHelperRest.GetSpeakStreamRest(result.Explanation, ApplicationConst.DefaultVoiceName);
                 }
                 catch (Exception ex)
                 {

@@ -206,7 +206,7 @@ public class BookContentHub:AbpHub
             if(uiReadInfo.speaking_text.IsNullOrEmpty()) return false;
             try
             {
-                uiReadInfo.speaking_buffer = TTSHelperRest.GetSpeakStreamRest(uiReadInfo.speaking_text, uiReadInfo.voice_name);       // make speak buffer
+                uiReadInfo.speaking_buffer = MsTTSHelperRest.GetSpeakStreamRest(uiReadInfo.speaking_text, uiReadInfo.voice_name);       // make speak buffer
                 return true;
             }
             catch (Exception ex)

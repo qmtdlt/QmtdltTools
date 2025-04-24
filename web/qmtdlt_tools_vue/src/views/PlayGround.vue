@@ -9,7 +9,7 @@
         <div>
           <el-row>
             <el-button @click="listenWrite" type="success"><el-icon><Headset /></el-icon> Speak Highlight</el-button>
-            <el-button @click="promptOneWord" type="warning" ><el-icon><Lightning/></el-icon> Prompt</el-button>
+            <el-button @click="promptOneWord" type="warning" ><IconStop></IconStop>Prompt</el-button>
             <el-button @click="showOrHidReader" type="info">
               <el-icon v-if="showLeft"><View /></el-icon>
               <el-icon v-else><Hide /></el-icon>
@@ -34,7 +34,7 @@ import ListenWrite from './ListenWrite.vue'; // Keep this import
 import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '@/utils/audioplay.ts' // Keep this import
 // import icon
 import { Headset,Lightning,View,Hide,VideoPause} from '@element-plus/icons-vue'
-
+import IconStop from '@/components/icons/IconStop.vue';
 
 const listenwrite_buffer = ref(''); // 音频数据
 const listenwrite_text = ref(''); // 音频数据
@@ -87,58 +87,5 @@ const handleReadContentChange = (data:string,text:string)=>{
 </script>
 
 <style scoped>
-.main-row {
-  margin: 0;
-  min-height: 100vh;
-  background: #f6f8fa;
-  padding: 32px 0 0 0;
-  box-sizing: border-box;
-}
-.divLeft,
-.divRight {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
 
-
-
-.position-row {
-  margin-bottom: 12px;
-  justify-content: flex-end;
-}
-
-.dropped-row {
-  margin-top: 10px;
-  justify-content: center;
-}
-
-.listenwrite-card {
-  width: 100%;
-  background: #f9fafc;
-  border-radius: 10px;
-  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.03);
-  padding: 18px 14px;
-  margin-top: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-
-@media (max-width: 900px) {
-  .main-row {
-    padding: 0;
-  }
-
-  .listenwrite-card {
-    padding: 10px 4px;
-  }
-
-  .dropped-text-area {
-    min-width: 120px;
-    padding: 6px 4px;
-    font-size: 0.98em;
-  }
-}
 </style>

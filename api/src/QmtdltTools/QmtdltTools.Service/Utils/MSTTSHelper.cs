@@ -5,7 +5,7 @@ using Microsoft.CognitiveServices.Speech;
 using QmtdltTools.Domain.Data;
 using Serilog; // Required for HttpUtility.HtmlEncode
 
-public class TTSHelperRest
+public class MsTTSHelperRest
 {
     // Replace with your actual key and region constants
     public static string speechKey = ApplicationConst.SPEECH_KEY;
