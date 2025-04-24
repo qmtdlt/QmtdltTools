@@ -34,10 +34,15 @@
     <div v-loading="translating">
       <el-row>
         <h1>{{ transSource }}</h1>
+        <el-button @click="playTransVoice(transResult.wordVoiceBuffer)" type="primary" plain circle>
+          <el-icon>
+            <Headset />
+          </el-icon>
+        </el-button>
       </el-row>
       <el-row>
         <h2>Explanation:</h2>
-        <el-button @click="playTransVoice" type="primary" plain circle>
+        <el-button @click="playTransVoice(transResult.voiceBuffer)" type="primary" plain circle>
           <el-icon>
             <Headset />
           </el-icon>
@@ -87,7 +92,7 @@ const readContent = ref({
 const showTransDialog = ref(false) // 控制翻译弹窗显示
 const translating = ref(false); // 拖拽到右侧区域的文本
 const jumpOffset = ref("1"); // 跳转偏移量
-const transResult = ref({ explanation: "", translation: "", voiceBuffer: "" }); // Store translation result pronunciation is base64 string
+const transResult = ref({ explanation: "", translation: "", voiceBuffer: "" ,wordVoiceBuffer:""}); // Store translation result pronunciation is base64 string
 
 // Use let instead of var for better scoping
 let connection = new signalR.HubConnectionBuilder()
@@ -148,11 +153,10 @@ connection.on("onShowTrans", (result: any) => {
   });
 });
 
-const playTransVoice = () => {
+const playTransVoice = (voiceBuffer:string) => {
   translating.value = false;
-  if (transResult.value.voiceBuffer) {
-    console.log("Playing translation voice again.");
-    startPlayBase64Audio(transResult.value.voiceBuffer, () => {
+  if (voiceBuffer) {
+    startPlayBase64Audio(voiceBuffer, () => {
       console.log("playTransVoice playback finished.");
     });
   } else {
