@@ -71,6 +71,11 @@ import { Headset, VideoPause, CaretRight, Close, ArrowLeft, ArrowRight } from '@
 import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '@/utils/audioplay';
 
 const route = useRoute() // 使用路由
+
+const readContentChange = defineEmits<{
+  (e: 'readContentChange', data: string): void
+}>()
+
 const readContent = ref({
   full_pragraph_text: '', // 读取到的文本内容
   speaking_text: '', // 读取到的文本内容
@@ -167,6 +172,7 @@ connection.on("onUpdateWatch", (formatTimeStr: string) => {
 });
 
 connection.on("UIReadInfo", (input: any) => {
+  readContentChange("readContentChange", input.speaking_buffer); // Emit the read content change event
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置
@@ -192,6 +198,8 @@ connection.on("onsetbookposition", (input: any) => {
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置
   readContent.value.speaking_buffer = input.speaking_buffer; // 读取到的文本位置
+  debugger
+  readContentChange("readContentChange", input.speaking_buffer); 
   // Note: onsetbookposition likely doesn't trigger immediate playback
   // It just updates the displayed text/position. Playback starts on startRead.
 });

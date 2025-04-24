@@ -1,14 +1,14 @@
 <template>
   <el-row>
     <el-col :span="12">
-      <MobileBookView />
+      <MobileBookView @readContentChange="handleReadContentChange"/>
     </el-col>
     <el-col :span="12">
       <!--右侧区域-->
       <el-card style="height: 50vh;">
         <div>
           <el-row>
-            <el-button @click="onListenWriteClick" type="success"><el-icon><Headset /></el-icon> Speak Highlight</el-button>
+            <el-button @click="listenWrite" type="success"><el-icon><Headset /></el-icon> Speak Highlight</el-button>
             <el-button @click="promptOneWord" type="warning" ><el-icon><Lightning/></el-icon> Prompt</el-button>
             <el-button @click="showOrHidReader" type="info">
               <el-icon v-if="showLeft"><View /></el-icon>
@@ -17,7 +17,7 @@
             </el-button>
           </el-row>
           <div>
-            <ListenWrite :target-text="readContent.speaking_text" @completed="handleListenWriteComplete" />
+            <ListenWrite :target-text="speaking_buffer" @completed="handleListenWriteComplete" />
           </div>
         </div>
       </el-card>
@@ -28,7 +28,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import MobileBookView from './MobileBookView.vue'
-import request from '@/utils/request' // Import your request utility
 import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import { ElMessage } from 'element-plus';
 import ListenWrite from './ListenWrite.vue'; // Keep this import
@@ -36,28 +35,19 @@ import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '@/utils
 // import icon
 import { Headset,Lightning,View,Hide,VideoPause} from '@element-plus/icons-vue'
 
-const route = useRoute() // 使用路由
 
-const readContent = ref({
-  full_pragraph_text: '', // 读取到的文本内容
-  speaking_text: '', // 读取到的文本内容
-  curPosition: { pragraphIndex: 0, sentenceIndex: 0 }, // 读取到的文本位置
-  bookId: route.query.id as string, // 书籍 ID
-  speaking_buffer: '' // 读取到的音频内容
-});
+const speaking_buffer = ref(''); // 音频数据
 
 const showLeft = ref(true); // Control visibility of .divLeft
 
 
 const listenWrite = () => {
-  
-  startPlayBase64Audio(readContent.value.speaking_buffer, ()=>{
+  debugger
+  stopPlayBase64Audio();
+  startPlayBase64Audio(speaking_buffer.value, ()=>{
     console.log("播放完成");
   }); // 读取到的音频内容
 }
-const onListenWriteClick = () => {
-  listenWrite();
-};
 
 const promptOneWord = () => {
 
@@ -73,6 +63,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  cleanupAudio();
   window.removeEventListener('keydown', handleKeyDown);
 })
 
@@ -85,8 +76,12 @@ function handleKeyDown(e: KeyboardEvent) {
 }
 
 const handleListenWriteComplete = async () => {
-  console.log("Listen and write completed!");
   ElMessage.success("听写完成!");
+}
+
+const handleReadContentChange = (data:string)=>{
+  debugger
+  speaking_buffer.value = data;
 }
 </script>
 
