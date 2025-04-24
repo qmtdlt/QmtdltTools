@@ -16,10 +16,10 @@
     </el-row>
     <el-row justify="start" align="middle">
       <el-button @click="startRead" type="primary" plain circle><el-icon>
-          <CaretRight />
+          <IconPlay />
         </el-icon></el-button>
-      <el-button @click="stopRead" type="danger"  plain circle><el-icon>
-          <Close />
+      <el-button @click="stopRead" type="danger" plain circle><el-icon>
+        <IconStop/>
         </el-icon></el-button>
       <el-button @click="goPrevious"><el-icon>
           <ArrowLeft />
@@ -66,6 +66,7 @@
   </el-dialog>
 </template>
 <script setup lang="ts">
+
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import HighlightedText from './HighLightedText.vue' // Import your HighlightedText component;
 import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
@@ -74,11 +75,12 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { Headset, VideoPause, CaretRight, Close, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 // Import cleanupAudio as well
 import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '@/utils/audioplay';
-
+import IconStop from '@/components/icons/IconStop.vue';
+import IconPlay from '@/components/icons/IconPlay.vue';
 const route = useRoute() // 使用路由
 
 const readContentChange = defineEmits<{
-  (e: 'readContentChange', data: string,str:string): void
+  (e: 'readContentChange', data: string, str: string): void
 }>()
 
 const readContent = ref({
@@ -92,7 +94,7 @@ const readContent = ref({
 const showTransDialog = ref(false) // 控制翻译弹窗显示
 const translating = ref(false); // 拖拽到右侧区域的文本
 const jumpOffset = ref("1"); // 跳转偏移量
-const transResult = ref({ explanation: "", translation: "", voiceBuffer: "" ,wordVoiceBuffer:""}); // Store translation result pronunciation is base64 string
+const transResult = ref({ explanation: "", translation: "", voiceBuffer: "", wordVoiceBuffer: "" }); // Store translation result pronunciation is base64 string
 
 // Use let instead of var for better scoping
 let connection = new signalR.HubConnectionBuilder()
@@ -153,7 +155,7 @@ connection.on("onShowTrans", (result: any) => {
   });
 });
 
-const playTransVoice = (voiceBuffer:string) => {
+const playTransVoice = (voiceBuffer: string) => {
   translating.value = false;
   if (voiceBuffer) {
     startPlayBase64Audio(voiceBuffer, () => {
@@ -176,7 +178,7 @@ connection.on("onUpdateWatch", (formatTimeStr: string) => {
 });
 
 connection.on("UIReadInfo", (input: any) => {
-  readContentChange("readContentChange", input.speaking_buffer,input.speaking_text); // Emit the read content change event
+  readContentChange("readContentChange", input.speaking_buffer, input.speaking_text); // Emit the read content change event
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
   readContent.value.curPosition = input.position; // 读取到的文本位置
@@ -203,7 +205,7 @@ connection.on("onsetbookposition", (input: any) => {
   readContent.value.curPosition = input.position; // 读取到的文本位置
   readContent.value.speaking_buffer = input.speaking_buffer; // 读取到的文本位置
   debugger
-  readContentChange("readContentChange", input.speaking_buffer,input.speaking_text); 
+  readContentChange("readContentChange", input.speaking_buffer, input.speaking_text);
   // Note: onsetbookposition likely doesn't trigger immediate playback
   // It just updates the displayed text/position. Playback starts on startRead.
 });
@@ -286,7 +288,7 @@ const handlePhaseSelect = async (phaseText: string) => {
     // this finally block could simplify the reset logic.
     // isFirstTime.value = true; // Reset regardless of outcome
   }
-  
+
 }
 </script>
 <style scoped>

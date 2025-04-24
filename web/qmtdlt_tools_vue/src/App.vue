@@ -50,12 +50,13 @@ onMounted(() => {
 
  
 .content {
-  padding: 0rem; /* 原为2rem */
+  padding: 1rem; /* 原为2rem */
   width: 100%;
-  height: 100%;
+  height: calc(100vh - 61px);
+  background: red;
   box-sizing: border-box;
   background-color: white;
-  border-radius: 8px;
+  border-radius: 0px;
   margin-bottom: 1rem;
 }
 
@@ -98,10 +99,6 @@ onMounted(() => {
 .main-nav a:hover, .main-nav a.active {
   color: white;
   background-color: rgba(255, 255, 255, 0.15);
-}
-
-.content-view {
-  animation: fadeIn 0.6s ease-in-out;
 }
 
 @keyframes fadeIn {

@@ -41,7 +41,7 @@ namespace QmtdltTools.Service.Services
                 {
                     BookId = bookId,
                     WordText = word,
-                    WordPronunciation = TTSHelperRest.GetSpeakStreamRest(word,ApplicationConst.DefaultVoiceName),
+                    WordPronunciation = MsTTSHelperRest.GetSpeakStreamRest(word,ApplicationConst.DefaultVoiceName),
                     Pronunciation = res.VoiceBuffer,
                     AIExplanation = res.Explanation,
                     AITranslation = res.Translation
