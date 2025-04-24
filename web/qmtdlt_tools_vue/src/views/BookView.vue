@@ -1,30 +1,7 @@
 <template>
   <el-row>
     <el-col :span="12">
-      <el-card style="height: 50vh;" >
-        <el-row justify="start" align="middle" v-if="showLeft">
-          <el-button-group>
-            <el-button @click="startRead" type="primary" icon="el-icon-caret-right">start</el-button>
-            <el-button @click="stopRead" type="danger" icon="el-icon-close">stop</el-button>
-            <el-button @click="goPrevious" icon="el-icon-arrow-left">previous</el-button>
-            <el-input v-model="jumpOffset" placeholder="偏移量" style="width: 90px; margin: 0 8px;"
-              size="small"></el-input>
-            <el-button @click="goNext" icon="el-icon-arrow-right">next</el-button>
-          </el-button-group>
-        </el-row>
-        <el-row class="paragraph-row" justify="center" v-if="showLeft">
-          <div class="paragraph-area">
-            <HighlightedText :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text" />
-          </div>
-        </el-row>
-        <el-row style="margin-top: 10px;" justify="right" v-if="showLeft">
-          <el-col :span="4" justify="end">
-            <el-tag type="info" effect="plain" size="small">
-              当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句 [{{formatTime}}]
-            </el-tag>
-          </el-col>
-        </el-row>
-      </el-card>
+      <MobileBookView />
     </el-col>
     <el-col :span="12">
       <!--右侧区域-->
@@ -82,7 +59,7 @@
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import HighlightedText from './HighLightedText.vue' // Import your HighlightedText component; 
+import MobileBookView from './MobileBookView.vue'
 import request from '@/utils/request' // Import your request utility
 import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
@@ -102,9 +79,6 @@ const readContent = ref({
 });
 
 const dropTextDealing = ref(false); // 拖拽到右侧区域的文本
-const sentence1 = ref(''); // 句子1
-const sentence2 = ref(''); // 句子1
-const sentence3 = ref(''); // 句子1
 const isReading = ref(false) // 是否正在阅读
 const jumpOffset = ref("1"); // 跳转偏移量
 const currentAudioSource = ref<AudioBufferSourceNode | null>(null); // Store the current audio source
