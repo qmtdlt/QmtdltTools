@@ -135,7 +135,10 @@ onBeforeUnmount(() => {
 // 快捷键监听 ctrl+1
 function handleKeyDown(e: KeyboardEvent) {
   if (e.ctrlKey && e.key === '1') {
-    listenWriteClick();
+    stopPlayBase64Audio();
+    startPlayBase64Audio(listenwrite_buffer.value, ()=>{
+      console.log("播放完成");
+    }); // 读取到的音频内容
     e.preventDefault();
   }
 }
