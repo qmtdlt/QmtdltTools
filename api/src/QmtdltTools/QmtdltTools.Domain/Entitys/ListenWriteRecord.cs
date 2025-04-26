@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QmtdltTools.Domain.Entitys
 {
@@ -19,5 +14,6 @@ namespace QmtdltTools.Domain.Entitys
         public int SIndex { get; set; }
         [StringLength(1024)]
         public string? SentenceText { get; set; }
+        public byte[]? Pronunciation { get; set; }
     }
 }

@@ -1,10 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Net;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Autofac.Core.Resolving.Middleware;
-using Castle.Components.DictionaryAdapter.Xml;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using QmtdltTools.Domain.Dtos;
 using QmtdltTools.Domain.Entitys;
@@ -15,7 +11,7 @@ using Volo.Abp.AspNetCore.SignalR;
 
 namespace QmtdltTools.Hubs;
 
-//[Authorize]
+[Authorize]
 public class BookContentHub:AbpHub
 {
     // static dict for all users
@@ -157,7 +153,12 @@ public class BookContentHub:AbpHub
     }
     public async Task Trans(Guid bookId,string word)
     {
-        VocabularyRecord? findRes = await _translationService.Find(bookId, bookReadingCache[bookId].position.PragraphIndex, bookReadingCache[bookId].position.SentenceIndex, word);
+        var uid = Context.GetUserId();
+        VocabularyRecord? findRes = await _translationService.Find(bookId,
+            bookReadingCache[bookId].position.PragraphIndex, 
+            bookReadingCache[bookId].position.SentenceIndex, 
+            bookReadingCache[bookId].plist[bookReadingCache[bookId].position.PragraphIndex].Sentences[bookReadingCache[bookId].position.SentenceIndex], // get word from database
+            word,uid);
         if(findRes != null)
         {
             await Clients.Caller.SendAsync("onShowTrans", new TranslateDto

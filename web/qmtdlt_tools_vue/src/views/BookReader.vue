@@ -1,16 +1,18 @@
 <template>
   <div style="height: 70vh;">
     <el-row justify="center" style="height: 75vh;">
-      <HighlightedText v-if="!showListenWrite" :full-text="readContent.full_pragraph_text" :highlight-text="readContent.speaking_text"
-        @phaseSelect="handlePhaseSelect" />
-        <div v-if="showListenWrite" class="lwdiv">
-          <el-row>
-            <el-button @click="listenWriteClick" type="success"><el-icon><Headset /></el-icon>&nbsp; Ctrl+1</el-button>
-          </el-row>
-          <div>
-            <ListenWrite :target-text="listenwrite_text" @completed="handleListenWriteComplete" />
-          </div>
+      <HighlightedText v-if="!showListenWrite" :full-text="readContent.full_pragraph_text"
+        :highlight-text="readContent.speaking_text" @phaseSelect="handlePhaseSelect" />
+      <div v-show="showListenWrite" class="lwdiv">
+        <el-row>
+          <el-button @click="listenWriteClick" type="success"><el-icon>
+              <Headset />
+            </el-icon>&nbsp; Ctrl+1</el-button>
+        </el-row>
+        <div>
+          <ListenWrite :target-text="listenwrite_text" @completed="handleListenWriteComplete" />
         </div>
+      </div>
     </el-row>
     <el-row style="margin-top: 10px;margin-bottom: 10px;" justify="right">
       <el-col :span="4" justify="end">
@@ -25,16 +27,17 @@
           <IconPlay />
         </el-icon></el-button>
       <el-button @click="stopRead" type="danger" plain circle><el-icon>
-        <IconStop/>
+          <IconStop />
         </el-icon></el-button>
       <el-button @click="goPrevious"><el-icon>
           <ArrowLeft />
         </el-icon></el-button>
-      <el-input v-model="jumpOffset" placeholder="偏移量" style="width: 90px; height: 30px; margin: 0 8px;" size="small"></el-input>
+      <el-input v-model="jumpOffset" placeholder="偏移量" style="width: 90px; height: 30px; margin: 0 8px;"
+        size="small"></el-input>
       <el-button @click="goNext"><el-icon>
           <ArrowRight />
         </el-icon></el-button>
-        <el-button @click="listenWriteClick"> {{ lwbtnText }}</el-button>
+      <el-button @click="showHideListenWrite" style="min-width: 100px;"> {{ lwbtnText }}</el-button>
     </el-row>
   </div>
   <el-dialog v-model="showTransDialog" title="翻译结果" width="85%">
@@ -71,7 +74,7 @@
       </el-row>
     </div>
   </el-dialog>
- 
+
 </template>
 <script setup lang="ts">
 
@@ -95,31 +98,22 @@ const showListenWrite = ref(false); // 控制听写弹窗显示
 const listenwrite_buffer = ref(''); // 音频数据
 const listenwrite_text = ref(''); // 音频数据
 
-const showLeft = ref(true); // Control visibility of .divLeft
-
 const lwbtnText = ref('听写'); // 按钮文本
 const listenWriteClick = () => {
+  stopPlayBase64Audio();
+  startPlayBase64Audio(listenwrite_buffer.value, () => {
+    console.log("播放完成");
+  }); // 读取到的音频内容
+}
+
+const showHideListenWrite = () => {
   showListenWrite.value = !showListenWrite.value;
-  if(showListenWrite.value)
-  {
+  if (showListenWrite.value) {
     lwbtnText.value = '关闭听写';
-    stopPlayBase64Audio();
-    startPlayBase64Audio(listenwrite_buffer.value, ()=>{
-      console.log("播放完成");
-    }); // 读取到的音频内容
-  }
-  else{
+  } else {
     lwbtnText.value = '听写';
-    stopPlayBase64Audio();
   }
-}
-
-const promptOneWord = () => {
-
-}
-
-const showOrHidReader = () => {
-  showLeft.value = !showLeft.value;
+  stopPlayBase64Audio();
 }
 
 onMounted(() => {
@@ -136,9 +130,19 @@ onBeforeUnmount(() => {
 function handleKeyDown(e: KeyboardEvent) {
   if (e.ctrlKey && e.key === '1') {
     stopPlayBase64Audio();
-    startPlayBase64Audio(listenwrite_buffer.value, ()=>{
+    startPlayBase64Audio(listenwrite_buffer.value, () => {
       console.log("播放完成");
     }); // 读取到的音频内容
+    e.preventDefault();
+  }
+  // 如果是空格，停止播放
+  if (e.ctrlKey && e.key === ' ') {
+    stopPlayBase64Audio();
+    e.preventDefault();
+  }
+  // 如果是ctrl + d ，调用 showHideListenWrite
+  if (e.ctrlKey && e.key === 'd') {
+    showHideListenWrite();
     e.preventDefault();
   }
 }
@@ -147,7 +151,7 @@ const handleListenWriteComplete = async () => {
   ElMessage.success("听写完成!");
 }
 
-const handleReadContentChange = (data:string,text:string)=>{
+const handleReadContentChange = (data: string, text: string) => {
   debugger
   listenwrite_buffer.value = data;
   listenwrite_text.value = text;
@@ -169,8 +173,16 @@ const transResult = ref({ explanation: "", translation: "", voiceBuffer: "", wor
 
 // Use let instead of var for better scoping
 let connection = new signalR.HubConnectionBuilder()
-  .withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent`)
+  //.withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent?access_token=${localStorage.getItem('token')}`)
+  .withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent`, {
+    accessTokenFactory: () => localStorage.getItem('token')
+  })
   .configureLogging(signalR.LogLevel.Information)
+  .withAutomaticReconnect({
+		nextRetryDelayInMilliseconds: () => {
+			return 2000; // 每5秒重连一次
+		},
+	})
   .build()
 
 const goPrevious = async () => {
@@ -366,8 +378,10 @@ const handlePhaseSelect = async (phaseText: string) => {
 .el-button+.el-button {
   margin-left: 10px;
 }
+
 .lwdiv {
-  width: 100vw;height: 100%; 
+  width: 100vw;
+  height: 100%;
   padding: 1rem;
   background-image: url('../assets/background1.png');
   border-radius: 5px;

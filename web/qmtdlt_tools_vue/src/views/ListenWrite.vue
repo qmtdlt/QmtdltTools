@@ -1,7 +1,8 @@
 <template>
   <div class="listenwrite-wrapper">
     <el-row>
-      <el-input
+      <!-- 目标文本,自动focuse -->
+      <el-input ref="inputRef"
         v-model="userInput"
         type="textarea"
         placeholder="输入听到的内容"
@@ -25,10 +26,15 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-
+import request from '../utils/request';
 const props = defineProps<{
   targetText: string;
 }>();
+
+// 目标文本
+const inputRef = ref<HTMLElement | null>(null);
+// 监听输入框的焦点
+
 
 const emit = defineEmits(['completed']);
 
@@ -48,7 +54,7 @@ function normalizeAndTokenize(text: string): string[] {
 
 // 反馈每个单词的正确与否
 const feedbackWords = computed(() => {
-  debugger
+
   const inputWordsRaw = userInput.value.split(/\s+/);
   const inputWordsNormalized = normalizeAndTokenize(userInput.value);
   const targetWordsNormalized = normalizeAndTokenize(props.targetText);
@@ -76,7 +82,10 @@ const isComplete = computed(() => {
   if (inputWords.length !== targetWords.length) return false;
 
   const complete = inputWords.every((word, idx) => word === targetWords[idx]);
-  if (complete) emit('completed');
+  if (complete) {
+    emit('completed');
+    request.post('api/ListenWrite/AddLWRecord',{SentenceText:props.targetText})
+  }
   return complete;
 });
 </script>

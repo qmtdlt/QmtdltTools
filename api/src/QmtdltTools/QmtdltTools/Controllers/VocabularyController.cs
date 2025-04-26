@@ -4,6 +4,7 @@ using QmtdltTools.Service.Services;
 using QmtdltTools.Domain.Entitys;
 using QmtdltTools.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
+using Polly;
 using QmtdltTools.Domain.Dtos;
 using QmtdltTools.Extensions;
 
@@ -74,7 +75,7 @@ namespace QmtdltTools.Controllers
         [HttpGet("Trans")]
         public async Task<VocabularyRecord?> Trans(Guid bookId, string word)
         {
-            VocabularyRecord? findRes = await _translationService.Find(bookId, 0, 0, word);
+            VocabularyRecord? findRes = await _translationService.Find(bookId, 0, 0,"", word,HttpContext.GetUserId());
             return findRes;
         }
         [HttpGet("GetOneWord")]
