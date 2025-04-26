@@ -20,20 +20,11 @@ namespace QmtdltTools.Controllers
             _listenWriteService = listenWriteService;
         }
         [HttpGet("GetUserRecords")]
-        public async Task<Response<List<ListenWriteRecord>>> GetUserRecords()
+        public async Task<Response<PageResult<ListenWriteRecord>>> GetUserRecords(int pageindex,int pagesize)
         {
-            return new Response<List<ListenWriteRecord>>
+            return new Response<PageResult<ListenWriteRecord>>
             {
-                data = await _listenWriteService.GetListByUserId(HttpContext.GetUserId()),
-                code = 200,
-            };
-        }
-        [HttpGet("GetBookRecords")]
-        public async Task<Response<List<ListenWriteRecord>>> GetBookRecords(Guid bookId)
-        {
-            return new Response<List<ListenWriteRecord>>
-            {
-                data = await _listenWriteService.GetListByBookId(bookId),
+                data = await _listenWriteService.GetListByUserId(HttpContext.GetUserId(),pageindex, pagesize),
                 code = 200,
             };
         }

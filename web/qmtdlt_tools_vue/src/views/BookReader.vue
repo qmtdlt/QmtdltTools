@@ -10,7 +10,7 @@
             </el-icon>&nbsp; Ctrl+1</el-button>
         </el-row>
         <div>
-          <ListenWrite :target-text="listenwrite_text" @completed="handleListenWriteComplete" />
+          <ListenWrite ref="listenWriteRef" :target-text="listenwrite_text" @completed="handleListenWriteComplete" />
         </div>
       </div>
     </el-row>
@@ -92,7 +92,7 @@ import IconPlay from '../components/icons/IconPlay.vue';
 
 
 const route = useRoute() // 使用路由
-
+const listenWriteRef = ref<InstanceType<typeof ListenWrite> | null>(null); // 引用 ListenWrite 组件实例
 const showListenWrite = ref(false); // 控制听写弹窗显示
 
 const listenwrite_buffer = ref(''); // 音频数据
@@ -109,6 +109,7 @@ const listenWriteClick = () => {
 const showHideListenWrite = () => {
   showListenWrite.value = !showListenWrite.value;
   if (showListenWrite.value) {
+    listenWriteRef.value?.focusInput(); // 调用子组件的方法
     lwbtnText.value = '关闭听写';
   } else {
     lwbtnText.value = '听写';

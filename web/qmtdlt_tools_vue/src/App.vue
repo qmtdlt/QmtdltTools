@@ -23,6 +23,11 @@ onMounted(() => {
           @click="activeRoute = '/vocabulary'"
           :class="{ active: activeRoute === '/vocabulary' }" 
         >Vocabulary</RouterLink>
+        <RouterLink 
+          to="/listenwritelist" 
+          @click="activeRoute = '/listenwritelist'"
+          :class="{ active: activeRoute === '/listenwritelist' }" 
+        >ListenWritelist</RouterLink>
         <!-- <RouterLink 
           to="/" 
           @click="activeRoute = '/'" 

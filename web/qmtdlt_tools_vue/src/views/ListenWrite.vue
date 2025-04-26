@@ -25,17 +25,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch ,onMounted} from 'vue';
 import request from '../utils/request';
+import { nextTick } from 'vue';
 const props = defineProps<{
   targetText: string;
 }>();
 
 // 目标文本
 const inputRef = ref<HTMLElement | null>(null);
-// 监听输入框的焦点
 
 
+const focusInput = () => {
+  nextTick(() => {
+    inputRef.value?.focus();
+  });
+}
+defineExpose({
+  focusInput
+});
 const emit = defineEmits(['completed']);
 
 const userInput = ref('');
@@ -43,6 +51,8 @@ const userInput = ref('');
 // 清除输入内容当目标文本变化时
 watch(() => props.targetText, () => {
   userInput.value = '';
+  debugger
+  focusInput();
 });
 
 // 归一化并分词（忽略标点和空格，转小写）
@@ -51,7 +61,9 @@ function normalizeAndTokenize(text: string): string[] {
   const normalized = text.toLowerCase().replace(/[.,!?;:()"'\[\]{}，。！？；：“”‘’、]/g, '');
   return normalized.split(/\s+/).filter(word => word.length > 0);
 }
-
+onMounted(() => {
+  focusInput();
+})
 // 反馈每个单词的正确与否
 const feedbackWords = computed(() => {
 

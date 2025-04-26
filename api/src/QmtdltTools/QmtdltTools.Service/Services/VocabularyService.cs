@@ -35,23 +35,27 @@ namespace QmtdltTools.Service.Services
         public async Task<PageResult<VocabularyRecord>> GetPageByBookId(Guid BookId,int pageIndex,int pageSize)
         {
             PageResult<VocabularyRecord> page = await _dc.VocabularyRecords.Where(x => x.BookId == BookId)
+                .OrderByDescending(t=>t.CreateTime)
                 .ToPageList(pageIndex, pageSize);
             return page;
         }
         public async Task<PageResult<VocabularyRecord>> GetPageByUserId(Guid? uid, int pageIndex, int pageSize)
         {
             var page = await _dc.VocabularyRecords.Where(x => x.CreateBy == uid)
+                .OrderByDescending(t=>t.CreateTime)
                 .ToPageList(pageIndex, pageSize);
             return page;
         }
         public async Task<List<VocabularyRecord>> GetListByBookId(Guid BookId)
         {
-            List<VocabularyRecord> list = await _dc.VocabularyRecords.Where(x => x.BookId == BookId).ToListAsync();
+            List<VocabularyRecord> list = await _dc.VocabularyRecords.Where(x => x.BookId == BookId)
+                .OrderByDescending(t=>t.CreateTime).ToListAsync();
             return list;
         }
         public async Task<List<VocabularyRecord>> GetListByUserId(Guid? uid)
         {
-            List<VocabularyRecord> list = await _dc.VocabularyRecords.Where(x => x.CreateBy == uid).ToListAsync();
+            List<VocabularyRecord> list = await _dc.VocabularyRecords.Where(x => x.CreateBy == uid)
+                .OrderByDescending(t=>t.CreateTime).ToListAsync();
             return list;
         }
 
