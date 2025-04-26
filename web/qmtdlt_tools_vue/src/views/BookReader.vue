@@ -37,6 +37,10 @@
       <el-button @click="goNext"><el-icon>
           <ArrowRight />
         </el-icon></el-button>
+        <el-button @click="switchMode" type="primary" >
+          <span v-if="useModelType === 1">听书模式</span>
+          <span v-else>听写模式</span>
+        </el-button>
       <el-button @click="showHideListenWrite" style="min-width: 100px;"> {{ lwbtnText }}</el-button>
     </el-row>
   </div>
@@ -90,7 +94,16 @@ import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '../util
 import IconStop from '../components/icons/IconStop.vue';
 import IconPlay from '../components/icons/IconPlay.vue';
 
+const useModelType = ref(1); // 1: 听书（听完一句自动read 下一句）2: 听写（听完一句，自动切换听写界面，听写成功回调后，下一句）
 
+const switchMode = () => {
+  useModelType.value = useModelType.value === 1 ? 2 : 1;
+  if (useModelType.value === 1) {
+    ElMessage.success("切换到听书模式");
+  } else {
+    ElMessage.success("切换到听写模式");
+  }
+}
 const route = useRoute() // 使用路由
 const listenWriteRef = ref<InstanceType<typeof ListenWrite> | null>(null); // 引用 ListenWrite 组件实例
 const showListenWrite = ref(false); // 控制听写弹窗显示
@@ -103,6 +116,7 @@ const listenWriteClick = () => {
   stopPlayBase64Audio();
   startPlayBase64Audio(listenwrite_buffer.value, () => {
     console.log("播放完成");
+    
   }); // 读取到的音频内容
 }
 
@@ -150,6 +164,13 @@ function handleKeyDown(e: KeyboardEvent) {
 
 const handleListenWriteComplete = async () => {
   ElMessage.success("听写完成!");
+  showListenWrite.value = false; // Show the ListenWrite component
+    lwbtnText.value = '听写';
+    connection.invoke("Read", readContent.value.bookId)
+      .catch((err) => {
+        console.error("Error invoking Read from onended:", err);
+        ElMessage.error(`请求下一段失败: ${err.message}`);
+      });
 }
 
 const handleReadContentChange = (data: string, text: string) => {
@@ -270,19 +291,21 @@ connection.on("UIReadInfo", (input: any) => {
 
   // Start playing the received audio buffer
   startPlayBase64Audio(input.speaking_buffer, () => {
-    console.log("UIReadInfo audio playback finished. Requesting next.");
-    // Once the audio finishes, request the next chunk
-    // This is the continuous reading loop
-    connection.invoke("Read", readContent.value.bookId)
+    if(useModelType.value === 1) {
+      connection.invoke("Read", readContent.value.bookId)
       .catch((err) => {
         console.error("Error invoking Read from onended:", err);
         ElMessage.error(`请求下一段失败: ${err.message}`);
       });
+    } else {
+      showListenWrite.value = true; // Show the ListenWrite component
+      listenWriteRef.value?.focusInput(); // 调用子组件的方法
+      lwbtnText.value = '关闭听写';
+    }
   });
 });
 
 connection.on("onsetbookposition", (input: any) => {
-  console.log("Received onsetbookposition:", input);
   // 设置书籍位置
   readContent.value.full_pragraph_text = input.full_pragraph_text; // 读取到的文本内容
   readContent.value.speaking_text = input.speaking_text; // 读取到的文本内容
