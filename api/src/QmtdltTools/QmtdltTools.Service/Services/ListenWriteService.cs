@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Entitys;
 using QmtdltTools.EFCore;
 using Volo.Abp.DependencyInjection;
@@ -22,6 +23,11 @@ namespace QmtdltTools.Service.Services
         {
             input.Id = Guid.NewGuid();
             input.UpdateTime = DateTime.Now;
+            input.CreateTime = DateTime.Now;
+            if (!string.IsNullOrEmpty(input.SentenceText))
+            {
+                input.Pronunciation = MsTTSHelperRest.GetSpeakStreamRest(input.SentenceText,ApplicationConst.DefaultVoiceName);
+            }
             await _dc.ListenWriteRecords.AddAsync(input);
             await _dc.SaveChangesAsync();
         }

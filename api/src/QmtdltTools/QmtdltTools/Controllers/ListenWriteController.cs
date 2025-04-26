@@ -4,6 +4,7 @@ using QmtdltTools.Service.Services;
 using QmtdltTools.Domain.Entitys;
 using QmtdltTools.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
+using QmtdltTools.Domain.Data;
 using QmtdltTools.Extensions;
 
 namespace QmtdltTools.Controllers
@@ -42,8 +43,6 @@ namespace QmtdltTools.Controllers
             try
             {
                 content.CreateBy = HttpContext.GetUserId();
-                content.CreateTime = DateTime.Now;
-
                 await _listenWriteService.AddRecord(content);
 
                 return new Response<bool>
