@@ -11,6 +11,11 @@ const router = createRouter({
       name: 'vocabulary',
       component: () => import('../views/Vocabulary.vue'),
     },
+    {
+      path:'/listenwritelist',
+      name: 'listenwrite',
+      component: () => import('../views/ListenWriteList.vue'),
+    },
     // {
     //   path: '/',
     //   name: 'home',

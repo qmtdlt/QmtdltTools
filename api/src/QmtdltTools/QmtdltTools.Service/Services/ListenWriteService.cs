@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Entitys;
+using QmtdltTools.Domain.Models;
 using QmtdltTools.EFCore;
+using QmtdltTools.EFCore.Extensions;
 using Volo.Abp.DependencyInjection;
 
 namespace QmtdltTools.Service.Services
@@ -21,6 +24,21 @@ namespace QmtdltTools.Service.Services
 
         public async Task AddRecord(ListenWriteRecord input)
         {
+            // if exists input.SentenceText return
+            try
+            {
+                var entity = await _dc.ListenWriteRecords
+                    .Where(x => x.SentenceText.Trim() == input.SentenceText.Trim())
+                    .FirstOrDefaultAsync();
+                if (entity != null)
+                {
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
             input.Id = Guid.NewGuid();
             input.UpdateTime = DateTime.Now;
             input.CreateTime = DateTime.Now;
@@ -36,10 +54,11 @@ namespace QmtdltTools.Service.Services
             List<ListenWriteRecord> list = await _dc.ListenWriteRecords.Where(x => x.BookId == BookId).ToListAsync();
             return list;
         }
-        public async Task<List<ListenWriteRecord>> GetListByUserId(Guid? uid)
+        public async Task<PageResult<ListenWriteRecord>> GetListByUserId(Guid? uid,int pageIndex,int pageSize)
         {
-            List<ListenWriteRecord> list = await _dc.ListenWriteRecords.Where(x => x.CreateBy == uid).ToListAsync();
-            return list;
+            var page = await _dc.ListenWriteRecords.Where(x => x.CreateBy == uid)
+                .OrderByDescending(t=>t.CreateTime).ToPageList(pageIndex,pageSize);
+            return page;
         }
     }
 }
