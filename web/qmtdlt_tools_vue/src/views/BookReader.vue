@@ -194,10 +194,14 @@ const jumpOffset = ref("1"); // 跳转偏移量
 const transResult = ref({ explanation: "", translation: "", voiceBuffer: "", wordVoiceBuffer: "" }); // Store translation result pronunciation is base64 string
 
 // Use let instead of var for better scoping
-let connection = new signalR.HubConnectionBuilder()
   //.withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent?access_token=${localStorage.getItem('token')}`)
+let connection = new signalR.HubConnectionBuilder()
   .withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent`, {
-    accessTokenFactory: () => localStorage.getItem('token')
+    accessTokenFactory: () => {
+      // localStorage.getItem('token')
+      const token = localStorage.getItem('token');
+      return token ?? ''; // Return empty string if token is null
+    }
   })
   .configureLogging(signalR.LogLevel.Information)
   .withAutomaticReconnect({
