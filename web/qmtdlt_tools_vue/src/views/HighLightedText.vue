@@ -72,6 +72,7 @@ onBeforeUnmount(() => {
   font-size: 2.5rem;
   overscroll-behavior-y: scroll;
   color: #c0c0c0;
+  overflow-y: hidden;
 }
 .highlight {
   color: #ffffff;

@@ -42,7 +42,7 @@ namespace QmtdltTools.Service.Utils
 
             foreach (EpubLocalTextContentFile textContentFile in book.ReadingOrder)
             {
-                var chapter = getChapterPragraphs(textContentFile);
+                List<MyPragraph> chapter = getChapterPragraphs(textContentFile);
                 if (null != chapter)
                 {
                     mybook.AddRange(chapter);
@@ -56,12 +56,38 @@ namespace QmtdltTools.Service.Utils
             HtmlDocument htmlDocument = new();
             htmlDocument.LoadHtml(textContentFile.Content);
             StringBuilder sb = new();
-            foreach (HtmlNode node in htmlDocument.DocumentNode.SelectNodes("//text()"))
+            HtmlNodeCollection blockNodes = htmlDocument.DocumentNode.SelectNodes("//p | //div");
+            if (blockNodes != null)
             {
-                string paragraph = node.InnerText.Trim();
-                if (!string.IsNullOrEmpty(paragraph))
+                foreach (HtmlNode blockNode in blockNodes)
                 {
-                    sb.AppendLine(paragraph);
+                    // 获取块级元素内的所有文本节点
+                    var textNodes = blockNode.SelectNodes(".//text()");
+                    if (textNodes != null)
+                    {
+                        // 合并文本节点，移除多余空白
+                        string blockText = string.Join(" ", textNodes
+                            .Select(node => node.InnerText.Trim())
+                            .Where(text => !string.IsNullOrWhiteSpace(text)));
+
+                        // 添加到结果，并保留段落间换行
+                        if (!string.IsNullOrEmpty(blockText))
+                        {
+                            sb.AppendLine(blockText);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // 如果没有明确的块级元素，退回到整个文档的文本处理
+                var textNodes = htmlDocument.DocumentNode.SelectNodes("//text()");
+                if (textNodes != null)
+                {
+                    string allText = string.Join(" ", textNodes
+                        .Select(node => node.InnerText.Trim())
+                        .Where(text => !string.IsNullOrWhiteSpace(text)));
+                    sb.AppendLine(allText);
                 }
             }
             string chapterText = sb.ToString();
@@ -76,6 +102,10 @@ namespace QmtdltTools.Service.Utils
         static List<MyPragraph> GetParagraph(string chapterText)
         {
             List<MyPragraph> res = new List<MyPragraph>();
+            if(HasNoPunctuation(chapterText))
+            {
+                chapterText = chapterText.Replace("\r", " ").Replace("\n", " ").Replace("  "," ");        // 直接去掉换行
+            }
             string[] splitPragraphs = chapterText.Replace("\r","").Split("\n");          // wiwndow \r\n
             string pragraph = "";
             for (int i = 0; i < splitPragraphs.Length; i++)
@@ -114,6 +144,13 @@ namespace QmtdltTools.Service.Utils
                 }
             }
             return res;
+        }
+        static bool HasNoPunctuation(string input)
+        {
+            // 定义正则表达式，匹配指定的英文和中文标点符号
+            string pattern = @"[,.\?:!;，。？：！；]";
+            // 使用 Regex.IsMatch 检查是否包含这些标点
+            return !Regex.IsMatch(input, pattern);
         }
         static int isTooShort(string input)
         {
