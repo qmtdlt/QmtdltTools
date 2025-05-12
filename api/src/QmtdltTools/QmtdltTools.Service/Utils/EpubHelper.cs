@@ -167,7 +167,7 @@ namespace QmtdltTools.Service.Utils
             return -1;
         }
 
-        static char[] splitSymbols = new List<char> { '；', ';', ':', '：', '。', '.' }.ToArray();
+        static char[] splitSymbols = new List<char> { '；', ';', ':', '：', '。', '.', ',', '，' }.ToArray();
         // 段落分句子
         static List<string> GetSentences(string pragraphs)
         {
