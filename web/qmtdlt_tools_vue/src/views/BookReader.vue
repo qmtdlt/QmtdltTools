@@ -265,6 +265,7 @@ connection.on("onShowTrans", (result: any) => {
 });
 
 const playTransVoice = (voiceBuffer: string) => {
+debugger
   translating.value = false;
   if (voiceBuffer) {
     startPlayBase64Audio(voiceBuffer, () => {
@@ -348,7 +349,7 @@ onBeforeUnmount(() => {
 })
 const transSource = ref(''); // Store the selected text for translation
 const handlePhaseSelect = async (phaseText: string) => {
-
+  debugger
   if (translating.value) {
     console.log("Translation already in progress. Ignoring phase select.");
     return; // Prevent multiple translation requests
