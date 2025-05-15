@@ -11,7 +11,7 @@ namespace QmtdltTools.Domain.Entitys
     [Table("VocabularyRecord")]
     public class VocabularyRecord : EntityBaseId
     {
-        public Guid BookId { get; set; }
+        //public Guid BookId { get; set; }
         /// <summary>
         /// 单词文本
         /// </summary>

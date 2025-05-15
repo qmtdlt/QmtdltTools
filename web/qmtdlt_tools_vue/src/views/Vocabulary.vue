@@ -64,9 +64,9 @@
   <div v-else>
     <el-card>
       <div>
-        <el-select v-model="selectedBookId" placeholder="请选择书籍" clearable style="width: 300px" @change="onBookChange">
+        <!-- <el-select v-model="selectedBookId" placeholder="请选择书籍" clearable style="width: 300px" @change="onBookChange">
           <el-option v-for="book in books" :key="book.id" :label="book.title" :value="book.id" />
-        </el-select>
+        </el-select> -->
       </div>
       <el-table height="80vh" :data="records" border v-loading="loading">
         <el-table-column label="序号" type="index" width="55" :index="indexMethod" />
@@ -181,7 +181,6 @@ interface ApiResponse<T> {
 }
 
 const books = ref<EBookMain[]>([])
-const selectedBookId = ref<string | null>(null)
 const records = ref<VocabularyRecord[]>([])
 const total = ref(0)
 const pageIndex = ref(1)
@@ -251,28 +250,16 @@ async function fetchRecords() {
   loading.value = true
   try {
     let res: ApiResponse<PageResult<VocabularyRecord>>
-    if (selectedBookId.value) {
-      res = await request.get<ApiResponse<PageResult<VocabularyRecord>>>(
-        '/api/Vocabulary/GetBookRecordsPage',
-        {
-          params: {
-            bookId: selectedBookId.value,
-            pageindex: pageIndex.value,
-            pagesize: pageSize.value,
-          },
-        }
-      )
-    } else {
-      res = await request.get<ApiResponse<PageResult<VocabularyRecord>>>(
-        '/api/Vocabulary/GetUserRecordsPage',
-        {
-          params: {
-            pageindex: pageIndex.value,
-            pagesize: pageSize.value,
-          },
-        }
-      )
-    }
+    
+    res = await request.get<ApiResponse<PageResult<VocabularyRecord>>>(
+      '/api/Vocabulary/GetUserRecordsPage',
+      {
+        params: {
+          pageindex: pageIndex.value,
+          pagesize: pageSize.value,
+        },
+      }
+    )
     if (res && res.data) {
       records.value = res.data.pageList
       total.value = res.data.total
@@ -289,10 +276,7 @@ async function fetchRecords() {
   }
 }
 
-function onBookChange() {
-  pageIndex.value = 1
-  fetchRecords()
-}
+
 
 function onPageChange(newPage: number) {
   pageIndex.value = newPage

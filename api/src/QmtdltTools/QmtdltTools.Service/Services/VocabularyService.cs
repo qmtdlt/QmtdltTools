@@ -34,7 +34,8 @@ namespace QmtdltTools.Service.Services
         }
         public async Task<PageResult<VocabularyRecord>> GetPageByBookId(Guid BookId,int pageIndex,int pageSize)
         {
-            PageResult<VocabularyRecord> page = await _dc.VocabularyRecords.Where(x => x.BookId == BookId)
+            PageResult<VocabularyRecord> page = await _dc.VocabularyRecords
+                //.Where(x => x.BookId == BookId)
                 .OrderByDescending(t=>t.CreateTime)
                 .ToPageList(pageIndex, pageSize);
             return page;
@@ -48,7 +49,8 @@ namespace QmtdltTools.Service.Services
         }
         public async Task<List<VocabularyRecord>> GetListByBookId(Guid BookId)
         {
-            List<VocabularyRecord> list = await _dc.VocabularyRecords.Where(x => x.BookId == BookId)
+            List<VocabularyRecord> list = await _dc.VocabularyRecords
+                //.Where(x => x.BookId == BookId)
                 .OrderByDescending(t=>t.CreateTime).ToListAsync();
             return list;
         }
