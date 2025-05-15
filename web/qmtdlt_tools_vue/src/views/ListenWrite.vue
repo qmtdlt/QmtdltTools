@@ -51,7 +51,7 @@ const userInput = ref('');
 // 清除输入内容当目标文本变化时
 watch(() => props.targetText, () => {
   userInput.value = '';
-  debugger
+  
   focusInput();
 });
 

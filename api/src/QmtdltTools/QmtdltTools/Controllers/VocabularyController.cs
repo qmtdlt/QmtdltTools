@@ -73,9 +73,9 @@ namespace QmtdltTools.Controllers
             }
         }
         [HttpGet("Trans")]
-        public async Task<VocabularyRecord?> Trans(Guid bookId, string word)
+        public async Task<VocabularyRecord?> Trans(string word)
         {
-            VocabularyRecord? findRes = await _translationService.Find(bookId, 0, 0,"", word,HttpContext.GetUserId());
+            VocabularyRecord? findRes = await _translationService.Find(0, 0,"", word,HttpContext.GetUserId());
             return findRes;
         }
         [HttpGet("GetOneWord")]
