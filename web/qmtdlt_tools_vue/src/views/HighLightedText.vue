@@ -111,12 +111,12 @@ const scrollToHighlightedText = async () => {
 };
 
 onMounted(() => {
-  document.addEventListener('mouseup', handleSelection); // 'mouseup' is often better for selections than 'selectionchange' for this kind of emit
+  // document.addEventListener('mouseup', handleSelection); // 'mouseup' is often better for selections than 'selectionchange' for this kind of emit
   scrollToHighlightedText();
 });
 
 onBeforeUnmount(() => {
-  document.removeEventListener('mouseup', handleSelection);
+  // document.removeEventListener('mouseup', handleSelection);
 });
 
 // Watch for changes in highlightText or fullText to re-calculate and scroll

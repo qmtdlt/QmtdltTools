@@ -9,10 +9,21 @@ const activeRoute = ref('')
 onMounted(() => {
   activeRoute.value = window.location.pathname
 })
+
+const handleSelection = () => {
+  const selection = window.getSelection()
+  if (selection && selection.rangeCount > 0) {
+    const selectedText = selection.toString().trim()
+    if (selectedText) {
+      // Emit the selected text to the parent component
+      alert(`Selected text: ${selectedText}`)
+    }
+  }
+}
 </script>
 
 <template>
-  <div class="container">
+  <div class="container" @mouseup="handleSelection">
     <header class="header" >
       <div class="logo" v-if="!isMobileRef">
         <h1>QmtdltTools</h1>
