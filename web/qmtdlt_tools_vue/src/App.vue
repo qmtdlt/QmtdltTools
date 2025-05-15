@@ -2,6 +2,9 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import { isMobbile } from './utils/myutil'
+import TranslateView from './views/TranslateView.vue'
+
+const transRef = ref<InstanceType<typeof TranslateView> | null>(null); // 引用 ListenWrite 组件实例
 
 const isMobileRef = ref(isMobbile())
 const activeRoute = ref('')
@@ -15,8 +18,11 @@ const handleSelection = () => {
   if (selection && selection.rangeCount > 0) {
     const selectedText = selection.toString().trim()
     if (selectedText) {
+      // 取消选中状态
+      selection.removeAllRanges()
+
       // Emit the selected text to the parent component
-      alert(`Selected text: ${selectedText}`)
+      transRef.value?.handlePhaseSelect(selectedText); // 调用子组件的方法
     }
   }
 }
@@ -59,6 +65,7 @@ const handleSelection = () => {
     <main class="content">
       <RouterView class="content-view"/>
     </main>
+    <TranslateView ref="transRef" />
   </div>
 </template>
 
