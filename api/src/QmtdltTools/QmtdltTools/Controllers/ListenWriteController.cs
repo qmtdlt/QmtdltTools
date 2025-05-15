@@ -6,6 +6,7 @@ using QmtdltTools.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using QmtdltTools.Domain.Data;
 using QmtdltTools.Extensions;
+using Autofac.Core;
 
 namespace QmtdltTools.Controllers
 {
@@ -51,6 +52,13 @@ namespace QmtdltTools.Controllers
                     message = e.Message
                 };
             }
+        }
+
+
+        [HttpGet("GetOneSentence")]
+        public async Task<ListenWriteRecord?> GetOneSentence()
+        {
+            return await _listenWriteService.GetOneSentence(HttpContext.GetUserId());
         }
     }
 }

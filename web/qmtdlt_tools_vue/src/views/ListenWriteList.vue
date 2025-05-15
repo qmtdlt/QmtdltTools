@@ -4,17 +4,15 @@
       <el-row>
         <el-col :span="8">
           <el-span>
-            <!--单词-->
             {{ curWordRef?.sentenceText }}
           </el-span>
         </el-col>
       </el-row>
-      <el-row>
+      <!-- <el-row>
         <el-span>
-          <!--AI 解释-->
           {{ curWordRef?.pronunciation }}
         </el-span>
-      </el-row>
+      </el-row> -->
       <el-row>
         <el-col :span="12">
           <el-button size="small" type="primary" title="ignore in three days" @click="ignoreInTimeRange">
@@ -156,7 +154,8 @@ onMounted(() => {
 
 const getWord = async () => {
   stopPronunciation();
-  const res = await request.get<ListenWriteRecord>('/api/Vocabulary/GetOneWord')
+  const res = await request.get<ListenWriteRecord>('/api/ListenWrite/GetOneSentence')
+  debugger
   curWordRef.value = res
   console.log(curWordRef.value)
 }

@@ -42,7 +42,7 @@ namespace QmtdltTools.Service.Services
                 {
                     entity = new Domain.Entitys.VocabularyRecord
                     {
-                        BookId = bookId,
+                        //BookId = bookId,
                         WordText = word,
                         WordPronunciation = MsTTSHelperRest.GetSpeakStreamRest(word,ApplicationConst.DefaultVoiceName), // 单词配音
                         Pronunciation = res.VoiceBuffer,
@@ -91,10 +91,11 @@ namespace QmtdltTools.Service.Services
             }
             return null;
         }
-        public Task GetListBookId(Guid bookId)
-        {
-            var list = _dc.VocabularyRecords.Where(x => x.BookId == bookId).ToList();
-            return Task.FromResult(list);
-        }
+        //public Task GetListBookId(Guid bookId)
+        //{
+        //    //Where(x => x.BookId == bookId)
+        //    var list = _dc.VocabularyRecords.ToList();
+        //    return Task.FromResult(list);
+        //}
     }
 }
