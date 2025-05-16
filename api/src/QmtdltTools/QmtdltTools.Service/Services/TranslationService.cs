@@ -16,51 +16,14 @@ namespace QmtdltTools.Service.Services
     {
         private readonly DC _dc;
         private readonly AiApiService _aiApiService;
-        public TranslationService(DC dc, AiApiService aiApiService)
+        private readonly VocabularyService _vocabularyService;
+        public TranslationService(DC dc, AiApiService aiApiService, VocabularyService vocabularyService)
         {
             _dc = dc;
             _aiApiService = aiApiService;
+            _vocabularyService = vocabularyService;
         }
-        public async Task AddRecord(VocabularyRecord record)
-        {
-            record.Id = Guid.NewGuid();
-            record.CreateTime = DateTime.Now;
-            await _dc.VocabularyRecords.AddAsync(record);
-            await _dc.SaveChangesAsync();
-        }
-        public async Task<VocabularyRecord?> Find(Guid bookId,int pIndex,int sIndex,string sentence,string word,Guid? uid)
-        {
-            var entity = await _dc.VocabularyRecords
-                .Where(x=>!string.IsNullOrEmpty(x.WordText)
-                          && !string.IsNullOrEmpty(word)
-                          && x.WordText.ToLower().Trim() == word.ToLower().Trim())
-                .FirstOrDefaultAsync();
-            if (entity == null)
-            {
-                TranslateDto? res = await _aiApiService.GetTranslateResult(word);       // 翻译
-                if (res != null)
-                {
-                    entity = new Domain.Entitys.VocabularyRecord
-                    {
-                        //BookId = bookId,
-                        WordText = word,
-                        WordPronunciation = MsTTSHelperRest.GetSpeakStreamRest(word,ApplicationConst.DefaultVoiceName), // 单词配音
-                        Pronunciation = res.VoiceBuffer,
-                        AIExplanation = res.Explanation,
-                        AITranslation = res.Translation,
-                        CreateBy = uid
-                    };
-                    await AddRecord(entity);
-                    return entity;
-                }
-            }
-            else
-            {
-                return entity;
-            }
-            return null;
-        }
-        public async Task<VocabularyRecord?> Find(int pIndex, int sIndex, string sentence, string word, Guid? uid)
+        public async Task<VocabularyRecord?> Trans(int pIndex, int sIndex, string sentence, string word, Guid? uid)
         {
             var entity = await _dc.VocabularyRecords
                 .Where(x => !string.IsNullOrEmpty(x.WordText)
@@ -81,21 +44,28 @@ namespace QmtdltTools.Service.Services
                         AITranslation = res.Translation,
                         CreateBy = uid
                     };
-                    await AddRecord(entity);
+                    await _vocabularyService.AddRecord(entity);
                     return entity;
                 }
             }
             else
             {
+                var userVoclbular = _dc.UserVocabularies.Where(t => t.VocabularyId == entity.Id && t.CreateBy == uid).FirstOrDefault();     // 查找当前用户是否有该单词
+                if (null == userVoclbular)
+                {
+                    userVoclbular = new UserVocabulary
+                    {
+                        VocabularyId = entity.Id,
+                        CreateBy = uid,
+                        CreateTime = DateTime.Now
+                    };
+                    // 存储 userVoclbular
+                    await _dc.UserVocabularies.AddAsync(userVoclbular);
+                    await _dc.SaveChangesAsync();
+                }
                 return entity;
             }
             return null;
         }
-        //public Task GetListBookId(Guid bookId)
-        //{
-        //    //Where(x => x.BookId == bookId)
-        //    var list = _dc.VocabularyRecords.ToList();
-        //    return Task.FromResult(list);
-        //}
     }
 }

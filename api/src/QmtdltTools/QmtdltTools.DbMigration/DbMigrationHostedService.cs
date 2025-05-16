@@ -27,11 +27,13 @@ public class DbMigrationHostedService : IHostedService
         System.Collections.Generic.List<EBookMain> ebooks = await _dc.EBooks.ToListAsync();
         System.Collections.Generic.List<ListenWriteRecord> listenwrite = await _dc.ListenWriteRecords.ToListAsync();
         System.Collections.Generic.List<VocabularyRecord> vocabulary = await _dc.VocabularyRecords.ToListAsync();
+        System.Collections.Generic.List<UserVocabulary> userVocabularies = await _dc.UserVocabularies.ToListAsync();
         // 将数据备份到文件
         File.WriteAllText("users.json", System.Text.Json.JsonSerializer.Serialize(users));
         File.WriteAllText("ebooks.json", System.Text.Json.JsonSerializer.Serialize(ebooks));
         File.WriteAllText("listenwrite.json", System.Text.Json.JsonSerializer.Serialize(listenwrite));
         File.WriteAllText("vocabulary.json", System.Text.Json.JsonSerializer.Serialize(vocabulary));
+        File.WriteAllText("uservocabularies.json", System.Text.Json.JsonSerializer.Serialize(userVocabularies));
     }
     public async Task Start()
     {
@@ -84,6 +86,17 @@ public class DbMigrationHostedService : IHostedService
             {
                 var list = System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.List<VocabularyRecord>>(File.ReadAllText("vocabulary.json"));
                 await _dc.VocabularyRecords.AddRangeAsync(list);
+                await _dc.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            try
+            {
+                var list = System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.List<UserVocabulary>>(File.ReadAllText("uservocabularies.json"));
+                await _dc.UserVocabularies.AddRangeAsync(list);
                 await _dc.SaveChangesAsync();
             }
             catch (Exception ex)

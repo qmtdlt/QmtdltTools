@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using QmtdltTools.Domain.Dtos;
 using QmtdltTools.Domain.Entitys;
 using QmtdltTools.Domain.Models;
@@ -31,53 +32,90 @@ namespace QmtdltTools.Service.Services
             input.UpdateTime = DateTime.Now;
             await _dc.VocabularyRecords.AddAsync(input);
             await _dc.SaveChangesAsync();
+
+            // 如果是添加单词，则添加到用户单词表中
+            UserVocabulary userVocabulary = new UserVocabulary
+            {
+                Id = Guid.NewGuid(),
+                VocabularyId = input.Id,
+                CreateBy = input.CreateBy,
+                CreateTime = DateTime.Now
+            };
+            await _dc.UserVocabularies.AddAsync(userVocabulary);
+            await _dc.SaveChangesAsync();
         }
-        public async Task<PageResult<VocabularyRecord>> GetPageByBookId(Guid BookId,int pageIndex,int pageSize)
+        
+        public async Task<PageResult<VocabularyDto>> GetPageByUserId(Guid? uid, int pageIndex, int pageSize)
         {
-            PageResult<VocabularyRecord> page = await _dc.VocabularyRecords
-                //.Where(x => x.BookId == BookId)
-                .OrderByDescending(t=>t.CreateTime)
-                .ToPageList(pageIndex, pageSize);
+            // UserVocabularies leftjoin VocabularyRecords，on 条件 UserVocabularies 的 VocabularyId 等于 VocabularyRecords 的 Id
+            var query = from uv in _dc.UserVocabularies.Where(t=>t.CreateBy == uid)
+                        join vr in _dc.VocabularyRecords
+                        on uv.VocabularyId equals vr.Id into vrGroup
+                        from vr in vrGroup.DefaultIfEmpty() // LEFT JOIN
+                        select new VocabularyDto
+                        {
+                            Id = uv.Id,
+                            VocabularyId = uv.VocabularyId,
+                            SentenceYouMade = uv.SentenceYouMade,
+                            SentencePronunciation = uv.SentencePronunciation,
+                            IfUsageCorrect = uv.IfUsageCorrect,
+                            IncorrectReason = uv.IncorrectReason,
+                            CorrectSentence = uv.CorrectSentence,
+                            CreateTime = uv.CreateTime,
+
+                            WordText = vr != null ? vr.WordText : null,
+                            WordPronunciation = vr != null ? vr.WordPronunciation : null,
+                            AIExplanation = vr != null ? vr.AIExplanation : null,
+                            Pronunciation = vr != null ? vr.Pronunciation : null,
+                            AITranslation = vr != null ? vr.AITranslation : null
+                        };
+            var page = await query.OrderByDescending(t => t.CreateTime).ToPageList(pageIndex, pageSize);
             return page;
-        }
-        public async Task<PageResult<VocabularyRecord>> GetPageByUserId(Guid? uid, int pageIndex, int pageSize)
-        {
-            var page = await _dc.VocabularyRecords.Where(x => x.CreateBy == uid)
-                .OrderByDescending(t=>t.CreateTime)
-                .ToPageList(pageIndex, pageSize);
-            return page;
-        }
-        public async Task<List<VocabularyRecord>> GetListByBookId(Guid BookId)
-        {
-            List<VocabularyRecord> list = await _dc.VocabularyRecords
-                //.Where(x => x.BookId == BookId)
-                .OrderByDescending(t=>t.CreateTime).ToListAsync();
-            return list;
-        }
-        public async Task<List<VocabularyRecord>> GetListByUserId(Guid? uid)
-        {
-            List<VocabularyRecord> list = await _dc.VocabularyRecords.Where(x => x.CreateBy == uid)
-                .OrderByDescending(t=>t.CreateTime).ToListAsync();
-            return list;
         }
 
-        public async Task<VocabularyRecord> MakeSentence(MakeSentenceInputDto input)
+        public async Task<UserVocabulary> MakeSentence(MakeSentenceInputDto input)
         {
-            VocabularyRecord? entity = await _dc.VocabularyRecords.Where(t=>t.Id == input.Id).FirstOrDefaultAsync();
+            UserVocabulary? entity = await _dc.UserVocabularies.Where(t=>t.Id == input.Id).FirstOrDefaultAsync();
             if (entity != null)
             {
                 entity.SentenceYouMade = input.Sentence;
-                SentenceEvaluateDto? dtores = await _aiApiService.GetSentenctevaluate(input.Sentence, entity.WordText);
+                SentenceEvaluateDto? dtores = await _aiApiService.GetSentenctevaluate(input.Sentence, input.WordText);
                 entity.IfUsageCorrect = dtores.IfUsageCorrect;
                 entity.IncorrectReason = dtores.IncorrectReason;
                 entity.CorrectSentence = dtores.CorrectSentence;
-                _dc.VocabularyRecords.Update(entity);
+                _dc.UserVocabularies.Update(entity);
                 await _dc.SaveChangesAsync();
             }
             return entity; 
         }
+        async Task<List<VocabularyDto>> GetListByUid(Guid? uid)
+        {
+            // UserVocabularies leftjoin VocabularyRecords，on 条件 UserVocabularies 的 VocabularyId 等于 VocabularyRecords 的 Id
+            var query = from uv in _dc.UserVocabularies.Where(t => t.CreateBy == uid)
+                        join vr in _dc.VocabularyRecords
+                        on uv.VocabularyId equals vr.Id into vrGroup
+                        from vr in vrGroup.DefaultIfEmpty() // LEFT JOIN
+                        select new VocabularyDto
+                        {
+                            Id = uv.Id,
+                            VocabularyId = uv.VocabularyId,
+                            SentenceYouMade = uv.SentenceYouMade,
+                            SentencePronunciation = uv.SentencePronunciation,
+                            IfUsageCorrect = uv.IfUsageCorrect,
+                            IncorrectReason = uv.IncorrectReason,
+                            CorrectSentence = uv.CorrectSentence,
+                            CreateTime = uv.CreateTime,
 
-        public async Task<VocabularyRecord?> GetOneWord(Guid? uid)
+                            WordText = vr != null ? vr.WordText : null,
+                            WordPronunciation = vr != null ? vr.WordPronunciation : null,
+                            AIExplanation = vr != null ? vr.AIExplanation : null,
+                            Pronunciation = vr != null ? vr.Pronunciation : null,
+                            AITranslation = vr != null ? vr.AITranslation : null
+                        };
+            var list = await query.OrderByDescending(t => t.CreateTime).ToListAsync();
+            return list;
+        }
+        public async Task<VocabularyDto?> GetOneWord(Guid? uid)
         {
             if(uid == null)
             {
@@ -98,14 +136,15 @@ namespace QmtdltTools.Service.Services
             success = userIgnoreIdsCache.TryGetValue(uid.Value, out List<Guid> ignoreList);
             // 如果index大于表中单词数量，则重新开始
             int count = 0;
+            var list = await GetListByUid(uid);
             if (success && ignoreList != null && ignoreList.Count > 0)
             {
                 // 获取忽略之后的单词数量
-                count = await _dc.VocabularyRecords.Where(x => !ignoreList.Contains(x.Id)).CountAsync();
+                count = list.Where(x => !ignoreList.Contains(x.Id)).Count();
             }
             else
             {
-                count = await _dc.VocabularyRecords.CountAsync();
+                count = list.Count;
             }
             if (index >= count)
             {
@@ -113,15 +152,14 @@ namespace QmtdltTools.Service.Services
                 userViewWordIndexCache[uid.Value] = index;
             }
             // 过滤掉忽略的单词，然后
-            var query = _dc.VocabularyRecords.AsQueryable();
             if (success && ignoreList != null && ignoreList.Count > 0)
             {
-                query = query.Where(x => !ignoreList.Contains(x.Id));
+                list = list.Where(x => !ignoreList.Contains(x.Id)).ToList();
             }
-            var word = await query
+            var word = list
                 .Skip(index)
                 .Take(1)
-                .FirstOrDefaultAsync();
+                .FirstOrDefault();
             return word;
         }
 

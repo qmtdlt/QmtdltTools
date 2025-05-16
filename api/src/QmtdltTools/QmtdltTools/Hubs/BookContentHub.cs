@@ -151,28 +151,6 @@ public class BookContentHub:AbpHub
             success = CurReadInfoEnQueue(bookId, out UIReadInfo enQueueInfo2);                   // en queue
         }
     }
-    public async Task Trans(Guid bookId,string word)
-    {
-        var uid = Context.GetUserId();
-        VocabularyRecord? findRes = await _translationService.Find(bookId,
-            bookReadingCache[bookId].position.PragraphIndex, 
-            bookReadingCache[bookId].position.SentenceIndex, 
-            bookReadingCache[bookId].plist[bookReadingCache[bookId].position.PragraphIndex].Sentences[bookReadingCache[bookId].position.SentenceIndex], // get word from database
-            word,uid);
-        if(findRes != null)
-        {
-            await Clients.Caller.SendAsync("onShowTrans", new TranslateDto
-            {
-                Explanation = findRes.AIExplanation,
-                Translation = findRes.AITranslation,
-                VoiceBuffer = findRes.Pronunciation,
-                WordVoiceBuffer = findRes.WordPronunciation
-            });
-            return;
-        }
-        await Clients.Caller.SendAsync("onShowErrMsg", "∑≠“Î ß∞‹");
-    }
-   
     public async Task ResetPosition(Guid bookId ,int offsetPos)
     {
         bookReadingCache[bookId].readQueue.Clear();

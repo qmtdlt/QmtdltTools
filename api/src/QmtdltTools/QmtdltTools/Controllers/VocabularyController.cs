@@ -23,25 +23,17 @@ namespace QmtdltTools.Controllers
             _service = service;
         }
         [HttpGet("GetUserRecordsPage")]
-        public async Task<Response<PageResult<VocabularyRecord>>> GetUserRecordsPage(int pageindex,int pagesize)
+        public async Task<Response<PageResult<VocabularyDto>>> GetUserRecordsPage(int pageindex,int pagesize)
         {
-            return new Response<PageResult<VocabularyRecord>>
+            return new Response<PageResult<VocabularyDto>>
             {
                 data = await _service.GetPageByUserId(HttpContext.GetUserId(), pageindex, pagesize),
                 code = 200,
             };
         }
-        [HttpGet("GetBookRecordsPage")]
-        public async Task<Response<PageResult<VocabularyRecord>>> GetBookRecordsPage(Guid bookId, int pageindex, int pagesize)
-        {
-            return new Response<PageResult<VocabularyRecord>>
-            {
-                data = await _service.GetPageByBookId(bookId, pageindex, pagesize),
-                code = 200,
-            };
-        }
+        
         [HttpPost("MakeSentence")]
-        public async Task<VocabularyRecord?> MakeSentence([FromBody] MakeSentenceInputDto input)
+        public async Task<UserVocabulary?> MakeSentence([FromBody] MakeSentenceInputDto input)
         {
             return await _service.MakeSentence(input);
         }
@@ -75,11 +67,11 @@ namespace QmtdltTools.Controllers
         [HttpGet("Trans")]
         public async Task<VocabularyRecord?> Trans(string word)
         {
-            VocabularyRecord? findRes = await _translationService.Find(0, 0,"", word,HttpContext.GetUserId());
+            VocabularyRecord? findRes = await _translationService.Trans(0, 0,"", word,HttpContext.GetUserId());
             return findRes;
         }
         [HttpGet("GetOneWord")]
-        public async Task<VocabularyRecord?> GetOneWord()
+        public async Task<VocabularyDto?> GetOneWord()
         {
             return await _service.GetOneWord(HttpContext.GetUserId());
         }
