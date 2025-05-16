@@ -12,7 +12,7 @@ public class EBookMain:EntityBaseId
     public string? Author { get; set; }
     [StringLength(256)]
     public string? Description { get; set; }
-    public string? CoverImage { get; set; }         // base64
+    public byte[]? CoverImage { get; set; }         // base64
     [StringLength(256)]
     public string? BookPath { get; set; }           // 
 }
