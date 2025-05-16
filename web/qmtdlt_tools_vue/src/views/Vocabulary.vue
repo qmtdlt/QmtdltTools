@@ -120,7 +120,7 @@
       <!-- ... dialog content ... -->
       <el-row :gutter="20" align="middle">
         <el-col :span="16">
-          <el-input v-model="currentSentence" placeholder="请输入您的句子"></el-input>
+          <el-input v-model="curMakeSentenceRef.sentence" placeholder="请输入您的句子"></el-input>
         </el-col>
         <el-col :span="8">
           <el-button @click="submitSentence" type="primary" :loading="sentenceSubmitting">
@@ -154,6 +154,12 @@ interface EBookMain {
   title?: string
 }
 
+interface MakeSentenceInputDto{
+  id: string
+  wordText?: string,
+  sentence?: string
+}
+
 interface VocabularyRecord {
   id: string
   wordText?: string
@@ -162,7 +168,6 @@ interface VocabularyRecord {
   sentenceYouMade?: string
   ifUsageCorrect?: boolean
   incorrectReason?: string
-
   createTime?: string,
   pronunciation?: string // 新增字段
 }
@@ -191,24 +196,9 @@ const currentAudioSource = ref<AudioBufferSourceNode | null>(null)
 
 // --- 新增造句对话框相关状态 ---
 const sentenceDialogVisible = ref(false)
-const currentSentence = ref('')
-const currentRecordId = ref<string | null>(null)
 const sentenceSubmitting = ref(false)
+const curMakeSentenceRef = ref<MakeSentenceInputDto>({id: '', wordText: '', sentence: ''})
 // --- 结束新增状态 ---
-
-function formatDate(dateStr?: string) {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleString()
-}
-
-async function fetchBooks() {
-  try {
-    const res = await request.get<EBookMain[]>('/api/EpubManage/GetBooks/GetBooks')
-    books.value = res
-  } catch (e) {
-    ElMessage.error('获取书籍列表失败')
-  }
-}
 
 function playPronunciation(base64string?: string) {
   if (!base64string) return
@@ -291,19 +281,28 @@ function onSizeChange(newSize: number) {
 
 // --- 新增打开造句对话框方法 ---
 function openMakeSentenceDialog(recordId: string) {
-  currentRecordId.value = recordId
-  currentSentence.value = '' // 清空上次输入
+  if(curMakeSentenceRef.value) {
+    curMakeSentenceRef.value.id = recordId;
+    curMakeSentenceRef.value.wordText = records.value.find(record => record.id === recordId)?.wordText;
+    curMakeSentenceRef.value.sentence = '';    // 清空上次输入
+  }
   sentenceDialogVisible.value = true
 }
 // --- 结束新增方法 ---
 
 // --- 新增提交造句方法 ---
 async function submitSentence() {
-  if (!currentSentence.value) {
+  // check curMakeSentenceRef
+  debugger
+  if (!curMakeSentenceRef.value) {
+    ElMessage.error('未找到造句记录，请重试')
+    return
+  }
+  if (!curMakeSentenceRef.value.sentence) {
     ElMessage.warning('请输入句子')
     return
   }
-  if (!currentRecordId.value) {
+  if (!curMakeSentenceRef.value.id) {
     ElMessage.error('未找到记录ID，请重试')
     return
   }
@@ -311,8 +310,9 @@ async function submitSentence() {
   sentenceSubmitting.value = true
   try {
     const payload = {
-      id: currentRecordId.value,
-      sentence: currentSentence.value,
+      id: curMakeSentenceRef.value.id,
+      wordText: curMakeSentenceRef.value.wordText,
+      sentence: curMakeSentenceRef.value.sentence,
     }
     // 假设 MakeSentenceInputDto 只需要 id 和 sentence
     let result = await request.post('/api/Vocabulary/MakeSentence', payload)
@@ -330,7 +330,6 @@ async function submitSentence() {
 }
 // --- 结束新增方法 ---
 onMounted(() => {
-  fetchBooks()
   fetchRecords()
   if (isMobileRef.value) {
     getWord()
