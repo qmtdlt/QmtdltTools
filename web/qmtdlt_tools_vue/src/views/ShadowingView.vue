@@ -1,63 +1,94 @@
 <template>
     <div class="shadowing-view">
-        <el-row justify="center">
-            <el-col :xs="20" :sm="16" :md="12">
-                <h2>请跟读以下文本：</h2>
-                <p>{{ targetText }}</p>
+        <el-row :gutter="32" justify="center" align="top">
+            <!-- 左侧：录音操作区 -->
+            <el-col :xs="24" :sm="6" :md="6" :lg="6">
+                <el-card shadow="hover" class="operate-card">
+                    <template #header>
+                        <span>跟读操作</span>
+                    </template>
+                    <div>
+                        <h3 style="margin-bottom: 10px;">请跟读以下文本：</h3>
+                        <p class="target-text">{{ targetText }}</p>
+                        <el-row :gutter="10" justify="center" style="margin-top: 20px;">
+                            <el-col :xs="12" :sm="24" :md="24">
+                                <el-button type="primary" @click="toggleRecording" :disabled="isProcessing" style="width: 100%;">
+                                    {{ isRecording ? '停止录音' : '开始录音' }}
+                                </el-button>
+                            </el-col>
+                            <el-col :xs="12" :sm="24" :md="24" style="margin-top: 10px;">
+                                <el-button type="success" @click="submitRecording"
+                                    :disabled="!recordedAudioUrl || isRecording || isProcessing" style="width: 100%;">
+                                    提交录音
+                                </el-button>
+                            </el-col>
+                        </el-row>
+                        <div style="margin-top: 24px;">
+                            <audio v-if="recordedAudioUrl" :src="recordedAudioUrl" controls style="width: 100%;"></audio>
+                        </div>
+                        <div style="margin-top: 16px;">
+                            <el-alert v-if="isRecording" title="正在录音..." type="info" show-icon />
+                            <el-alert v-if="statusMessage" :title="statusMessage" type="warning" show-icon />
+                        </div>
+                    </div>
+                </el-card>
             </el-col>
-        </el-row>
-        <el-row :gutter="10" justify="center" style="margin-top: 20px;">
-            <el-col :xs="8" :sm="6" :md="4">
-                <el-button type="primary" @click="toggleRecording" :disabled="isProcessing" style="width: 100%;">
-                    {{ isRecording ? '停止录音' : '开始录音' }}
-                </el-button>
-            </el-col>
-            <el-col :xs="8" :sm="6" :md="4">
-                <el-button type="success" @click="submitRecording"
-                    :disabled="!recordedAudioUrl || isRecording || isProcessing" style="width: 100%;">
-                    提交录音
-                </el-button>
-            </el-col>
-        </el-row>
 
-        <el-row justify="center" style="margin-top: 20px;" v-if="recordedAudioUrl">
-            <el-col :xs="20" :sm="16" :md="12">
-                <audio :src="recordedAudioUrl" controls style="width: 100%;"></audio>
-            </el-col>
-        </el-row>
-
-        <el-row justify="center" style="margin-top: 10px;">
-            <el-col :xs="20" :sm="16" :md="12">
-                <p v-if="isRecording">正在录音...</p>
-                <p v-if="statusMessage">{{ statusMessage }}</p>
-            </el-col>
-        </el-row>
-
-        <!-- 结果展示区域 -->
-        <el-row justify="center" style="margin-top: 30px;" v-if="shadowingResult">
-            <el-col :xs="24" :sm="20" :md="16">
-                <el-card class="box-card">
+            <!-- 右侧：评估结果区 -->
+            <el-col :xs="24" :sm="18" :md="18" :lg="18">
+                <el-card v-if="shadowingResult" shadow="hover" class="result-card">
                     <template #header>
                         <div class="card-header">
                             <span>跟读分析结果</span>
                         </div>
                     </template>
                     <div>
-                        <p><strong>总准确度:</strong> {{ shadowingResult.accuracyScore }}</p>
-                        <p><strong>发音得分:</strong> {{ shadowingResult.pronunciationScore }}</p>
-                        <p><strong>完整度得分:</strong> {{ shadowingResult.completenessScore }}</p>
-                        <p><strong>流利度得分:</strong> {{ shadowingResult.fluencyScore }}</p>
-                    </div>
-                    <el-divider />
-                    <h4>逐词分析:</h4>
-                    <div v-for="(word, idx) in shadowingResult.words" :key="idx" class="word-analysis">
-                        <p>
-                            <strong>单词:</strong> {{ word.word }} -
-                            <strong>准确度:</strong> {{ word.accuracyScore }} -
-                            <strong>错误类型:</strong> {{ word.errorType }}
-                        </p>
+                        <el-row :gutter="16" class="score-row">
+                            <el-col :span="12"><span class="score-label">总准确度：</span><span class="score-value">{{ shadowingResult.accuracyScore }}</span></el-col>
+                            <el-col :span="12"><span class="score-label">发音得分：</span><span class="score-value">{{ shadowingResult.pronunciationScore }}</span></el-col>
+                            <el-col :span="12"><span class="score-label">完整度得分：</span><span class="score-value">{{ shadowingResult.completenessScore }}</span></el-col>
+                            <el-col :span="12"><span class="score-label">流利度得分：</span><span class="score-value">{{ shadowingResult.fluencyScore }}</span></el-col>
+                        </el-row>
+                        <el-divider />
+                        <h4 style="margin-bottom: 12px;">逐词分析</h4>
+                        <div class="word-card-flow">
+                            <el-card
+                                v-for="(word, idx) in shadowingResult.words"
+                                :key="idx"
+                                class="word-mini-card"
+                                :body-style="{ padding: '12px' }"
+                                shadow="never"
+                            >
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <el-tag :type="getWordTagType(word.errorType)" effect="plain" size="small">
+                                        {{ word.errorType }}
+                                    </el-tag>
+                                    <span class="word-score">分数: {{ word.accuracyScore }}</span>
+                                </div>
+                                <div class="word-main">
+                                    <strong>{{ word.word }}</strong>
+                                </div>
+                                <el-collapse>
+                                    <el-collapse-item title="音节详情" v-if="word.syllables && word.syllables.length">
+                                        <ul>
+                                            <li v-for="(syll, sidx) in word.syllables" :key="sidx">
+                                                {{ syll.syllable }} <span v-if="syll.grapheme">({{ syll.grapheme }})</span> - 分数: {{ syll.accuracyScore }}
+                                            </li>
+                                        </ul>
+                                    </el-collapse-item>
+                                    <el-collapse-item title="音素详情" v-if="word.phonemes && word.phonemes.length">
+                                        <ul>
+                                            <li v-for="(ph, pidx) in word.phonemes" :key="pidx">
+                                                {{ ph.phoneme }} - 分数: {{ ph.accuracyScore }}
+                                            </li>
+                                        </ul>
+                                    </el-collapse-item>
+                                </el-collapse>
+                            </el-card>
+                        </div>
                     </div>
                 </el-card>
+                <el-empty v-else description="暂无评估结果" style="margin-top: 40px;" />
             </el-col>
         </el-row>
     </div>
@@ -85,7 +116,7 @@ const props = defineProps<{
 
 let stream: MediaStream | null = null;
 
-// 新增：结果数据
+// 结果数据
 const shadowingResult = ref<any>(null)
 
 const toBase64 = (blob: Blob): Promise<string> => {
@@ -229,6 +260,17 @@ const submitRecording = async () => {
     }
 }
 
+// 新增：根据错误类型返回不同tag颜色
+const getWordTagType = (type: string) => {
+    switch (type?.toLowerCase()) {
+        case 'none': return 'success'
+        case 'mispronunciation': return 'warning'
+        case 'omission': return 'danger'
+        case 'insertion': return 'info'
+        default: return ''
+    }
+}
+
 onUnmounted(() => {
     if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
         mediaRecorder.value.stop()
@@ -245,22 +287,68 @@ onUnmounted(() => {
 
 <style scoped>
 .shadowing-view {
-    padding: 20px;
-    text-align: center;
+    padding: 32px 0;
+    min-height: 100%;
 }
-.box-card {
-    margin-top: 20px;
+.operate-card {
+    min-height: 420px;
+    margin-bottom: 24px;
+}
+.result-card {
+    min-height: 420px;
+    margin-bottom: 24px;
+}
+.target-text {
+    font-size: 1.15em;
+    color: #333;
+    background: #f7fafd;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 0;
+    margin-top: 8px;
+    display: block;
+}
+.score-row {
+    margin-bottom: 10px;
+}
+.score-label {
+    color: #888;
+    font-weight: bold;
+}
+.score-value {
+    color: #409EFF;
+    font-weight: bold;
+    margin-left: 6px;
+}
+.word-card-flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 10px;
+}
+.word-mini-card {
+    max-width: 300px;
+    min-width: 220px;
+    flex: 1 1 220px;
+    margin-bottom: 0;
+    border: 1px solid #e5e6eb;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 1px 4px 0 rgba(0,0,0,0.03);
+    transition: box-shadow 0.2s;
+}
+.word-mini-card:hover {
+    box-shadow: 0 4px 16px 0 rgba(64,158,255,0.10);
+}
+.word-main {
+    font-size: 1.12em;
+    margin: 8px 0 4px 0;
+    color: #222;
     text-align: left;
 }
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.word-analysis {
-    margin-bottom: 15px;
-    padding: 10px;
-    border: 1px solid #eee;
-    border-radius: 4px;
+.word-score {
+    color: #67c23a;
+    font-weight: bold;
+    margin-left: 8px;
 }
 </style>
