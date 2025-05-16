@@ -32,6 +32,34 @@
                 <p v-if="statusMessage">{{ statusMessage }}</p>
             </el-col>
         </el-row>
+
+        <!-- 结果展示区域 -->
+        <el-row justify="center" style="margin-top: 30px;" v-if="shadowingResult">
+            <el-col :xs="24" :sm="20" :md="16">
+                <el-card class="box-card">
+                    <template #header>
+                        <div class="card-header">
+                            <span>跟读分析结果</span>
+                        </div>
+                    </template>
+                    <div>
+                        <p><strong>总准确度:</strong> {{ shadowingResult.accuracyScore }}</p>
+                        <p><strong>发音得分:</strong> {{ shadowingResult.pronunciationScore }}</p>
+                        <p><strong>完整度得分:</strong> {{ shadowingResult.completenessScore }}</p>
+                        <p><strong>流利度得分:</strong> {{ shadowingResult.fluencyScore }}</p>
+                    </div>
+                    <el-divider />
+                    <h4>逐词分析:</h4>
+                    <div v-for="(word, idx) in shadowingResult.words" :key="idx" class="word-analysis">
+                        <p>
+                            <strong>单词:</strong> {{ word.word }} -
+                            <strong>准确度:</strong> {{ word.accuracyScore }} -
+                            <strong>错误类型:</strong> {{ word.errorType }}
+                        </p>
+                    </div>
+                </el-card>
+            </el-col>
+        </el-row>
     </div>
 </template>
 
@@ -45,7 +73,7 @@ const emit = defineEmits<{
 }>()
 
 const isRecording = ref(false)
-const isProcessing = ref(false) // To disable buttons during async operations
+const isProcessing = ref(false)
 const mediaRecorder = ref<MediaRecorder | null>(null)
 const audioChunks = ref<Blob[]>([])
 const recordedAudio = ref<Blob | null>(null)
@@ -53,9 +81,12 @@ const recordedAudioUrl = ref<string | null>(null)
 const statusMessage = ref<string>('')
 const props = defineProps<{
     targetText: string;
-}>();
+}>()
 
 let stream: MediaStream | null = null;
+
+// 新增：结果数据
+const shadowingResult = ref<any>(null)
 
 const toBase64 = (blob: Blob): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -171,25 +202,24 @@ const submitRecording = async () => {
 
         try {
             const base64Audio = await toBase64(recordedAudio.value);
-            console.log("Base64 Audio:", typeof (base64Audio), base64Audio); // Log the Base64 audio for debugging
+            console.log("Base64 Audio:", typeof (base64Audio), base64Audio);
             debugger
 
-            // let res = await request.post<string>('/api/Shadowing/CheckShadowing', {
-            //     audioBase64: base64Audio,
-            // });
             const formData = new FormData();
-            // Append the Blob directly.
-            // The third argument is the filename that the server will see.
-            // The field name "audioFile" must match what the backend expects for IFormFile.
             formData.append('audioFile', recordedAudio.value, 'recording.wav');
 
-
             let res = await request.post<string>('/api/Shadowing/CheckShadowing?reftext=' + props.targetText, formData, {
-                // No need to set Content-Type here, Axios handles it for FormData
-                headers: { 'Content-Type': 'multipart/form-data' } // This is usually not needed
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
 
             console.log("Shadowing result:", res);
+
+            // 新增：保存结果
+            if (typeof res === 'string') {
+                shadowingResult.value = JSON.parse(res);
+            } else {
+                shadowingResult.value = res;
+            }
         } catch (err) {
             console.error("Error during shadowing:", err);
         }
@@ -217,5 +247,20 @@ onUnmounted(() => {
 .shadowing-view {
     padding: 20px;
     text-align: center;
+}
+.box-card {
+    margin-top: 20px;
+    text-align: left;
+}
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.word-analysis {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
 }
 </style>
