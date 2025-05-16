@@ -3,7 +3,9 @@ using System.Web;
 using Microsoft.CognitiveServices.Speech.Audio;
 using Microsoft.CognitiveServices.Speech;
 using QmtdltTools.Domain.Data;
-using Serilog; // Required for HttpUtility.HtmlEncode
+using Serilog;
+using Microsoft.AspNetCore.Http;
+using Microsoft.CognitiveServices.Speech.PronunciationAssessment; // Required for HttpUtility.HtmlEncode
 
 public class MsTTSHelperRest
 {
@@ -67,15 +69,15 @@ public class MsTTSHelperRest
                     string errorMessage = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                     // Log the error (replace with your logging mechanism)
                     // Log.Error($"Speech synthesis REST API failed: {response.StatusCode} - {errorMessage}");
-                    Console.Error.WriteLine($"Speech synthesis REST API failed: {response.StatusCode} - {errorMessage}"); // Example logging
+                    Log.Error($"Speech synthesis REST API failed: {response.StatusCode} - {errorMessage}"); // Example logging
                     // Return empty array or throw exception based on desired behavior
                     return new byte[0];
                 }
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"An error occurred during REST API call: {ex.Message}"); // Example logging
-                throw new Exception("Failed to synthesize speech via REST API.", ex);
+                Log.Error($"An error occurred during REST API call: {ex.Message},content:{text}"); // Example logging
+                return new byte[0];
             }
         }
     }
@@ -86,7 +88,7 @@ public class MsTTSHelperRest
     /// <param name="text"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public static byte[] GetSpeakStream(string text, string SpeechSynthesisVoiceName)
+    public static byte[] GetSpeakStream(string text, string SpeechSynthesisVoiceName = ApplicationConst.DefaultVoiceName)
     {
         // Create speech configuration
         var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
@@ -126,6 +128,104 @@ public class MsTTSHelperRest
         }
     }
 
+
+    public static async Task<PronunciationAssessmentResult?> AssessPronunciationAsync(IFormFile audioFile, string referenceText)
+    {
+        if (audioFile == null || string.IsNullOrEmpty(referenceText))
+        {
+            throw new ArgumentException("Audio file and reference text are required.");
+        }
+
+        // 创建 SpeechConfig
+        var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+        speechConfig.SpeechRecognitionLanguage = "en-US"; // 设置语言
+
+        // 创建 PronunciationAssessmentConfig
+        var pronunciationConfig = new PronunciationAssessmentConfig(referenceText,
+            GradingSystem.HundredMark, Granularity.Phoneme);
+
+        // 将 IFormFile 转换为流
+        using var audioStream = audioFile.OpenReadStream();
+
+        // 创建 AudioConfig
+        using var reader = new BinaryReader(audioStream);
+
+        // 创建自定义回调实例
+        var callback = new BinaryReaderCallback(reader);
+
+        // 创建 PullAudioInputStream
+        using var audioInputStream = new PullAudioInputStream(callback);
+
+        // 创建 AudioConfig
+        using var audioConfig = AudioConfig.FromStreamInput(audioInputStream);
+
+        // 创建 SpeechRecognizer
+        using var recognizer = new SpeechRecognizer(speechConfig, audioConfig);
+
+        // 应用发音评估配置
+        pronunciationConfig.ApplyTo(recognizer);
+
+        // 进行识别
+        var result = await recognizer.RecognizeOnceAsync();
+
+        // 检查识别结果
+        if (result.Reason == ResultReason.RecognizedSpeech)
+        {
+            // 获取发音评估结果
+            var pronunciationResult = PronunciationAssessmentResult.FromResult(result);
+            //var score = pronunciationResult.PronunciationScore;
+            //var accuracy = pronunciationResult.AccuracyScore;
+            //var fluency = pronunciationResult.FluencyScore;
+            //var completeness = pronunciationResult.CompletenessScore;
+            return pronunciationResult;
+
+            // 返回评估结果（JSON 格式）
+            //return $@"
+            //{{
+            //    ""PronunciationScore"": {score},
+            //    ""AccuracyScore"": {accuracy},
+            //    ""FluencyScore"": {fluency},
+            //    ""CompletenessScore"": {completeness}
+            //}}";
+        }
+        else if (result.Reason == ResultReason.NoMatch)
+        {
+            //return "No speech could be recognized.";
+            return null;
+        }
+        else if (result.Reason == ResultReason.Canceled)
+        {
+            var cancellation = CancellationDetails.FromResult(result);
+            //return $"Recognition canceled: {cancellation.Reason}. Error details: {cancellation.ErrorDetails}";
+            return null;
+        }
+        else
+        {
+            //return "Unknown error occurred.";
+            return null;
+        }
+    }
+
+
+    private class BinaryReaderStream : PullAudioInputStreamCallback
+    {
+        private readonly BinaryReader _reader;
+
+        public BinaryReaderStream(Stream stream)
+        {
+            _reader = new BinaryReader(stream);
+        }
+
+        public override int Read(byte[] dataBuffer, uint size)
+        {
+            return _reader.Read(dataBuffer, 0, (int)size);
+        }
+
+        public override void Close()
+        {
+            _reader.Dispose();
+        }
+    }
     /// <summary>
     /// Generate by Grok: 
     /// strem callback
@@ -148,6 +248,39 @@ public class MsTTSHelperRest
         public override void Close()
         {
             // No additional cleanup needed as MemoryStream is managed by the using statement
+        }
+    }
+
+    public class BinaryReaderCallback : PullAudioInputStreamCallback
+    {
+        private readonly BinaryReader _reader;
+
+        public BinaryReaderCallback(BinaryReader reader)
+        {
+            _reader = reader;
+        }
+
+        // 实现 Read 方法，从 BinaryReader 读取数据
+        public override int Read(byte[] dataBuffer, uint size)
+        {
+            try
+            {
+                // 从流中读取最多 size 个字节的数据
+                int bytesRead = _reader.Read(dataBuffer, 0, (int)size);
+                return bytesRead;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"读取流时出错: {ex.Message}");
+                return 0;
+            }
+        }
+
+        // 实现 Close 方法，清理资源
+        public override void Close()
+        {
+            _reader?.Close();
+            base.Close();
         }
     }
 }

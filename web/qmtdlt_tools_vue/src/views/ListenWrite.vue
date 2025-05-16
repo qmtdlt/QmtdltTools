@@ -58,7 +58,8 @@ watch(() => props.targetText, () => {
 // 归一化并分词（忽略标点和空格，转小写）
 function normalizeAndTokenize(text: string): string[] {
   if (!text) return [];
-  const normalized = text.toLowerCase().replace(/[.,!?;:()"'\[\]{}，。！？；：“”‘’、]/g, '');
+  let normalized = text.toLowerCase().replace(/[—.,!?;:()"'\[\]{}，。！？；：“”‘’、]/g, '');
+  
   return normalized.split(/\s+/).filter(word => word.length > 0);
 }
 onMounted(() => {

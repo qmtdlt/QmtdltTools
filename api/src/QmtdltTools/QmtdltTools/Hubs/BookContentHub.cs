@@ -159,6 +159,8 @@ public class BookContentHub:AbpHub
         await InitCache(bookId);
     }
 
+    
+
     bool CurReadInfoEnQueue(Guid bookId, out UIReadInfo uiReadInfo)
     {
         bool success = GetCurUIReadInfo(bookId, out uiReadInfo);
