@@ -1,14 +1,7 @@
-﻿using HtmlAgilityPack;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using QmtdltTools.Domain.Entitys;
 using QmtdltTools.Domain.Models;
 using QmtdltTools.EFCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using VersOne.Epub;
 using Volo.Abp.DependencyInjection;
 
@@ -54,7 +47,7 @@ namespace QmtdltTools.Service.Services
                     {
                         Title = book.Title,
                         Author = book.Author,
-                        CoverImage = Convert.ToBase64String(book.CoverImage),
+                        CoverImage = book.CoverImage,
                         BookPath = path,
                         CreateBy = uid,
                     };
@@ -67,7 +60,6 @@ namespace QmtdltTools.Service.Services
                 data = true
             };
         }
-
         public async Task<EBookMain?> GetBookById(Guid id)
         {
             var book = await _dc.EBooks.Where(t=>t.Id == id).FirstOrDefaultAsync();
