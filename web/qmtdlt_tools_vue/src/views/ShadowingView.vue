@@ -36,7 +36,18 @@
 
             <!-- 右侧：评估结果区 -->
             <el-col :xs="24" :sm="18" :md="18" :lg="18">
-                <el-card v-if="shadowingResult" shadow="hover" class="result-card">
+                <el-card v-if="isProcessing" shadow="hover" class="result-card">
+                    <template #header>
+                        <div class="card-header">
+                            <span>跟读分析结果</span>
+                        </div>
+                    </template>
+                    <div style="text-align:center;padding:60px 0;">
+                        <el-icon style="font-size:32px;color:#409EFF;"><i class="el-icon-loading"></i></el-icon>
+                        <div style="margin-top:16px;color:#888;">分析中，请稍候...</div>
+                    </div>
+                </el-card>
+                <el-card v-else-if="shadowingResult" shadow="hover" class="result-card">
                     <template #header>
                         <div class="card-header">
                             <span>跟读分析结果</span>
@@ -228,6 +239,9 @@ const toggleRecording = () => {
 
 const submitRecording = async () => {
     if (recordedAudio.value) {
+        // 清空分析结果并显示加载中
+        shadowingResult.value = null;
+        isProcessing.value = true;
         emit('completed', recordedAudio.value);
         ElMessage.success('录音已提交')
 
@@ -253,8 +267,9 @@ const submitRecording = async () => {
             }
         } catch (err) {
             console.error("Error during shadowing:", err);
+        } finally {
+            isProcessing.value = false;
         }
-
     } else {
         ElMessage.warning('没有可提交的录音')
     }
