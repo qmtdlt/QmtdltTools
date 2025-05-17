@@ -98,7 +98,6 @@ public class BookContentHub:AbpHub
             else
             {
                 List<MyPragraph> plist = EpubHelper.PrepareAllPragraphs(ebook);     // analyse book and get all pragraphs
-                Console.WriteLine($"plist count:{plist.Count}");
                 // make dictionary cache
                 bool success = bookReadingCache.TryGetValue(bookId, out var bookInfo);                              // try get from dictionary
 
@@ -107,7 +106,7 @@ public class BookContentHub:AbpHub
                     bookInfo = new BookReaderModel
                     {
                         plist = plist,
-                        position = new ReadPosition { PragraphIndex = 0, SentenceIndex = 0 },
+                        position = new ReadPosition { PragraphIndex = 0, SentenceIndex = 0, ProgressValue = 0 },
                     };
                     bookReadingCache.AddOrUpdate(bookId, bookInfo, (bookId, old) => { return bookInfo; });          // first add bookInfo to cache
                 }
@@ -151,10 +150,10 @@ public class BookContentHub:AbpHub
             success = CurReadInfoEnQueue(bookId, out UIReadInfo enQueueInfo2);                   // en queue
         }
     }
-    public async Task ResetPosition(Guid bookId ,int offsetPos)
+    public async Task ResetPosition(Guid bookId ,int progress)
     {
         bookReadingCache[bookId].readQueue.Clear();
-        bookReadingCache[bookId].ResetPosition(offsetPos);
+        bookReadingCache[bookId].ResetProgress(progress);
         RedisHelper.Set(bookId.ToString(), bookReadingCache[bookId].position);
         await InitCache(bookId);
     }
