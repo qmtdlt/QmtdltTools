@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,52 +16,34 @@ namespace QmtdltTools.Domain.Models
         public ReadPosition position { get; set; }           // 位置
         public bool PositionInbook()
         {
-            if(position.PragraphIndex < plist.Count && position.SentenceIndex < plist[position.PragraphIndex].Sentences.Count)
+            CalcPosProg();
+            if(position.PragraphIndex < plist.Count && position.SentenceIndex < plist[position.PragraphIndex].Sentences.Count 
+                && (position.ProgressValue >= 0 && position.ProgressValue <= 100))
             {
                 return true;
             }
             return false;
         }
-
-        public void ResetPosition(int offsetPos)
+        public void ResetProgress(int progress)
         {
-            if(offsetPos >= 0)
+            if(progress < 0 || progress > 100)
             {
-                int cnt = 0;
-                while(PositionInbook() && cnt < offsetPos - 1)      // sub 1, because cached two
-                {
-                    PositionNext();
-                    cnt++;
-                }
+                return;
             }
             else
             {
-                int cnt = 0;
-                while (PositionInbook() && cnt <= Math.Abs(offsetPos))
-                {
-                    if (position.SentenceIndex > 0)
-                    {
-                        position.SentenceIndex--;
-                    }
-                    else
-                    {
-                        if (position.PragraphIndex > 0)
-                        {
-                            position.PragraphIndex--;
-                            position.SentenceIndex = plist[position.PragraphIndex].Sentences.Count - 1;
-                        }
-                    }
-                    cnt++;
-                }
+                position.ProgressValue = progress;
+                position.PragraphIndex = (int)((double)progress / 100d * (double)plist.Count);
+                position.SentenceIndex = 0;
             }
         }
-
-
+        
         public bool PositionNext()
         {
             if (position.SentenceIndex + 1 < plist[position.PragraphIndex].Sentences.Count)
             {
                 position.SentenceIndex++;
+                CalcPosProg();
                 return true;
             }
             else
@@ -69,6 +52,7 @@ namespace QmtdltTools.Domain.Models
                 {
                     position.PragraphIndex++;
                     position.SentenceIndex = 0;
+                    CalcPosProg();
                     return true;
                 }
                 else
@@ -77,6 +61,10 @@ namespace QmtdltTools.Domain.Models
                     return false;
                 }
             }
+        }
+        void CalcPosProg()
+        {
+            position.ProgressValue = ((double)(plist.Take(position.PragraphIndex).Sum(t => t.Sentences.Count) + position.SentenceIndex) / (double)plist.Sum(t=>t.Sentences.Count) * 100d);
         }
         public UIReadInfo GetCurrentPosInfo()
         {
@@ -120,5 +108,6 @@ namespace QmtdltTools.Domain.Models
         }
         public int PragraphIndex { get; set; }
         public int SentenceIndex { get; set; }
+        public double ProgressValue { get; set; }
     }
 }

@@ -25,12 +25,8 @@
       </div>
     </el-row>
     <el-row style="margin-top: 10px;margin-bottom: 10px;" justify="right">
-      <el-col :span="4" justify="end">
-        <el-tag type="info" effect="plain" size="small">
-          当前段落： {{ readContent.curPosition.pragraphIndex }} 第: {{ readContent.curPosition.sentenceIndex }} 句
-          [{{ formatTime }}]
-        </el-tag>
-      </el-col>
+      <el-slider v-model="readContent.curPosition.progressValue" @change="progChange"></el-slider>
+      {{ readContent.curPosition }}
     </el-row>
     <el-row justify="start" align="middle">
       <el-button @click="startRead" type="primary" plain circle><el-icon>
@@ -38,22 +34,8 @@
         </el-icon></el-button>
       <el-button @click="stopRead" type="danger" plain circle><el-icon>
           <IconStop />
-        </el-icon></el-button>
-      <el-button @click="goPrevious"><el-icon>
-          <ArrowLeft />
-        </el-icon></el-button>
-      <el-input v-model="jumpOffset" placeholder="偏移量" style="width: 90px; height: 30px; margin: 0 8px;"
-        size="small"></el-input>
-      <el-button @click="goNext"><el-icon>
-          <ArrowRight />
-        </el-icon></el-button>
-      <!-- <el-button @click="switchMode" type="primary" > -->
-
-      <!-- <span v-if="useModelType === 1">听书模式</span>
-          <span v-else-if="useModelType === 2">听写模式</span>
-          <span v-else-if="useModelType === 3">跟读</span> -->
-      <!-- </el-button> -->
-
+        </el-icon>
+      </el-button>
       <el-radio-group v-model="useModelType" @change="switchMode">
         <el-radio-button label="1">听书模式</el-radio-button>
         <el-radio-button label="2">听写模式</el-radio-button>
@@ -79,9 +61,9 @@ import IconStop from '../components/icons/IconStop.vue';
 import IconPlay from '../components/icons/IconPlay.vue';
 
 const useModelType = ref("1"); // 1: 听书（听完一句自动read 下一句）2: 听写（听完一句，自动切换听写界面，听写成功回调后，下一句）3：跟读（听完一句，自动切换跟读界面，跟读成功回调后，下一句）
-
+const progressValue = ref(0); // 进度条值
 const switchMode = () => {
-  
+
   if (useModelType.value === "1") {
     ElMessage.success("切换到听书模式");
   } else if (useModelType.value === "2") {
@@ -165,10 +147,10 @@ const handleListenWriteComplete = async () => {
 
 const handleShadowingComplete = async (audio: Blob) => {
   console.log("跟读音频:", audio);
-  
+
   // 将 Blob 转为 Base64
-  
-  
+
+
 };
 
 const handleReadContentChange = (data: string, text: string) => {
@@ -176,15 +158,15 @@ const handleReadContentChange = (data: string, text: string) => {
   listenwrite_buffer.value = data;
   // text — 替换为空格
   listenwrite_text.value = text.replace('—', ' ').replace('-', ' '); // 读取到的音频内容
-  
+
 }
 
 const readContent = ref({
   full_pragraph_text: '', // 读取到的文本内容
   speaking_text: '', // 读取到的文本内容
-  curPosition: { pragraphIndex: 0, sentenceIndex: 0 }, // 读取到的文本位置
+  curPosition: { pragraphIndex: 0, sentenceIndex: 0,progressValue: 0 }, // 读取到的文本位置
   bookId: route.query.id as string, // 书籍 ID
-  speaking_buffer: '' // 读取到的音频内容
+  speaking_buffer: '', // 读取到的音频内容  
 });
 
 const jumpOffset = ref("1"); // 跳转偏移量
@@ -207,23 +189,11 @@ let connection = new signalR.HubConnectionBuilder()
   })
   .build()
 
-const goPrevious = async () => {
-  stopRead(); // Stop any current reading before starting a new one
-  // Delay invoking to ensure audio stops before requesting new content
+const progChange = () => {
+  stopRead();
+
   setTimeout(() => {
-    connection.invoke("ResetPosition", readContent.value.bookId, 0 - parseInt(jumpOffset.value || '0')).then(() => { // Added fallback for parseInt
-      startRead(); // Start reading again
-    }).catch((err) => {
-      console.error("Error resetting position:", err);
-      ElMessage.error(`重置位置失败: ${err.message}`);
-    });
-  }, 100); // Small delay
-}
-const goNext = async () => {
-  stopRead(); // Stop any current reading before starting a new one
-  // Delay invoking to ensure audio stops before requesting new content
-  setTimeout(() => {
-    connection.invoke("ResetPosition", readContent.value.bookId, parseInt(jumpOffset.value || '0')).then(() => { // Added fallback for parseInt
+    connection.invoke("ResetPosition", readContent.value.bookId, progressValue.value).then(() => { // Added fallback for parseInt
       startRead(); // Start reading again
     }).catch((err) => {
       console.error("Error resetting position:", err);
@@ -234,9 +204,6 @@ const goNext = async () => {
 
 const startRead = async () => {
   console.log("startRead called. Invoking 'Read' on SignalR.");
-  // This call needs to be triggered by a user gesture (the button click)
-  // The audio playback will happen in the UIReadInfo handler, which
-  // now uses the persistent AudioContext and attempts to resume it.
   connection.invoke("Read", readContent.value.bookId)
     .catch((err) => {
       console.error("Error invoking Read:", err);
@@ -294,8 +261,6 @@ connection.on("onsetbookposition", (input: any) => {
   readContent.value.speaking_buffer = input.speaking_buffer; // 读取到的文本位置
 
   handleReadContentChange(input.speaking_buffer, input.speaking_text);
-  // Note: onsetbookposition likely doesn't trigger immediate playback
-  // It just updates the displayed text/position. Playback starts on startRead.
 });
 
 onMounted(() => {

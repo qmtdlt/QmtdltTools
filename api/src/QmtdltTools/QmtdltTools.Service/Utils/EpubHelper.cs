@@ -62,18 +62,18 @@ namespace QmtdltTools.Service.Utils
                 foreach (HtmlNode blockNode in blockNodes)
                 {
                     // 获取块级元素内的所有文本节点
-                    var textNodes = blockNode.SelectNodes(".//text()");
-                    if (textNodes != null)
+                    //var textNodes = blockNode.SelectNodes(".//text()");
+                    if (blockNode != null)
                     {
                         // 合并文本节点，移除多余空白
-                        string blockText = string.Join(" ", textNodes
-                            .Select(node => node.InnerText.Trim())
-                            .Where(text => !string.IsNullOrWhiteSpace(text)));
+                        //string blockText = string.Join(" ", textNodes
+                        //    .Select(node => node.InnerText.Trim())
+                        //    .Where(text => !string.IsNullOrWhiteSpace(text)));
 
                         // 添加到结果，并保留段落间换行
-                        if (!string.IsNullOrEmpty(blockText))
+                        if (!string.IsNullOrEmpty(blockNode.InnerText))
                         {
-                            sb.AppendLine(blockText);
+                            sb.AppendLine(blockNode.InnerText.Replace("\r\n", "\n").Replace("\n", " "));
                         }
                     }
                 }
