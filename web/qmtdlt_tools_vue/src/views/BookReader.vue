@@ -61,7 +61,6 @@ import IconStop from '../components/icons/IconStop.vue';
 import IconPlay from '../components/icons/IconPlay.vue';
 
 const useModelType = ref("1"); // 1: 听书（听完一句自动read 下一句）2: 听写（听完一句，自动切换听写界面，听写成功回调后，下一句）3：跟读（听完一句，自动切换跟读界面，跟读成功回调后，下一句）
-const progressValue = ref(0); // 进度条值
 const switchMode = () => {
 
   if (useModelType.value === "1") {
@@ -169,8 +168,6 @@ const readContent = ref({
   speaking_buffer: '', // 读取到的音频内容  
 });
 
-const jumpOffset = ref("1"); // 跳转偏移量
-
 // Use let instead of var for better scoping
 //.withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent?access_token=${localStorage.getItem('token')}`)
 let connection = new signalR.HubConnectionBuilder()
@@ -193,7 +190,7 @@ const progChange = () => {
   stopRead();
 
   setTimeout(() => {
-    connection.invoke("ResetPosition", readContent.value.bookId, progressValue.value).then(() => { // Added fallback for parseInt
+    connection.invoke("ResetPosition", readContent.value.bookId, readContent.value.curPosition.progressValue).then(() => { // Added fallback for parseInt
       startRead(); // Start reading again
     }).catch((err) => {
       console.error("Error resetting position:", err);
