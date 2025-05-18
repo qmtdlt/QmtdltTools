@@ -1,12 +1,11 @@
 <template>
-  <div style="height: 70vh;">
-    <el-row justify="center" style="height: 75vh;">
+  <el-container style="margin: 0px;padding: 0px;"> 
+    <el-main style="margin: 0px;padding: 0px;">
       <!-- 书籍内容 -->
       <HighlightedText v-if="useModelType === '1'" :full-text="readContent.full_pragraph_text"
         :highlight-text="readContent.speaking_text" />
       <!-- 听写组件 -->
       <div v-if="useModelType === '2'" class="lwdiv">
-        
         <el-row>
           <ListenWrite ref="listenWriteRef" :target-text="listenwrite_text" @completed="handleListenWriteComplete" />
         </el-row>
@@ -25,25 +24,32 @@
       <div v-if="useModelType === '3'" class="shadowDiv">
         <ShadowingView ref="shadowingRef" :target-text="listenwrite_text" @completed="handleShadowingComplete" />
       </div>
-    </el-row>
-    <!-- 进度条 -->
-    <el-row style="margin-top: 10px;margin-bottom: 10px;" justify="right">
-      <el-slider v-model="readContent.curPosition.progressValue" @change="progChange"></el-slider>
-    </el-row>
-    <el-row justify="start" align="middle">
-      <el-button @click="startRead" type="primary" plain circle>
-        <el-icon><IconPlay /></el-icon>
-      </el-button>
-      <el-button @click="stopRead" type="danger" plain circle>
-        <el-icon><IconStop /></el-icon>
-      </el-button>
-      <el-radio-group v-model="useModelType" @change="switchMode">
-        <el-radio-button label="1">听书模式</el-radio-button>
-        <el-radio-button label="2">听写模式</el-radio-button>
-        <el-radio-button label="3">跟读模式</el-radio-button>
-      </el-radio-group>
-    </el-row>
-  </div>
+    </el-main>
+    <el-footer>
+      <!-- 进度条 -->
+      <el-row style="margin-top: 10px;margin-bottom: 10px;" justify="right">
+        <el-slider v-model="readContent.curPosition.progressValue" @change="progChange"></el-slider>
+      </el-row>
+      <el-row justify="start" align="middle">
+        <el-button @click="startRead" type="primary" plain circle>
+          <el-icon>
+            <IconPlay />
+          </el-icon>
+        </el-button>
+        <el-button @click="stopRead" type="danger" plain circle>
+          <el-icon>
+            <IconStop />
+          </el-icon>
+        </el-button>
+        <el-radio-group v-model="useModelType" @change="switchMode">
+          <el-radio-button label="1">听书模式</el-radio-button>
+          <el-radio-button label="2">听写模式</el-radio-button>
+          <el-radio-button label="3">跟读模式</el-radio-button>
+        </el-radio-group>
+      </el-row>
+    </el-footer>
+
+  </el-container>
 </template>
 <script setup lang="ts">
 
@@ -64,7 +70,6 @@ const useModelType = ref("1"); // 1: 听书（听完一句自动read 下一句�
 const route = useRoute() // 使用路由
 const listenWriteRef = ref<InstanceType<typeof ListenWrite> | null>(null); // 引用 ListenWrite 组件实例
 const shadowingRef = ref<InstanceType<typeof ShadowingView> | null>(null); // 引用 ShadowingView 组件实例
-
 const listenwrite_buffer = ref('');   // 音频数据
 const listenwrite_text = ref('');     // 音频数据
 
@@ -125,7 +130,7 @@ const handleListenWriteComplete = async () => {
   ElMessage.success("听写完成!");
   readNext();
 }
-const readNext =() =>{
+const readNext = () => {
   listenwrite_text_is_show.value = false; // 隐藏文本
   connection.invoke("Read", readContent.value.bookId)
     .catch((err) => {
@@ -210,7 +215,7 @@ connection.on("UIReadInfo", (input: any) => {
   startPlayBase64Audio(input.speaking_buffer, () => {
     if (useModelType.value === "1") {
       readNext(); // 继续读取下一段
-    } 
+    }
   });
 });
 
@@ -257,7 +262,7 @@ onBeforeUnmount(() => {
 }
 
 .lwdiv {
-  width: 100vw;
+  width: 99vw;
   height: 100%;
   padding: 1rem;
   background-image: url('../assets/background1.png');
@@ -265,7 +270,7 @@ onBeforeUnmount(() => {
 }
 
 .shadowDiv {
-  width: 100vw;
+  width: 99vw;
   height: 100%;
   padding: 1rem;
   background-image: url('../assets/background1.png');

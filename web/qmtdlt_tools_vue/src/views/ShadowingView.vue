@@ -242,7 +242,6 @@ const submitRecording = async () => {
         // 清空分析结果并显示加载中
         shadowingResult.value = null;
         isProcessing.value = true;
-        emit('completed', recordedAudio.value);
         ElMessage.success('录音已提交')
 
         try {
@@ -265,6 +264,8 @@ const submitRecording = async () => {
             } else {
                 shadowingResult.value = res;
             }
+            
+            emit('completed', recordedAudio.value);
         } catch (err) {
             console.error("Error during shadowing:", err);
         } finally {
