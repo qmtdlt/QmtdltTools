@@ -1,47 +1,47 @@
 <template>
   <div style="height: 70vh;">
     <el-row justify="center" style="height: 75vh;">
-      <HighlightedText v-if="!showListenWrite && !showShadowDiv" :full-text="readContent.full_pragraph_text"
+      <!-- 书籍内容 -->
+      <HighlightedText v-if="useModelType === '1'" :full-text="readContent.full_pragraph_text"
         :highlight-text="readContent.speaking_text" />
-      <div v-show="showListenWrite" class="lwdiv">
+      <!-- 听写组件 -->
+      <div v-if="useModelType === '2'" class="lwdiv">
+        
+        <el-row>
+          <ListenWrite ref="listenWriteRef" :target-text="listenwrite_text" @completed="handleListenWriteComplete" />
+        </el-row>
+        <el-row v-if="listenwrite_text_is_show">
+          {{ listenwrite_text }}
+        </el-row>
         <el-row justify="left">
           <el-col :span="2">
             <el-button @click="listenWriteClick" type="success"><el-icon>
                 <Headset />
               </el-icon>&nbsp; Ctrl+1</el-button>
           </el-col>
-          <el-col :span="2">
-            <el-button @click="showHideListenWrite" type="success"><el-icon>
-                <Sort />
-              </el-icon>&nbsp; Ctrl+D</el-button>
-          </el-col>
-        </el-row>
-        <el-row>
-          <ListenWrite ref="listenWriteRef" :target-text="listenwrite_text" @completed="handleListenWriteComplete" />
         </el-row>
       </div>
-      <div v-show="showShadowDiv" class="shadowDiv">
+      <!-- 跟读组件 -->
+      <div v-if="useModelType === '3'" class="shadowDiv">
         <ShadowingView ref="shadowingRef" :target-text="listenwrite_text" @completed="handleShadowingComplete" />
       </div>
     </el-row>
+    <!-- 进度条 -->
     <el-row style="margin-top: 10px;margin-bottom: 10px;" justify="right">
       <el-slider v-model="readContent.curPosition.progressValue" @change="progChange"></el-slider>
-      {{ readContent.curPosition }}
     </el-row>
     <el-row justify="start" align="middle">
-      <el-button @click="startRead" type="primary" plain circle><el-icon>
-          <IconPlay />
-        </el-icon></el-button>
-      <el-button @click="stopRead" type="danger" plain circle><el-icon>
-          <IconStop />
-        </el-icon>
+      <el-button @click="startRead" type="primary" plain circle>
+        <el-icon><IconPlay /></el-icon>
+      </el-button>
+      <el-button @click="stopRead" type="danger" plain circle>
+        <el-icon><IconStop /></el-icon>
       </el-button>
       <el-radio-group v-model="useModelType" @change="switchMode">
         <el-radio-button label="1">听书模式</el-radio-button>
         <el-radio-button label="2">听写模式</el-radio-button>
         <el-radio-button label="3">跟读模式</el-radio-button>
       </el-radio-group>
-      <el-button @click="showHideListenWrite" style="min-width: 100px;"> {{ lwbtnText }}</el-button>
     </el-row>
   </div>
 </template>
@@ -55,51 +55,38 @@ import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Headset, VideoPause, CaretRight, Close, ArrowLeft, ArrowRight, Sort } from '@element-plus/icons-vue'
-// Import cleanupAudio as well
 import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '../utils/audioplay';
 import IconStop from '../components/icons/IconStop.vue';
 import IconPlay from '../components/icons/IconPlay.vue';
 
+const listenwrite_text_is_show = ref(false); // 控制文本是否显示
 const useModelType = ref("1"); // 1: 听书（听完一句自动read 下一句）2: 听写（听完一句，自动切换听写界面，听写成功回调后，下一句）3：跟读（听完一句，自动切换跟读界面，跟读成功回调后，下一句）
-const switchMode = () => {
+const route = useRoute() // 使用路由
+const listenWriteRef = ref<InstanceType<typeof ListenWrite> | null>(null); // 引用 ListenWrite 组件实例
+const shadowingRef = ref<InstanceType<typeof ShadowingView> | null>(null); // 引用 ShadowingView 组件实例
 
+const listenwrite_buffer = ref('');   // 音频数据
+const listenwrite_text = ref('');     // 音频数据
+
+const switchMode = () => {
   if (useModelType.value === "1") {
     ElMessage.success("切换到听书模式");
   } else if (useModelType.value === "2") {
     ElMessage.success("切换到听写模式");
+    listenWriteRef.value?.focusInput(); // 调用子组件的方法
+    stopPlayBase64Audio();
   } else if (useModelType.value === "3") {
     ElMessage.success("切换到跟读模式");
   } else {
     ElMessage.error("未知模式");
   }
 }
-const route = useRoute() // 使用路由
-const listenWriteRef = ref<InstanceType<typeof ListenWrite> | null>(null); // 引用 ListenWrite 组件实例
-const shadowingRef = ref<InstanceType<typeof ShadowingView> | null>(null); // 引用 ShadowingView 组件实例
-const showListenWrite = ref(false); // 控制听写弹窗显示
-const showShadowDiv = ref(false); // 跟读组件是否显示
 
-const listenwrite_buffer = ref(''); // 音频数据
-const listenwrite_text = ref(''); // 音频数据
-
-const lwbtnText = ref('听写'); // 按钮文本
 const listenWriteClick = () => {
   stopPlayBase64Audio();
   startPlayBase64Audio(listenwrite_buffer.value, () => {
     console.log("播放完成");
-
   }); // 读取到的音频内容
-}
-
-const showHideListenWrite = () => {
-  showListenWrite.value = !showListenWrite.value;
-  if (showListenWrite.value) {
-    listenWriteRef.value?.focusInput(); // 调用子组件的方法
-    lwbtnText.value = '关闭听写';
-  } else {
-    lwbtnText.value = '听写';
-  }
-  stopPlayBase64Audio();
 }
 
 onMounted(() => {
@@ -128,52 +115,46 @@ function handleKeyDown(e: KeyboardEvent) {
   }
   // 如果是ctrl + d ，调用 showHideListenWrite
   if (e.ctrlKey && e.key === 'd') {
-    showHideListenWrite();
+    // TODO 显示提示
     e.preventDefault();
+    listenwrite_text_is_show.value = !listenwrite_text_is_show.value;
   }
 }
 
 const handleListenWriteComplete = async () => {
   ElMessage.success("听写完成!");
-  showListenWrite.value = false; // Show the ListenWrite component
-  lwbtnText.value = '听写';
+  readNext();
+}
+const readNext =() =>{
+  listenwrite_text_is_show.value = false; // 隐藏文本
   connection.invoke("Read", readContent.value.bookId)
     .catch((err) => {
       console.error("Error invoking Read from onended:", err);
       ElMessage.error(`请求下一段失败: ${err.message}`);
     });
 }
-
 const handleShadowingComplete = async (audio: Blob) => {
   console.log("跟读音频:", audio);
-
-  // 将 Blob 转为 Base64
-
-
+  readNext();
 };
 
 const handleReadContentChange = (data: string, text: string) => {
-
   listenwrite_buffer.value = data;
   // text — 替换为空格
   listenwrite_text.value = text.replace('—', ' ').replace('-', ' '); // 读取到的音频内容
-
 }
 
 const readContent = ref({
   full_pragraph_text: '', // 读取到的文本内容
   speaking_text: '', // 读取到的文本内容
-  curPosition: { pragraphIndex: 0, sentenceIndex: 0,progressValue: 0 }, // 读取到的文本位置
+  curPosition: { pragraphIndex: 0, sentenceIndex: 0, progressValue: 0 }, // 读取到的文本位置
   bookId: route.query.id as string, // 书籍 ID
   speaking_buffer: '', // 读取到的音频内容  
 });
 
-// Use let instead of var for better scoping
-//.withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent?access_token=${localStorage.getItem('token')}`)
 let connection = new signalR.HubConnectionBuilder()
   .withUrl(`${import.meta.env.VITE_API_URL}/signalr-hubs/bookcontent`, {
     accessTokenFactory: () => {
-      // localStorage.getItem('token')
       const token = localStorage.getItem('token');
       return token ?? ''; // Return empty string if token is null
     }
@@ -183,12 +164,10 @@ let connection = new signalR.HubConnectionBuilder()
     nextRetryDelayInMilliseconds: () => {
       return 2000; // 每5秒重连一次
     },
-  })
-  .build()
+  }).build()
 
 const progChange = () => {
   stopRead();
-
   setTimeout(() => {
     connection.invoke("ResetPosition", readContent.value.bookId, readContent.value.curPosition.progressValue).then(() => { // Added fallback for parseInt
       startRead(); // Start reading again
@@ -201,18 +180,13 @@ const progChange = () => {
 
 const startRead = async () => {
   console.log("startRead called. Invoking 'Read' on SignalR.");
-  connection.invoke("Read", readContent.value.bookId)
-    .catch((err) => {
-      console.error("Error invoking Read:", err);
-      ElMessage.error(`开始阅读失败: ${err.message}`);
-    });
+  readNext();
 }
 
 const stopRead = async () => {
   console.log("stopRead called.");
   stopPlayBase64Audio(); // Now suspends the context
 }
-
 
 
 connection.on("onShowErrMsg", (msg: string) => {
@@ -235,18 +209,8 @@ connection.on("UIReadInfo", (input: any) => {
   // Start playing the received audio buffer
   startPlayBase64Audio(input.speaking_buffer, () => {
     if (useModelType.value === "1") {
-      connection.invoke("Read", readContent.value.bookId)
-        .catch((err) => {
-          console.error("Error invoking Read from onended:", err);
-          ElMessage.error(`请求下一段失败: ${err.message}`);
-        });
-    } else if (useModelType.value === "2") {
-      showListenWrite.value = true; // Show the ListenWrite component
-      listenWriteRef.value?.focusInput(); // 调用子组件的方法
-      lwbtnText.value = '关闭听写';
-    } else if (useModelType.value === "3") {
-      showShadowDiv.value = true; // Show the Shadowing component
-    }
+      readNext(); // 继续读取下一段
+    } 
   });
 });
 
