@@ -141,16 +141,8 @@ watch(
   border-radius: 8px;
   font-size: 3rem; /* Adjusted for potentially smaller container */
   color: #c0c0c0;
-
-  /* IMPORTANT: overflow hidden to clip, auto if you want scrollbars on extreme cases */
   overflow-y: hidden;
-  /* overflow-y: auto; */ /* Use auto if you want a scrollbar as a fallback */
-
-  /* For smooth programmatic scrolling, browser needs to support it */
-  scroll-behavior: smooth; /* Already handled by scrollTo options, but can be a default */
-
-  /* The following might not be needed if you handle scrolling programmatically */
-  /* overscroll-behavior-y: contain; */
+  scroll-behavior: smooth;
 }
 
 .highlightdiv p {
