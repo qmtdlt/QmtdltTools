@@ -33,26 +33,29 @@
             </el-row>
         </div>
     </el-dialog>
-    <el-dialog v-model="showSelectDialog" width="320px" :show-close="false" center>
-        <div style="text-align:center;">
-            <el-row justify="center" style="margin-bottom:20px;">
-                <el-button @click="copyPhaseText" type="primary" plain circle>
-                    <el-icon size="large">
-                        <DocumentCopy />
-                    </el-icon>
-                </el-button>
-                <el-button @click="confirmTrans" type="success" plain circle>
-                    <el-icon size="large">
-                        <IconTranslate />
-                    </el-icon>
-                </el-button>
-                <el-button @click="cancelSelect" type="danger" plain circle>
-                    <el-icon size="large">
-                        <Close />
-                    </el-icon>
-                </el-button>
+    <el-dialog v-model="showSelectDialog" width="480px" :show-close="false" center
+        style="padding: 0px; padding-bottom: 20px;padding-left: 20px;padding-right: 20px;">
+        <div style="text-align:left;">
+            <el-row justify="end" style="margin-bottom:10px;">
+                <div style="display: flex; gap: 0px; margin-right: 20px;">
+                    <el-button @click="copyPhaseText" type="primary" plain circle>
+                        <el-icon size="large">
+                            <DocumentCopy />
+                        </el-icon>
+                    </el-button>
+                    <el-button @click="confirmTrans" type="success" plain circle>
+                        <el-icon size="large">
+                            <IconTranslate />
+                        </el-icon>
+                    </el-button>
+                    <el-button @click="cancelSelect" type="danger" plain circle>
+                        <el-icon size="large">
+                            <Close />
+                        </el-icon>
+                    </el-button>
+                </div>
             </el-row>
-            <h1 style="margin: 20px 0 10px 0;">{{ selectDialogText }}</h1>
+            <h1 style="margin: 0px 0px 10px 0px;">{{ selectDialogText }}</h1>
         </div>
     </el-dialog>
 </template>
