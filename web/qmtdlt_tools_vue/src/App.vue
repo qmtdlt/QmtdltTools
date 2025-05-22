@@ -44,22 +44,13 @@ const handleSelection = () => {
           to="/listenwritelist" 
           @click="activeRoute = '/listenwritelist'"
           :class="{ active: activeRoute === '/listenwritelist' }" 
-        >ListenWritelist</RouterLink>
-        <!-- <RouterLink 
-          to="/" 
-          @click="activeRoute = '/'" 
-          :class="{ active: activeRoute === '/' }"
-        >DayToDo</RouterLink> -->
+        >Records</RouterLink>
+        
         <RouterLink 
           to="/library" 
           @click="activeRoute = '/library'" 
           :class="{ active: activeRoute === '/library' }"
         >Library</RouterLink>
-        <RouterLink 
-          to="/" 
-          @click="activeRoute = '/'" 
-          :class="{ active: activeRoute === '/' }"
-        >Login</RouterLink>
       </nav>
     </header>
     <main class="content">
