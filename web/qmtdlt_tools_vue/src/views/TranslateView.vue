@@ -51,7 +51,8 @@
                         <Close />
                     </el-icon>
                 </el-button>
-            </el-row><h2 style="margin: 20px 0 10px 0;">{{ selectDialogText }}</h2>
+            </el-row>
+            <h1 style="margin: 20px 0 10px 0;">{{ selectDialogText }}</h1>
         </div>
     </el-dialog>
 </template>
