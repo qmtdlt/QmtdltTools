@@ -31,21 +31,25 @@
         <el-slider v-model="readContent.curPosition.progressValue" @change="progChange"></el-slider>
       </el-row>
       <el-row justify="start" align="middle">
-        <el-button @click="startRead" type="primary" plain circle>
-          <el-icon>
-            <IconPlay />
-          </el-icon>
-        </el-button>
-        <el-button @click="stopRead" type="danger" plain circle>
-          <el-icon>
-            <IconStop />
-          </el-icon>
-        </el-button>
-        <el-radio-group v-model="useModelType" @change="switchMode">
-          <el-radio-button label="1">听书模式</el-radio-button>
-          <el-radio-button label="2">听写模式</el-radio-button>
-          <el-radio-button label="3">跟读模式</el-radio-button>
-        </el-radio-group>
+        <el-col :span="1">
+          <el-button @click="startRead" type="primary" plain circle>
+            <el-icon>
+              <IconPlay />
+            </el-icon>
+          </el-button>
+          <el-button @click="stopRead" type="danger" plain circle>
+            <el-icon>
+              <IconStop />
+            </el-icon>
+          </el-button>
+        </el-col>
+        <el-col :span="4">
+          <el-radio-group v-model="useModelType" @change="switchMode">
+            <el-radio-button label="1">听书模式</el-radio-button>
+            <el-radio-button label="2">听写模式</el-radio-button>
+            <el-radio-button label="3">跟读模式</el-radio-button>
+          </el-radio-group>
+        </el-col>
       </el-row>
     </el-footer>
 
