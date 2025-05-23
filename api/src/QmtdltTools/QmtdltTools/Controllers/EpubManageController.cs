@@ -30,6 +30,15 @@ namespace QmtdltTools.Controllers
             
             return await _epubManageService.UploadEpub(bytes,file.FileName,uid);
         }
+        [HttpPost("UploadTxt")]
+        public async Task<Response<bool>> UploadTxt(IFormFile file)
+        {
+
+            Guid? uid = HttpContext.GetUserId();           // 当前登录用户id
+            var stream = file.OpenReadStream();         // 文件转换为字节数组
+
+            return await _epubManageService.UploadText(stream, file.FileName, uid);
+        }
         [HttpGet("DownloadEpub")]
         public async Task<IActionResult> DownloadEpub(Guid id)
         {
@@ -50,11 +59,9 @@ namespace QmtdltTools.Controllers
         }
         // 获取book列表
         [HttpGet("GetBooks")]
-        public async Task<List<EBookMain>> GetBooks()
+        public async Task<List<EBookMain>> GetBooks(string booktype)
         {
-            var userId = HttpContext.GetUserId();           // 当前登录用户id
-
-            return await _epubManageService.GetBooks(HttpContext.GetUserId());
+            return await _epubManageService.GetBooks(HttpContext.GetUserId(), booktype);
         }
         // 删除book，DeleteBook
         [HttpDelete("DeleteBook")]
