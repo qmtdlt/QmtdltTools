@@ -19,3 +19,4 @@ api/src/QmtdltTools/QmtdltTools.Service/obj/
 /api/src/QmtdltTools/QmtdltTools.DbMigration/obj
 api/src/QmtdltTools/QmtdltTools.sln.DotSettings.user
 /api/src/QmtdltTools/QmtdltTools/Properties/PublishProfiles/FolderProfile.pubxml.user
+/api/src/QmtdltTools/QmtdltTools/wwwroot/uploads/epubs
