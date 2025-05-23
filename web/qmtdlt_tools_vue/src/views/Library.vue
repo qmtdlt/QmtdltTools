@@ -5,11 +5,7 @@
       <div class="left-actions">
         <h2>图书库</h2>
         <el-button type="primary" @click="fetchBooks">刷新列表</el-button>
-      </div>
-      <div class="right-actions">
-        <el-button type="primary" @click="dialogVisible = true">
-          + 添加电子书
-        </el-button>
+        <el-button type="primary" @click="dialogVisible = true">+ 添加电子书</el-button>
       </div>
     </div>
 
@@ -18,29 +14,36 @@
       <el-empty v-if="books.length === 0 && !loading" description="暂无电子书" />
       <div v-else class="grid-container">
         <div class="book-item" v-for="book in books" :key="book.id">
-          <img @click="readBook(book)" :src="book.coverImage
-            ? 'data:image/jpeg;base64,' + book.coverImage
-            : 'default-cover.jpg'" alt="book cover" class="cover" />
+          <div class="book-cover-wrap" @click="readBook(book)">
+            <img :src="book.coverImage
+              ? 'data:image/jpeg;base64,' + book.coverImage
+              : 'default-cover.jpg'" alt="book cover" class="cover" />
+          </div>
+          <!-- <div class="book-title" @click="readBook(book)" :title="book.title">{{ book.title }}</div> -->
           <div class="actions">
             <el-button size="mini" type="danger" @click="deleteBook(book.id)">删除</el-button>
           </div>
-          <!-- <div class="title" @click="readBook(book)" style="cursor:pointer;">{{ book.title }}</div> -->
         </div>
       </div>
     </div>
 
     <!-- TXT区域 -->
     <div class="txt-section">
-      <div class="txt-header">
-        <h3>TXT文档</h3>
-        <el-button type="primary" @click="txtDialogVisible = true" size="small">上传TXT</el-button>
-        <el-button type="primary" @click="fetchTxtBooks" size="small">刷新TXT列表</el-button>
+      <div class="header txt-header">
+        <div class="left-actions">
+          <h2>TXT文档</h2>
+          <el-button type="primary" @click="fetchTxtBooks">刷新TXT列表</el-button>
+          <el-button type="primary" @click="txtDialogVisible = true">+ 上传TXT</el-button>
+        </div>
       </div>
-      <div class="txt-grid" v-loading="txtLoading" element-loading-text="加载中...">
+      <div class="books-grid" v-loading="txtLoading" element-loading-text="加载中...">
         <el-empty v-if="txtBooks.length === 0 && !txtLoading" description="暂无TXT文档" />
-        <div v-else class="txt-grid-container">
-          <div class="txt-item" v-for="book in txtBooks" :key="book.id">
-            <div class="txt-title" @click="readBook(book)" style="cursor:pointer;">{{ book.title }}</div>
+        <div v-else class="grid-container">
+          <div class="book-item txt-book-item" v-for="book in txtBooks" :key="book.id">
+            <div class="txt-icon-wrap" @click="readBook(book)">
+              <el-icon class="txt-icon"><Document /></el-icon>
+            </div>
+            <div class="book-title txt-title" @click="readBook(book)" :title="book.title">{{ book.title }}</div>
             <div class="actions">
               <el-button size="mini" type="danger" @click="deleteBook(book.id)">删除</el-button>
             </div>
@@ -99,7 +102,7 @@
 import { defineComponent, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Upload } from '@element-plus/icons-vue';
+import { Upload, Document } from '@element-plus/icons-vue';
 import request from '@/utils/request';
 import { isMobbile } from '@/utils/myutil';
 import { BookTypes } from '@/data/BookTypes';
@@ -125,7 +128,7 @@ interface UploadOption {
 
 export default defineComponent({
   name: 'LibraryView',
-  components: { Upload },
+  components: { Upload, Document },
   setup() {
     const dialogVisible = ref(false);
     const txtDialogVisible = ref(false);
@@ -332,18 +335,19 @@ export default defineComponent({
 .library-container {
   padding: 24px;
   background-color: #fff;
+  min-height: 100vh;
 }
 
 /* 顶部操作区域 */
 .header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   margin-bottom: 24px;
+  gap: 32px;
 }
 
-.left-actions,
-.right-actions {
+.left-actions {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -362,90 +366,101 @@ export default defineComponent({
 .grid-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 24px;
 }
 
 .book-item {
-  width: 120px;
-  text-align: center;
-  cursor: pointer;
-  margin: 20px;
-}
-
-.cover {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.title {
-  margin-top: 8px;
-  font-size: 14px;
-  color: #333;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-/* TXT区域样式 */
-.txt-section {
-  margin-top: 32px;
-  background: #f9fafc;
-  border-radius: 6px;
-  padding: 18px 12px 12px 12px;
-}
-.txt-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-.txt-grid {
-  min-height: 120px;
-}
-.txt-grid-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-.txt-item {
-  width: 180px;
-  background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  width: 140px;
+  min-height: 240px;
+  background: #f8fafc;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   padding: 16px 8px 8px 8px;
-  margin-bottom: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: box-shadow 0.2s;
+  position: relative;
 }
-.txt-title {
+.book-item:hover {
+  box-shadow: 0 4px 16px 0 rgba(64,158,255,0.10);
+}
+.book-cover-wrap {
+  width: 100%;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #e9ecef;
+}
+.book-title {
+  margin-top: 10px;
   font-size: 15px;
   color: #409EFF;
   font-weight: bold;
-  margin-bottom: 10px;
   cursor: pointer;
   text-align: center;
   word-break: break-all;
+  min-height: 36px;
+  line-height: 1.2;
 }
 .actions {
-  margin-top: 8px;
+  margin-top: 10px;
   display: flex;
   justify-content: center;
   gap: 8px;
 }
 
-/* 标签区域 */
-.tag-section {
-  margin-top: 16px;
-  padding: 12px;
-  background-color: #f9fafc;
-  border-radius: 4px;
+/* TXT区域样式与书籍卡片一致 */
+.txt-section {
+  margin-top: 32px;
 }
-
-.tag-section h3 {
-  margin: 0 0 8px;
+.txt-header {
+  margin-bottom: 16px;
+}
+.txt-book-item {
+  background: #f8fafc;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 16px 8px 8px 8px;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 140px;
+  position: relative;
+}
+.txt-icon-wrap {
+  width: 100%;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e9ecef;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.txt-icon {
+  font-size: 60px;
+  color: #b1b3b8;
+}
+.txt-title {
+  margin-top: 10px;
+  font-size: 15px;
+  color: #409EFF;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+  word-break: break-all;
+  min-height: 36px;
+  line-height: 1.2;
 }
 
 /* 上传区域对话框内部 */

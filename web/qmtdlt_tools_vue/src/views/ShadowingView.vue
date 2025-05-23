@@ -265,7 +265,7 @@ const submitRecording = async () => {
                 shadowingResult.value = res;
             }
             
-            emit('completed', recordedAudio.value);
+            // emit('completed', recordedAudio.value);
         } catch (err) {
             console.error("Error during shadowing:", err);
         } finally {
