@@ -35,6 +35,25 @@ namespace QmtdltTools.Service.Utils
             }
             return null;
         }
+        public static string? GetEbookText(string epubFilePath, out string message)
+        {
+            message = "";
+            if (!File.Exists(epubFilePath))
+            {
+                message = "file not exists: " + epubFilePath;
+                return null;
+            }
+            try
+            {
+                // 使用 VersOne.Epub 库读取 EPUB 文件
+                return File.ReadAllText(epubFilePath);
+            }
+            catch (Exception ex)
+            {
+                message = "some exception occur: " + ex.Message;
+            }
+            return null;
+        }
 
         public static List<MyPragraph> PrepareAllPragraphs(EpubBook book)
         {
@@ -99,7 +118,7 @@ namespace QmtdltTools.Service.Utils
         }
 
         // 章节分段落
-        static List<MyPragraph> GetParagraph(string chapterText)
+        public static List<MyPragraph> GetParagraph(string chapterText)
         {
             List<MyPragraph> res = new List<MyPragraph>();
             if(HasNoPunctuation(chapterText))
