@@ -24,9 +24,7 @@ namespace QmtdltTools.Controllers
         [HttpPost("CheckShadowing")]
         public async Task<PronunciationAssessmentResult?> CheckShadowing([FromForm] IFormFile audioFile,string reftext) // Added [FromForm]
         {
-            var result = await MsTTSHelperRest.AssessPronunciationAsync(audioFile, reftext);
-            Console.WriteLine(result);
-            return result;
+            return await MsTTSHelperRest.PronunciationAssessmentWithWavFileAsync(audioFile, reftext);
         }
     }
 }
