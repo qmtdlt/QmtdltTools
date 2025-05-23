@@ -5,7 +5,8 @@ using Microsoft.CognitiveServices.Speech;
 using QmtdltTools.Domain.Data;
 using Serilog;
 using Microsoft.AspNetCore.Http;
-using Microsoft.CognitiveServices.Speech.PronunciationAssessment; // Required for HttpUtility.HtmlEncode
+using Microsoft.CognitiveServices.Speech.PronunciationAssessment;
+using System.Threading.Tasks; // Required for HttpUtility.HtmlEncode
 
 public class MsTTSHelperRest
 {
@@ -82,150 +83,155 @@ public class MsTTSHelperRest
         }
     }
 
-    /// <summary>
-    /// Generate by Grok:
-    /// </summary>
-    /// <param name="text"></param>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
-    public static byte[] GetSpeakStream(string text, string SpeechSynthesisVoiceName = ApplicationConst.DefaultVoiceName)
+    public static async Task<PronunciationAssessmentResult?> PronunciationAssessmentWithWavFileAsync(IFormFile audioFile, string referenceText)
     {
-        // Create speech configuration
-        var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-
-        speechConfig.SpeechSynthesisVoiceName = SpeechSynthesisVoiceName;
-
-        // Set the output format to MP3
-        speechConfig.SetSpeechSynthesisOutputFormat(SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3);
-
-        using (var memoryStream = new MemoryStream())
+        // 1. 保存上传的音频为本地临时文件
+        string tempFile = Path.GetTempFileName();
+        string wavFile = Path.ChangeExtension(tempFile, ".wav");
+        using (var fs = new FileStream(wavFile, FileMode.Create, FileAccess.Write))
         {
-            // Create our callback handler
-            var callback = new CustomPushAudioOutputStreamCallback(memoryStream);
+            await audioFile.CopyToAsync(fs);
+        }
 
-            // Create the push audio output stream with our callback
-            using (var pushStream = new PushAudioOutputStream(callback))
+        try
+        {
+            // 2. 创建 SpeechConfig
+            var speechKey = ApplicationConst.SPEECH_KEY;
+            var speechRegion = ApplicationConst.SPEECH_REGION;
+            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+            speechConfig.SpeechRecognitionLanguage = "en-US";
+
+            // 3. 用FromWavFileInput创建AudioConfig
+            using var audioConfig = AudioConfig.FromWavFileInput(wavFile);
+
+            // 4. 创建 SpeechRecognizer
+            using var recognizer = new SpeechRecognizer(speechConfig, "en-US", audioConfig);
+
+            // 5. 设置发音评估参数
+            var pronConfig = new PronunciationAssessmentConfig(
+                referenceText,
+                GradingSystem.HundredMark,
+                Granularity.Phoneme,
+                enableMiscue: false
+            );
+            pronConfig.EnableProsodyAssessment();
+            pronConfig.ApplyTo(recognizer);
+
+            // 6. 开始识别
+            var result = await recognizer.RecognizeOnceAsync();
+
+            // 7. 判断并返回结果
+            if (result.Reason == ResultReason.RecognizedSpeech)
             {
-                using (var audioConfig = AudioConfig.FromStreamOutput(pushStream))
-                {
-                    using (var synthesizer = new SpeechSynthesizer(speechConfig, audioConfig))
-                    {
-                        // Synthesize the text to speech
-                        var result = synthesizer.SpeakTextAsync(text).GetAwaiter().GetResult();
+                return PronunciationAssessmentResult.FromResult(result);
+            }
+            else
+            {
+                // 可选：记录NoMatch/Canceled等情况
+                return null;
+            }
+        }
+        finally
+        {
+            // 8. 删除临时文件
+            if (File.Exists(wavFile)) File.Delete(wavFile);
+            if (File.Exists(tempFile)) File.Delete(tempFile);
+        }
+    }
 
-                        if (result.Reason == ResultReason.SynthesizingAudioCompleted)
-                        {
-                            return memoryStream.ToArray();
-                        }
-                        else
-                        {
-                            Log.Error($"Speech synthesis failed: {result.Reason}");
-                            return new byte[0];
-                        }
-                    }
-                }
+    public static async Task<PronunciationAssessmentResult> PronunciationAssessmentWithStream(IFormFile audioFile, string referenceText)
+    {
+        // Creates an instance of a speech config with specified endpoint and subscription key.
+        // Replace with your own endpoint and subscription key.
+        var config = SpeechConfig.FromEndpoint(new Uri($"https://{speechRegion}.api.cognitive.microsoft.com"), speechKey);
+
+        using var audioStream = audioFile.OpenReadStream();
+
+        // audioFile 存文件
+        //using (var fs = new FileStream(audioFile.FileName, FileMode.Create))
+        //{
+        //    audioStream.CopyTo(fs);
+        //}
+
+        // Read audio data from file. In real scenario this can be from memory or network
+        var audioDataWithHeader = audioStream.GetAllBytes(); //File.ReadAllBytes(audioFile.FileName);
+
+        var audioData = new byte[audioDataWithHeader.Length - 46];
+        Array.Copy(audioDataWithHeader, 46, audioData, 0, audioData.Length);
+
+        var resultReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var resultContainer = new List<string>();
+
+        var startTime = DateTime.Now;
+
+        var res = await PronunciationAssessmentWithStreamInternalAsync(config, referenceText, audioData, resultReceived, resultContainer);
+        //if (File.Exists(audioFile.FileName))
+        //{
+        //    File.Delete(audioFile.FileName);
+        //}
+        return res;
+    }
+    private static async Task<PronunciationAssessmentResult> PronunciationAssessmentWithStreamInternalAsync(SpeechConfig speechConfig, string referenceText, byte[] audioData, TaskCompletionSource<int> resultReceived, List<string> resultContainer)
+    {
+        using (var audioInputStream = AudioInputStream.CreatePushStream(AudioStreamFormat.GetWaveFormatPCM(16000, 16, 1))) // This need be set based on the format of the given audio data
+        using (var audioConfig = AudioConfig.FromStreamInput(audioInputStream))
+        // Specify the language used for Pronunciation Assessment.
+        using (var speechRecognizer = new SpeechRecognizer(speechConfig, "en-US", audioConfig))
+        {
+            // create pronunciation assessment config, set grading system, granularity and if enable miscue based on your requirement.
+            var pronAssessmentConfig = new PronunciationAssessmentConfig(referenceText, GradingSystem.HundredMark, Granularity.Phoneme, false);
+
+            pronAssessmentConfig.EnableProsodyAssessment();
+
+            speechRecognizer.SessionStarted += (s, e) => {
+                Console.WriteLine($"SESSION ID: {e.SessionId}");
+            };
+
+            pronAssessmentConfig.ApplyTo(speechRecognizer);
+
+            audioInputStream.Write(audioData);
+            audioInputStream.Write(new byte[0]); // send a zero-size chunk to signal the end of stream
+
+            var result = await speechRecognizer.RecognizeOnceAsync();
+            if (result.Reason == ResultReason.RecognizedSpeech)
+            {
+                // 获取发音评估结果
+                var pronunciationResult = PronunciationAssessmentResult.FromResult(result);
+                //var score = pronunciationResult.PronunciationScore;
+                //var accuracy = pronunciationResult.AccuracyScore;
+                //var fluency = pronunciationResult.FluencyScore;
+                //var completeness = pronunciationResult.CompletenessScore;
+                return pronunciationResult;
+
+                // 返回评估结果（JSON 格式）
+                //return $@"
+                //{{
+                //    ""PronunciationScore"": {score},
+                //    ""AccuracyScore"": {accuracy},
+                //    ""FluencyScore"": {fluency},
+                //    ""CompletenessScore"": {completeness}
+                //}}";
+            }
+            else if (result.Reason == ResultReason.NoMatch)
+            {
+                //return "No speech could be recognized.";
+                return null;
+            }
+            else if (result.Reason == ResultReason.Canceled)
+            {
+                var cancellation = CancellationDetails.FromResult(result);
+                //return $"Recognition canceled: {cancellation.Reason}. Error details: {cancellation.ErrorDetails}";
+                return null;
+            }
+            else
+            {
+                //return "Unknown error occurred.";
+                return null;
             }
         }
     }
 
-
-    public static async Task<PronunciationAssessmentResult?> AssessPronunciationAsync(IFormFile audioFile, string referenceText)
-    {
-        if (audioFile == null || string.IsNullOrEmpty(referenceText))
-        {
-            throw new ArgumentException("Audio file and reference text are required.");
-        }
-
-        // 创建 SpeechConfig
-        var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
-        speechConfig.SpeechRecognitionLanguage = "en-US"; // 设置语言
-
-        // 创建 PronunciationAssessmentConfig
-        var pronunciationConfig = new PronunciationAssessmentConfig(referenceText,
-            GradingSystem.HundredMark, Granularity.Phoneme);
-
-        // 将 IFormFile 转换为流
-        using var audioStream = audioFile.OpenReadStream();
-
-        // 创建 AudioConfig
-        using var reader = new BinaryReader(audioStream);
-
-        // 创建自定义回调实例
-        var callback = new BinaryReaderCallback(reader);
-
-        // 创建 PullAudioInputStream
-        using var audioInputStream = new PullAudioInputStream(callback);
-
-        // 创建 AudioConfig
-        using var audioConfig = AudioConfig.FromStreamInput(audioInputStream);
-
-        // 创建 SpeechRecognizer
-        using var recognizer = new SpeechRecognizer(speechConfig, audioConfig);
-
-        // 应用发音评估配置
-        pronunciationConfig.ApplyTo(recognizer);
-
-        // 进行识别
-        var result = await recognizer.RecognizeOnceAsync();
-
-        // 检查识别结果
-        if (result.Reason == ResultReason.RecognizedSpeech)
-        {
-            // 获取发音评估结果
-            var pronunciationResult = PronunciationAssessmentResult.FromResult(result);
-            //var score = pronunciationResult.PronunciationScore;
-            //var accuracy = pronunciationResult.AccuracyScore;
-            //var fluency = pronunciationResult.FluencyScore;
-            //var completeness = pronunciationResult.CompletenessScore;
-            return pronunciationResult;
-
-            // 返回评估结果（JSON 格式）
-            //return $@"
-            //{{
-            //    ""PronunciationScore"": {score},
-            //    ""AccuracyScore"": {accuracy},
-            //    ""FluencyScore"": {fluency},
-            //    ""CompletenessScore"": {completeness}
-            //}}";
-        }
-        else if (result.Reason == ResultReason.NoMatch)
-        {
-            //return "No speech could be recognized.";
-            return null;
-        }
-        else if (result.Reason == ResultReason.Canceled)
-        {
-            var cancellation = CancellationDetails.FromResult(result);
-            //return $"Recognition canceled: {cancellation.Reason}. Error details: {cancellation.ErrorDetails}";
-            return null;
-        }
-        else
-        {
-            //return "Unknown error occurred.";
-            return null;
-        }
-    }
-
-
-    private class BinaryReaderStream : PullAudioInputStreamCallback
-    {
-        private readonly BinaryReader _reader;
-
-        public BinaryReaderStream(Stream stream)
-        {
-            _reader = new BinaryReader(stream);
-        }
-
-        public override int Read(byte[] dataBuffer, uint size)
-        {
-            return _reader.Read(dataBuffer, 0, (int)size);
-        }
-
-        public override void Close()
-        {
-            _reader.Dispose();
-        }
-    }
+   
     /// <summary>
     /// Generate by Grok: 
     /// strem callback
@@ -248,39 +254,6 @@ public class MsTTSHelperRest
         public override void Close()
         {
             // No additional cleanup needed as MemoryStream is managed by the using statement
-        }
-    }
-
-    public class BinaryReaderCallback : PullAudioInputStreamCallback
-    {
-        private readonly BinaryReader _reader;
-
-        public BinaryReaderCallback(BinaryReader reader)
-        {
-            _reader = reader;
-        }
-
-        // 实现 Read 方法，从 BinaryReader 读取数据
-        public override int Read(byte[] dataBuffer, uint size)
-        {
-            try
-            {
-                // 从流中读取最多 size 个字节的数据
-                int bytesRead = _reader.Read(dataBuffer, 0, (int)size);
-                return bytesRead;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"读取流时出错: {ex.Message}");
-                return 0;
-            }
-        }
-
-        // 实现 Close 方法，清理资源
-        public override void Close()
-        {
-            _reader?.Close();
-            base.Close();
         }
     }
 }

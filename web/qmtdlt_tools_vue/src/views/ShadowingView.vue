@@ -54,11 +54,21 @@
                         </div>
                     </template>
                     <div>
-                        <el-row :gutter="16" class="score-row">
-                            <el-col :span="12"><span class="score-label">总准确度：</span><span class="score-value">{{ shadowingResult.accuracyScore }}</span></el-col>
-                            <el-col :span="12"><span class="score-label">发音得分：</span><span class="score-value">{{ shadowingResult.pronunciationScore }}</span></el-col>
-                            <el-col :span="12"><span class="score-label">完整度得分：</span><span class="score-value">{{ shadowingResult.completenessScore }}</span></el-col>
-                            <el-col :span="12"><span class="score-label">流利度得分：</span><span class="score-value">{{ shadowingResult.fluencyScore }}</span></el-col>
+                        <!-- <el-row :gutter="16" class="score-row">
+                            <el-col :span="8"><span class="score-label">发音准确度：</span><span class="score-value">{{ shadowingResult.accuracyScore }}</span></el-col>
+                            <el-col :span="8"><span class="score-label">流畅度：</span><span class="score-value">{{ shadowingResult.fluencyScore }}</span></el-col>
+                            <el-col :span="8"><span class="score-label">语音的韵律：</span><span class="score-value">{{ shadowingResult.prosodyScore }}</span></el-col>
+                            <el-col :span="8"><span class="score-label">发音质量得分：</span><span class="score-value">{{ shadowingResult.pronunciationScore }}</span></el-col>
+                            <el-col :span="8"><span class="score-label">完整性得分：</span><span class="score-value">{{ shadowingResult.completenessScore }}</span></el-col>
+                        </el-row> -->
+                        <el-row>
+                            <el-col :span="7">
+                                <div ref="mainChart" style="height: 160px; width: 100%;"></div>
+                                <div style="text-align:center; margin-top: 8px; color:#888;">发音分数</div>
+                            </el-col>
+                            <el-col :span="17">
+                                <div ref="detailChart" style="height: 170px; width: 100%;"></div>
+                            </el-col>
                         </el-row>
                         <el-divider />
                         <h4 style="margin-bottom: 12px;">逐词分析</h4>
@@ -106,9 +116,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue'
+import { onMounted, ref, watch, nextTick ,onUnmounted} from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import Recorder from 'recorder-core' // 如果你用npm引入
+import 'recorder-core/src/engine/wav.js'
+import * as echarts from 'echarts';
 
 const emit = defineEmits<{
     (e: 'completed', audioBlob: Blob): void
@@ -128,106 +141,127 @@ const props = defineProps<{
 let stream: MediaStream | null = null;
 
 // 结果数据
-const shadowingResult = ref<any>(null)
+const shadowingResult = ref<any>({
+    accuracyScore: 88,
+    pronunciationScore: 80,
+    completenessScore: 100,
+    fluencyScore: 100,
+    prosodyScore: 57
+});
+const mainChart = ref<HTMLElement | null>(null);
+const detailChart = ref<HTMLElement | null>(null);
+let mainChartInstance: echarts.ECharts | null = null;
+let detailChartInstance: echarts.ECharts | null = null;
+// 渲染主环形仪表盘
+function renderMainChart() {
+    if (!mainChart.value) return;
+    if (!mainChartInstance) mainChartInstance = echarts.init(mainChart.value);
+    const option = {
+        title: { show: false },
+        series: [{
+            type: 'gauge',
+            startAngle: 90,
+            endAngle: -269.9999,
+            progress: { show: true, width: 18 },
+            axisLine: { lineStyle: { width: 18 } },
+            pointer: { show: false },
+            axisTick: { show: false },
+            splitLine: { show: false },
+            axisLabel: { show: false },
+            anchor: { show: false },
+            detail: {
+                valueAnimation: true,
+                fontSize: 38,
+                offsetCenter: [0, '35%'],
+                color: '#409EFF',
+                formatter: '{value}'
+            },
+            data: [{ value: shadowingResult.value.pronunciationScore }]
+        }]
+    };
+    mainChartInstance.setOption(option);
+}
 
-const toBase64 = (blob: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            const base64 = (reader.result as string).split(',')[1]; // 去掉 data:audio/wav;base64,...
-            resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
+// 渲染条形图
+function renderDetailChart() {
+    if (!detailChart.value) return;
+    if (!detailChartInstance) detailChartInstance = echarts.init(detailChart.value);
+
+    const data = [
+        { name: '准确性', value: shadowingResult.value.accuracyScore },
+        { name: '完整性', value: shadowingResult.value.completenessScore },
+        { name: '流畅度', value: shadowingResult.value.fluencyScore },
+        { name: '韵律', value: shadowingResult.value.prosodyScore }
+    ];
+    const option = {
+        grid: { left: 50, right: 20, top: 24, bottom: 24 },
+        xAxis: { type: 'value', min: 0, max: 100, show: false },
+        yAxis: {
+            type: 'category',
+            data: data.map(d => d.name),
+            axisLine: { show: false },
+            axisTick: { show: false },
+            axisLabel: { fontWeight: 'bold', color: '#888' }
+        },
+        series: [{
+            type: 'bar',
+            data: data.map(d => d.value),
+            label: { show: true, position: 'right', formatter: '{c} / 100', color: '#222', fontWeight: 'bold' },
+            barWidth: 18,
+            itemStyle: {
+                borderRadius: 8,
+                color: (params: any) => {
+                    // 分段配色
+                    if (params.value < 60) return '#E53E3E';
+                    if (params.value < 80) return '#FFB100';
+                    return '#67C23A';
+                }
+            }
+        }]
+    };
+    detailChartInstance.setOption(option);
+}
+
+// 当评分数据变动时自动刷新图表
+watch(shadowingResult, () => {
+    nextTick(() => {
+        renderMainChart();
+        renderDetailChart();
+    });
+}, { deep: true });
+onMounted(() => {
+    renderMainChart();
+    renderDetailChart();
+});
+let rec: any = null;
+const startRecording = async () => {
+    rec = Recorder({
+        type: "wav",          
+        sampleRate: 16000,    
+        bitRate: 16,          
+        mono: true,           
+    });
+    rec.open(function(){
+        rec.start();
+        isRecording.value = true;
+        statusMessage.value = "录音中...";
+    }, function(msg:string, isUserNotAllow:boolean){
+        ElMessage.error('无法获取麦克风权限，请检查设置。')
     });
 };
 
-
-const startRecording = async () => {
-    if (isRecording.value) { // If already recording, stop current and restart
-        stopRecordingLogic();
-        // It might be better to await stopRecordingLogic or handle the async nature
-        // but for now, this will attempt to stop then proceed.
-        // A more robust solution might involve a state machine or promises.
-    }
-
-    statusMessage.value = '正在请求麦克风权限...'
-    isProcessing.value = true; // Indicate processing has started
-    recordedAudio.value = null; // Clear previous recording
-    if (recordedAudioUrl.value) {
-        URL.revokeObjectURL(recordedAudioUrl.value); // Clean up old URL
-        recordedAudioUrl.value = null;
-    }
-    audioChunks.value = [];
-
-    try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-        statusMessage.value = '麦克风已连接，准备录音...'
-        mediaRecorder.value = new MediaRecorder(stream)
-
-        mediaRecorder.value.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                audioChunks.value.push(event.data)
-            }
-        }
-
-        mediaRecorder.value.onstop = () => {
-            if (audioChunks.value.length > 0) {
-                recordedAudio.value = new Blob(audioChunks.value, { type: 'audio/wav' }) // Or 'audio/webm' etc.
-                recordedAudioUrl.value = URL.createObjectURL(recordedAudio.value)
-                statusMessage.value = '录音已停止。可以播放或提交。'
-            } else {
-                statusMessage.value = '没有录制到音频数据。';
-            }
-            isRecording.value = false
-            isProcessing.value = false; // Processing finished (stop)
-            // Stop all tracks in the stream to release the microphone
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-        }
-
-        mediaRecorder.value.onerror = (event) => {
-            console.error('MediaRecorder error:', event);
-            ElMessage.error('录音发生错误');
-            statusMessage.value = `录音错误: ${(event as any).error?.name || 'Unknown error'}`;
-            isRecording.value = false;
-            isProcessing.value = false; // Processing finished (error)
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-        };
-
-        mediaRecorder.value.start()
-        isRecording.value = true
-        statusMessage.value = '录音中...'
-        isProcessing.value = false; // <<< FIX: Recording started, no longer processing the start action
-    } catch (err) {
-        console.error('无法获取麦克风:', err)
-        ElMessage.error('无法获取麦克风权限，请检查设置。')
-        statusMessage.value = `无法获取麦克风: ${(err as Error).message}`;
-        isProcessing.value = false; // Processing finished (error during start)
-    }
-    // The finally block for isProcessing is removed as it's handled in try/catch and onstop/onerror
-}
-
 const stopRecordingLogic = () => {
-    if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
-        statusMessage.value = '正在停止录音...'
-        isProcessing.value = true; // Indicate processing has started for stopping
-        mediaRecorder.value.stop() // This will trigger 'onstop' or 'onerror' which will set isProcessing to false
-    } else {
-        // If not recording or recorder not active, just ensure state is correct
-        isRecording.value = false;
-        isProcessing.value = false; // Not processing if not recording
-        if (stream) { // Ensure stream is released if stop is called unexpectedly
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
-        }
+    if (rec && isRecording.value) {
+        rec.stop(function(blob: Blob, duration: number){
+            recordedAudio.value = blob;
+            recordedAudioUrl.value = URL.createObjectURL(blob);
+            isRecording.value = false;
+            statusMessage.value = '录音已停止。可以播放或提交。'
+        }, function(msg: string){
+            ElMessage.error('录音停止失败: ' + msg);
+        });
     }
-}
+};
 
 const toggleRecording = () => {
     if (isRecording.value) {
@@ -245,10 +279,6 @@ const submitRecording = async () => {
         ElMessage.success('录音已提交')
 
         try {
-            const base64Audio = await toBase64(recordedAudio.value);
-            console.log("Base64 Audio:", typeof (base64Audio), base64Audio);
-            debugger
-
             const formData = new FormData();
             formData.append('audioFile', recordedAudio.value, 'recording.wav');
 
@@ -288,7 +318,7 @@ const getWordTagType = (type: string) => {
 }
 
 onUnmounted(() => {
-    if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
+  if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
         mediaRecorder.value.stop()
     }
     if (stream) {
@@ -298,7 +328,6 @@ onUnmounted(() => {
         URL.revokeObjectURL(recordedAudioUrl.value) // Clean up
     }
 })
-
 </script>
 
 <style scoped>
