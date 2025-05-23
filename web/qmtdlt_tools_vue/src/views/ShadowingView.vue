@@ -1,8 +1,8 @@
 <template>
     <div class="shadowing-view">
-        <el-row :gutter="32" justify="center" align="top">
+        <el-row :gutter="16" justify="center" align="top">
             <!-- 左侧：录音操作区 -->
-            <el-col :xs="24" :sm="6" :md="6" :lg="6">
+            <el-col :xs="22" :sm="6" :md="6" :lg="6">
                 <el-card shadow="hover" class="operate-card">
                     <template #header>
                         <span>跟读操作</span>
@@ -35,7 +35,7 @@
             </el-col>
 
             <!-- 右侧：评估结果区 -->
-            <el-col :xs="24" :sm="18" :md="18" :lg="18">
+            <el-col :xs="24" :sm="16" :md="16" :lg="16">
                 <el-card v-if="isProcessing" shadow="hover" class="result-card">
                     <template #header>
                         <div class="card-header">
@@ -54,20 +54,13 @@
                         </div>
                     </template>
                     <div>
-                        <!-- <el-row :gutter="16" class="score-row">
-                            <el-col :span="8"><span class="score-label">发音准确度：</span><span class="score-value">{{ shadowingResult.accuracyScore }}</span></el-col>
-                            <el-col :span="8"><span class="score-label">流畅度：</span><span class="score-value">{{ shadowingResult.fluencyScore }}</span></el-col>
-                            <el-col :span="8"><span class="score-label">语音的韵律：</span><span class="score-value">{{ shadowingResult.prosodyScore }}</span></el-col>
-                            <el-col :span="8"><span class="score-label">发音质量得分：</span><span class="score-value">{{ shadowingResult.pronunciationScore }}</span></el-col>
-                            <el-col :span="8"><span class="score-label">完整性得分：</span><span class="score-value">{{ shadowingResult.completenessScore }}</span></el-col>
-                        </el-row> -->
                         <el-row>
-                            <el-col :span="7">
-                                <div ref="mainChart" style="height: 160px; width: 100%;"></div>
+                            <el-col :span="6">
+                                <div ref="mainChart" style="height: 160px; width: 90%;"></div>
                                 <div style="text-align:center; margin-top: 8px; color:#888;">发音分数</div>
                             </el-col>
-                            <el-col :span="17">
-                                <div ref="detailChart" style="height: 170px; width: 100%;"></div>
+                            <el-col :span="16">
+                                <div ref="detailChart" style="height: 170px; width: 90%;"></div>
                             </el-col>
                         </el-row>
                         <el-divider />
@@ -138,16 +131,33 @@ const props = defineProps<{
     targetText: string;
 }>()
 
+interface PronunciationAssessmentResult {
+    accuracyScore: number;
+    pronunciationScore: number;
+    completenessScore: number;
+    fluencyScore: number;
+    prosodyScore: number;
+    words: Array<{
+        word: string;
+        accuracyScore: number;
+        errorType: string;
+        syllables?: Array<{
+            syllable: string;
+            accuracyScore: number;
+            grapheme?: string;
+        }>;
+        phonemes?: Array<{
+            phoneme: string;
+            accuracyScore: number;
+        }>;
+    }>;
+}
+
 let stream: MediaStream | null = null;
 
 // 结果数据
-const shadowingResult = ref<any>({
-    accuracyScore: 88,
-    pronunciationScore: 80,
-    completenessScore: 100,
-    fluencyScore: 100,
-    prosodyScore: 57
-});
+const shadowingResult = ref<PronunciationAssessmentResult| null>(null);
+
 const mainChart = ref<HTMLElement | null>(null);
 const detailChart = ref<HTMLElement | null>(null);
 let mainChartInstance: echarts.ECharts | null = null;
@@ -155,7 +165,12 @@ let detailChartInstance: echarts.ECharts | null = null;
 // 渲染主环形仪表盘
 function renderMainChart() {
     if (!mainChart.value) return;
-    if (!mainChartInstance) mainChartInstance = echarts.init(mainChart.value);
+    // 每次都销毁并重新初始化，避免多次渲染后图表失效
+    if (mainChartInstance) {
+        mainChartInstance.dispose();
+        mainChartInstance = null;
+    }
+    mainChartInstance = echarts.init(mainChart.value);
     const option = {
         title: { show: false },
         series: [{
@@ -176,7 +191,7 @@ function renderMainChart() {
                 color: '#409EFF',
                 formatter: '{value}'
             },
-            data: [{ value: shadowingResult.value.pronunciationScore }]
+            data: [{ value: shadowingResult.value?.pronunciationScore }]
         }]
     };
     mainChartInstance.setOption(option);
@@ -185,16 +200,21 @@ function renderMainChart() {
 // 渲染条形图
 function renderDetailChart() {
     if (!detailChart.value) return;
-    if (!detailChartInstance) detailChartInstance = echarts.init(detailChart.value);
+    // 每次都销毁并重新初始化，避免多次渲染后图表失效
+    if (detailChartInstance) {
+        detailChartInstance.dispose();
+        detailChartInstance = null;
+    }
+    detailChartInstance = echarts.init(detailChart.value);
 
     const data = [
-        { name: '准确性', value: shadowingResult.value.accuracyScore },
-        { name: '完整性', value: shadowingResult.value.completenessScore },
-        { name: '流畅度', value: shadowingResult.value.fluencyScore },
-        { name: '韵律', value: shadowingResult.value.prosodyScore }
+        { name: '发音准确度', value: shadowingResult.value?.accuracyScore },
+        { name: '语音的流畅度', value: shadowingResult.value?.fluencyScore },
+        { name: '完整性', value: shadowingResult.value?.completenessScore },
+        { name: '韵律', value: shadowingResult.value?.prosodyScore }
     ];
     const option = {
-        grid: { left: 50, right: 20, top: 24, bottom: 24 },
+        grid: { left: 90, right: 80, top: 14, bottom: 14 },
         xAxis: { type: 'value', min: 0, max: 100, show: false },
         yAxis: {
             type: 'category',
@@ -211,7 +231,6 @@ function renderDetailChart() {
             itemStyle: {
                 borderRadius: 8,
                 color: (params: any) => {
-                    // 分段配色
                     if (params.value < 60) return '#E53E3E';
                     if (params.value < 80) return '#FFB100';
                     return '#67C23A';
@@ -274,7 +293,6 @@ const toggleRecording = () => {
 const submitRecording = async () => {
     if (recordedAudio.value) {
         // 清空分析结果并显示加载中
-        shadowingResult.value = null;
         isProcessing.value = true;
         ElMessage.success('录音已提交')
 
@@ -282,19 +300,19 @@ const submitRecording = async () => {
             const formData = new FormData();
             formData.append('audioFile', recordedAudio.value, 'recording.wav');
 
-            let res = await request.post<string>('/api/Shadowing/CheckShadowing?reftext=' + props.targetText, formData, {
+            let res = await request.post<PronunciationAssessmentResult>('/api/Shadowing/CheckShadowing?reftext=' + props.targetText, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            console.log("Shadowing result:", res);
 
-            // 新增：保存结果
-            if (typeof res === 'string') {
-                shadowingResult.value = JSON.parse(res);
-            } else {
-                shadowingResult.value = res;
-            }
-            
+            shadowingResult.value = res;
+
+            console.log("Shadowing result:", shadowingResult.value);
+            // 关键：强制刷新图表
+            nextTick(() => {
+                renderMainChart();
+                renderDetailChart();
+            });
             // emit('completed', recordedAudio.value);
         } catch (err) {
             console.error("Error during shadowing:", err);
@@ -332,7 +350,7 @@ onUnmounted(() => {
 
 <style scoped>
 .shadowing-view {
-    padding: 32px 0;
+    padding: 10px 0;
     min-height: 100%;
 }
 .operate-card {
