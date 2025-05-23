@@ -74,6 +74,7 @@ interface Book {
   id: string;
   title: string;
   author?: string;
+  bookType?: string;
   coverImage?: string;
   createTime?: string;
 }
