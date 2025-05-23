@@ -58,6 +58,9 @@ namespace QmtdltTools.Domain.Models
                 else
                 {
                     // isEnd
+                    position.PragraphIndex++;
+                    position.SentenceIndex = 0;
+                    position.ProgressValue = 100d;
                     return false;
                 }
             }

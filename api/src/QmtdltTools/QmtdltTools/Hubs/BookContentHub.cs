@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Dtos;
 using QmtdltTools.Domain.Entitys;
 using QmtdltTools.Domain.Models;
@@ -90,14 +91,30 @@ public class BookContentHub:AbpHub
         
         if (File.Exists(book.BookPath))                                             // if file exists
         {
-            var ebook = EpubHelper.GetEbook(book.BookPath, out string message);     // get ebook
-            if (ebook == null)
+            List<MyPragraph> plist = new List<MyPragraph>();
+            if(book.BookType == BookTypes.Epub)
             {
-                await Clients.Caller.SendAsync("onShowErrMsg", message);               // show err
+                var ebook = EpubHelper.GetEbook(book.BookPath, out string message);     // get ebook
+                if (ebook == null)
+                {
+                    await Clients.Caller.SendAsync("onShowErrMsg", message);               // show err
+                    return;
+                }
+                plist = EpubHelper.PrepareAllPragraphs(ebook);     // analyse book and get all pragraphs
             }
-            else
+            if (book.BookType == BookTypes.Txt)
             {
-                List<MyPragraph> plist = EpubHelper.PrepareAllPragraphs(ebook);     // analyse book and get all pragraphs
+                var textContent = EpubHelper.GetEbookText(book.BookPath, out string message);     // get ebook
+                if (string.IsNullOrEmpty(textContent))
+                {
+                    await Clients.Caller.SendAsync("onShowErrMsg", message);               // show err
+                    return;
+                }
+                plist = EpubHelper.GetParagraph(textContent);     // analyse book and get all pragraphs
+            }
+
+            {
+                
                 // make dictionary cache
                 bool success = bookReadingCache.TryGetValue(bookId, out var bookInfo);                              // try get from dictionary
 
@@ -137,16 +154,23 @@ public class BookContentHub:AbpHub
         if (bookReadingCache[bookId].PositionInbook() && connectionStatusCache[connectionId])
         {
             bool success = bookReadingCache[bookId].readQueue.TryDequeue(out UIReadInfo uiReadInfo);
-            if (!success)
+            if (!success && bookReadingCache[bookId].PositionInbook())
             {
                 success = CurReadInfoEnQueue(bookId, out UIReadInfo enQueueInfo1);            // get queue data fail,make data(only for first time)
                 bookReadingCache[bookId].readQueue.TryDequeue(out uiReadInfo);
             }
 
             _ = Clients.Caller.SendAsync("UIReadInfo", uiReadInfo);            // call client speak
-            RedisHelper.Set(bookId.ToString(), bookReadingCache[bookId].position);
 
-            bookReadingCache[bookId].PositionNext();                // go next
+            bool isInBook = bookReadingCache[bookId].PositionNext();                // go next
+            RedisHelper.Set(bookId.ToString(), bookReadingCache[bookId].position);
+            if (!isInBook)
+            {
+                // อ๊มห
+                _ = Clients.Caller.SendAsync("onSetBookPosition", uiReadInfo);
+                return;
+            }
+
             success = CurReadInfoEnQueue(bookId, out UIReadInfo enQueueInfo2);                   // en queue
         }
     }
