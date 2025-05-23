@@ -1,6 +1,6 @@
 <template>
-  <el-container style="margin: 0px;padding: 0px;"> 
-    <el-main style="margin: 0px;padding: 0px;">
+  <el-container class="book-reader-container">
+    <el-main class="book-reader-main">
       <!-- 书籍内容 -->
       <HighlightedText v-if="useModelType === '1'" :full-text="readContent.full_pragraph_text"
         :highlight-text="readContent.speaking_text" />
@@ -12,26 +12,28 @@
         <el-row v-if="listenwrite_text_is_show">
           {{ listenwrite_text }}
         </el-row>
-        <el-row justify="left">
+        
+      </div>
+      <!-- 跟读组件 -->
+      <div v-if="useModelType === '3'" class="shadowDiv">
+        <ShadowingView ref="shadowingRef" :target-text="listenwrite_text" @completed="handleShadowingComplete" />
+      </div>
+
+      <el-row justify="left">
           <el-col :span="2">
             <el-button @click="listenWriteClick" type="success"><el-icon>
                 <Headset />
               </el-icon>&nbsp; Ctrl+1</el-button>
           </el-col>
         </el-row>
-      </div>
-      <!-- 跟读组件 -->
-      <div v-if="useModelType === '3'" class="shadowDiv">
-        <ShadowingView ref="shadowingRef" :target-text="listenwrite_text" @completed="handleShadowingComplete" />
-      </div>
     </el-main>
-    <el-footer>
+    <el-footer class="book-reader-footer">
       <!-- 进度条 -->
       <el-row style="margin-top: 10px;margin-bottom: 10px;" justify="right">
         <el-slider v-model="readContent.curPosition.progressValue" @change="progChange"></el-slider>
       </el-row>
       <el-row justify="start" align="middle">
-        <el-col :span="1">
+        <el-col :span="2">
           <el-button @click="startRead" type="primary" plain circle>
             <el-icon>
               <IconPlay />
@@ -52,9 +54,9 @@
         </el-col>
       </el-row>
     </el-footer>
-
   </el-container>
 </template>
+
 <script setup lang="ts">
 
 import { ref, onMounted, onBeforeUnmount } from 'vue'
@@ -260,7 +262,34 @@ onBeforeUnmount(() => {
 })
 
 </script>
+
 <style scoped>
+.book-reader-container {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.book-reader-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0;
+  margin: 0;
+}
+.book-reader-footer {
+  flex-shrink: 0;
+  height: 120px;
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
+  box-shadow: 0 -2px 8px 0 rgba(0,0,0,0.03);
+  padding: 0 24px;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 .el-button+.el-button {
   margin-left: 10px;
 }

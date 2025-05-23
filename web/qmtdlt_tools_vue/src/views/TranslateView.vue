@@ -38,16 +38,16 @@
         <div style="text-align:left;">
             <el-row justify="end" style="margin-bottom:10px;">
                 <div style="display: flex; gap: 0px; margin-right: 20px;">
-                    <el-button @click="copyPhaseText" type="primary" plain circle>
-                        <el-icon size="large">
-                            <DocumentCopy />
-                        </el-icon>
-                    </el-button>
                     <el-button @click="confirmTrans" type="success" plain circle>
                         <el-icon size="large">
                             <IconTranslate />
                         </el-icon>
                     </el-button>
+                    <el-button @click="copyPhaseText" type="primary" plain circle>
+                        <el-icon size="large">
+                            <DocumentCopy />
+                        </el-icon>
+                    </el-button>                    
                     <el-button @click="cancelSelect" type="danger" plain circle>
                         <el-icon size="large">
                             <Close />

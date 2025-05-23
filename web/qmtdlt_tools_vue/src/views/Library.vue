@@ -68,7 +68,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { Upload } from '@element-plus/icons-vue';
 import request from '@/utils/request'; // 自行替换为你的请求工具
 import { isMobbile } from '@/utils/myutil'; // 自行替换为你的工具函数
-
+import {BookTypes} from '@/data/BookTypes'; // 自行替换为你的数据文件
 const isMobileRef = ref(isMobbile())
 interface Book {
   id: string;
@@ -104,7 +104,7 @@ export default defineComponent({
     const fetchBooks = async () => {
       loading.value = true;
       try {
-        const response = await request.get('/api/EpubManage/GetBooks/GetBooks');
+        const response = await request.get('/api/EpubManage/GetBooks/GetBooks?booktype=' + BookTypes.Epub);
         // 如果后端返回的数据在 response.data 中，请根据实际返回结构调整
         books.value = response.data || response;
       } catch (error) {
