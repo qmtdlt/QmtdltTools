@@ -3,6 +3,7 @@ using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Entitys;
 using QmtdltTools.Domain.Models;
 using QmtdltTools.EFCore;
+using System.IO;
 using VersOne.Epub;
 using Volo.Abp.DependencyInjection;
 
@@ -14,6 +15,47 @@ namespace QmtdltTools.Service.Services
         public EpubManageService(DC dc)
         {
             _dc = dc;
+        }
+
+        public async Task<Response<bool>> ExcerptChapter(string content, Guid? uid)
+        {
+            // 将buffer存储搭配wwwroot下
+            string fileName = $"摘录{DateTime.Now.ToString(ApplicationConst.TimeFormat)}";
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "epubs", fileName);
+            // 判断路径是否存在，不存在则创建
+            if (!Directory.Exists(Path.GetDirectoryName(path)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+            }
+            File.WriteAllText(path, content);
+
+
+            if (_dc.EBooks.Any(e => e.Title == fileName && e.Author == uid.ToString() && e.CreateBy == uid))
+            {
+                return new Response<bool>
+                {
+                    code = 1,
+                    message = "文件已存在"
+                };
+            }
+            else
+            {
+                EBookMain eBookMain = new EBookMain
+                {
+                    Title = fileName,
+                    Author = uid.ToString(),
+                    CoverImage = null,
+                    BookPath = path,
+                    CreateBy = uid,
+                    BookType = BookTypes.Txt
+                };
+                _dc.EBooks.Add(eBookMain);
+                await _dc.SaveChangesAsync();
+            }
+            return new Response<bool>
+            {
+                data = true
+            };
         }
         public async Task<Response<bool>> UploadText(Stream stream, string fileName, Guid? uid)
         {

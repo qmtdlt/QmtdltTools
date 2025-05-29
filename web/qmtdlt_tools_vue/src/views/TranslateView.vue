@@ -47,6 +47,11 @@
                         <el-icon size="large">
                             <DocumentCopy />
                         </el-icon>
+                    </el-button>
+                    <el-button @click="excerptChapter" type="primary" plain circle>
+                        <el-icon size="large">
+                            <IconExcerptChapter />
+                        </el-icon>
                     </el-button>                    
                     <el-button @click="cancelSelect" type="danger" plain circle>
                         <el-icon size="large">
@@ -67,6 +72,7 @@ import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '../util
 import request from '@/utils/request';
 import { Headset, VideoPause, DocumentCopy, Close, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import IconTranslate from '@/components/icons/IconTranslate.vue'
+import IconExcerptChapter from '@/components/icons/IconExcerptChapter.vue'
 const transSource = ref(''); // Store the selected text for translation
 const showTransDialog = ref(false) // 控制翻译弹窗显示
 const translating = ref(false); // 拖拽到右侧区域的文本
@@ -78,6 +84,22 @@ const copyPhaseText = async () => {
     await navigator.clipboard.writeText(selectDialogText.value)
     ElMessage.success('已复制到剪贴板')
     showSelectDialog.value = false
+}
+
+const excerptChapter = async () => {
+    const res = await ElMessageBox.confirm('是否要摘录这段话?', '提示', {
+        confirmButtonText: '摘录',
+        cancelButtonText: '取消',
+    })
+    if ("confirm" == res) {
+        // Handle the action when the user confirms
+        console.log('User confirmed:', res)
+        await request.post('/api/EpubManage/ExcerptChapter/ExcerptChapter?content=' + selectDialogText.value);
+        ElMessage.success('摘录成功')
+    } else {
+        // Handle the action when the user cancels
+        console.log('User cancelled:', res)
+    }
 }
 
 const confirmTrans = async () => {

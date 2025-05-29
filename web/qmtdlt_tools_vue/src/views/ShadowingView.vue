@@ -153,7 +153,7 @@ interface PronunciationAssessmentResult {
     }>;
 }
 
-let stream: MediaStream | null = null;
+// const stream = ref<MediaStream| null>(null);
 
 // 结果数据
 const shadowingResult = ref<PronunciationAssessmentResult| null>(null);
@@ -339,9 +339,9 @@ onUnmounted(() => {
   if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
         mediaRecorder.value.stop()
     }
-    if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-    }
+    // if (stream) {
+    //     stream.value.getTracks().forEach((track: MediaStreamTrack) => track.stop());
+    // }
     if (recordedAudioUrl.value) {
         URL.revokeObjectURL(recordedAudioUrl.value) // Clean up
     }

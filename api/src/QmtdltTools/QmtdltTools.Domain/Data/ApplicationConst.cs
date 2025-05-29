@@ -2,10 +2,11 @@ namespace QmtdltTools.Domain.Data;
 
 public class ApplicationConst
 {
+    public const string TimeFormat = "yyyyMMddHHmmss";
     public static string LogPath
     { 
         get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
-            "Logs", $"{DateTime.Now:yyyyMMddHHmmss}logs.txt"); } 
+            "Logs", $"{DateTime.Now.ToString(TimeFormat)}logs.txt"); } 
     }
     public const string DefaultVoiceName = "en-US-AvaMultilingualNeural";
     public static string SPEECH_KEY = "";
