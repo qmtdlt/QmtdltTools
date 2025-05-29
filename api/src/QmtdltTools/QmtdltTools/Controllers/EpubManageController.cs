@@ -39,6 +39,14 @@ namespace QmtdltTools.Controllers
 
             return await _epubManageService.UploadText(stream, file.FileName, uid);
         }
+        [HttpPost("ExcerptChapter")]
+        public async Task<Response<bool>> ExcerptChapter(string content)
+        {
+
+            Guid? uid = HttpContext.GetUserId();           // 当前登录用户id
+
+            return await _epubManageService.ExcerptChapter(content, uid);
+        }
         [HttpGet("DownloadEpub")]
         public async Task<IActionResult> DownloadEpub(Guid id)
         {
