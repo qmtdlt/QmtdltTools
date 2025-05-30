@@ -9,27 +9,22 @@
         <el-row>
           <ListenWrite ref="listenWriteRef" :target-text="listenwrite_text" @completed="handleListenWriteComplete" />
         </el-row>
-        <el-row v-if="listenwrite_text_is_show">
-          {{ listenwrite_text }}
+        <el-row v-if="listenwrite_text_is_show" justify="center" style="margin: 18px 0;">
+          <el-card class="listenwrite-text-card" shadow="hover">
+            <span class="listenwrite-text">{{ listenwrite_text }}</span>
+          </el-card>
         </el-row>
-        
+
       </div>
       <!-- 跟读组件 -->
       <div v-if="useModelType === '3'" class="shadowDiv">
         <ShadowingView ref="shadowingRef" :target-text="listenwrite_text" @completed="handleShadowingComplete" />
       </div>
-
-      <el-row justify="left">
-          <el-col :span="2">
-            <el-button @click="listenWriteClick" type="success"><el-icon>
-                <Headset />
-              </el-icon>&nbsp; Ctrl+1</el-button>
-          </el-col>
-        </el-row>
     </el-main>
     <el-footer class="book-reader-footer">
       <!-- 进度条 -->
-      <el-row style="margin-top: 10px;margin-bottom: 10px;" justify="right">
+      <el-card>
+        <el-row justify="right">
         <el-slider v-model="readContent.curPosition.progressValue" @change="progChange"></el-slider>
       </el-row>
       <el-row justify="start" align="middle">
@@ -52,7 +47,18 @@
             <el-radio-button label="3">跟读模式</el-radio-button>
           </el-radio-group>
         </el-col>
+        <el-col :span="2">
+          <el-button @click="listenWriteClick" type="success"><el-icon>
+              <Headset />
+          </el-icon>&nbsp; Ctrl+1 重听</el-button>
+        </el-col>
+        <el-col :span="2">
+          <el-button @click="listenWriteHint" type="success"><el-icon>
+              <MagicStick />
+          </el-icon>&nbsp; Ctrl+D 提示</el-button>
+        </el-col>
       </el-row>
+      </el-card>
     </el-footer>
   </el-container>
 </template>
@@ -66,7 +72,7 @@ import ShadowingView from './ShadowingView.vue'; // Import your ShadowingView co
 import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Headset, VideoPause, CaretRight, Close, ArrowLeft, ArrowRight, Sort } from '@element-plus/icons-vue'
+import { Headset, MagicStick, CaretRight, Close, ArrowLeft, ArrowRight, Sort } from '@element-plus/icons-vue'
 import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '../utils/audioplay';
 import IconStop from '../components/icons/IconStop.vue';
 import IconPlay from '../components/icons/IconPlay.vue';
@@ -98,6 +104,9 @@ const listenWriteClick = () => {
   startPlayBase64Audio(listenwrite_buffer.value, () => {
     console.log("播放完成");
   }); // 读取到的音频内容
+}
+const listenWriteHint = () => {
+  listenwrite_text_is_show.value = !listenwrite_text_is_show.value; // 切换文本显示状态
 }
 
 onMounted(() => {
@@ -265,30 +274,50 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .book-reader-container {
-  min-height: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
+
 .book-reader-main {
-  flex: 1 1 auto;
+  display: flex;
+  flex: auto;
   min-height: 0;
   overflow: auto;
   padding: 0;
   margin: 0;
 }
+
 .book-reader-footer {
   flex-shrink: 0;
-  height: 120px;
-  background: #fff;
-  border-top: 1px solid #f0f0f0;
-  box-shadow: 0 -2px 8px 0 rgba(0,0,0,0.03);
-  padding: 0 24px;
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  height: 120px;
+  position: sticky;
+  z-index: 10;
+  width: 100%;
+  margin: 10px 0px 0px 0px !important;
+}
+
+.el-footer{
+  padding: 0px;
+}
+.listenwrite-text-card {
+  background: #f7fafd;
+  border-radius: 8px;
+  padding: 12px 24px;  
+  width: 100%;
+  text-align: left;
+  border: 1px solid #e6e8eb;
+  box-shadow: 0 2px 8px rgba(64,158,255,0.06);
+}
+
+.listenwrite-text {
+  font-size: 2em;
+  color: #409EFF;
+  font-weight: bold;
+  letter-spacing: 1px;
+  word-break: break-all;
 }
 .el-button+.el-button {
   margin-left: 10px;

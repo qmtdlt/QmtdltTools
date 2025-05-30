@@ -141,7 +141,7 @@ watch(
   border-radius: 8px;
   font-size: 3rem; /* Adjusted for potentially smaller container */
   color: #c0c0c0;
-  overflow-y: hidden;
+  overflow-y: scroll;
   scroll-behavior: smooth;
 }
 
