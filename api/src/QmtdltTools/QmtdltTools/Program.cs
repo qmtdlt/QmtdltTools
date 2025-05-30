@@ -11,10 +11,21 @@ using Serilog.Events;
 using Volo.Abp.AspNetCore.SignalR;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Hosting;
 
 const string Cors = "VueApp";
 InitLog();
 var builder = WebApplication.CreateBuilder(args);           // got a web application builder
+
+
+//builder.WebHost.ConfigureKestrel(options =>
+//{
+//    options.ListenAnyIP(5083, listenOptions =>
+//    {
+//        listenOptions.UseHttps("/home/qmtdlt_tools/pem/youngforyou.top.pfx", "12000asdQWER");
+//    });
+//});
+
 
 builder.Host
     .AddAppSettingsSecretsJson()        // add appsettings.json
@@ -37,9 +48,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy(Cors, builder =>
     {
         builder.WithOrigins(allowedCorsOrigins)
-            .AllowAnyHeader()
+        .AllowAnyHeader()
         .AllowAnyMethod()
-            .AllowCredentials();
+        .AllowCredentials();
     });
 });
 // jwt 
@@ -52,7 +63,7 @@ ApplicationConst.DOU_BAO = configuration.GetSection("MySecret:DOU_BAO").Get<stri
 ApplicationConst.QIAN_WEN = configuration.GetSection("MySecret:QIAN_WEN").Get<string>();
 
 var Issuer = configuration.GetSection("Jwt:Issuer").Get<string>();
-var Audience = configuration.GetSection("Jwt:Audience").Get<string>(); 
+var Audience = configuration.GetSection("Jwt:Audience").Get<string>();
 var SystenScurityKey = configuration.GetSection("Jwt:SystenScurityKey").Get<string>();
 builder.Services.AddAuthentication(options =>
 {

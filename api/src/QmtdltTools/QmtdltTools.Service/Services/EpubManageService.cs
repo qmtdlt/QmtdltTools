@@ -138,7 +138,7 @@ namespace QmtdltTools.Service.Services
                         CoverImage = book.CoverImage,
                         BookPath = path,
                         CreateBy = uid,
-                        BookType = BookTypes.Txt
+                        BookType = BookTypes.Epub
                     };
                     _dc.EBooks.Add(eBookMain);
                     await _dc.SaveChangesAsync();

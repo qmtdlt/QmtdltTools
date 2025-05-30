@@ -32,7 +32,7 @@ const handleSelection = () => {
   <div class="container" @mouseup="handleSelection">
     <header class="header" >
       <div class="logo" v-if="!isMobileRef">
-        <h1>QmtdltTools</h1>
+        <h1>YoungForYou</h1>
       </div>
       <nav class="main-nav">
         <RouterLink 
