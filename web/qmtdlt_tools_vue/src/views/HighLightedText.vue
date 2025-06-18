@@ -139,7 +139,7 @@ watch(
   background: url('../assets/background2.png') no-repeat center center;
   background-size: cover;
   border-radius: 8px;
-  font-size: 3rem; /* Adjusted for potentially smaller container */
+  font-size: 2rem; /* Adjusted for potentially smaller container */
   color: #c0c0c0;
   overflow-y: scroll;
   scroll-behavior: smooth;
