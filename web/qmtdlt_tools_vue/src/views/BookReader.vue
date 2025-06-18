@@ -57,6 +57,11 @@
               <MagicStick />
           </el-icon>&nbsp; Ctrl+D 提示</el-button>
         </el-col>
+        <el-col :span="2">
+          <el-button @click="collectPharagraph" type="success"><el-icon>
+              <Management />
+          </el-icon>收藏段落</el-button>
+        </el-col>
       </el-row>
       </el-card>
     </el-footer>
@@ -72,10 +77,11 @@ import ShadowingView from './ShadowingView.vue'; // Import your ShadowingView co
 import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Headset, MagicStick, CaretRight, Close, ArrowLeft, ArrowRight, Sort } from '@element-plus/icons-vue'
+import { Headset, MagicStick, CaretRight, Close, ArrowLeft, ArrowRight, Sort,Management } from '@element-plus/icons-vue'
 import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '../utils/audioplay';
 import IconStop from '../components/icons/IconStop.vue';
 import IconPlay from '../components/icons/IconPlay.vue';
+import request from '@/utils/request'; // 导入请求工具
 
 const listenwrite_text_is_show = ref(false); // 控制文本是否显示
 const useModelType = ref("1"); // 1: 听书（听完一句自动read 下一句）2: 听写（听完一句，自动切换听写界面，听写成功回调后，下一句）3：跟读（听完一句，自动切换跟读界面，跟读成功回调后，下一句）
@@ -107,6 +113,26 @@ const listenWriteClick = () => {
 }
 const listenWriteHint = () => {
   listenwrite_text_is_show.value = !listenwrite_text_is_show.value; // 切换文本显示状态
+}
+
+const collectPharagraph = async ()=>{
+ await excerptChapter();
+}
+
+const excerptChapter = async () => {
+    const res = await ElMessageBox.confirm('是否要摘录这段话?', '提示', {
+        confirmButtonText: '摘录',
+        cancelButtonText: '取消',
+    })
+    if ("confirm" == res) {
+        // Handle the action when the user confirms
+        console.log('User confirmed:', res)
+        await request.post('/api/EpubManage/ExcerptChapter/ExcerptChapter?content=' + readContent.value.full_pragraph_text);
+        ElMessage.success('摘录成功')
+    } else {
+        // Handle the action when the user cancels
+        console.log('User cancelled:', res)
+    }
 }
 
 onMounted(() => {
