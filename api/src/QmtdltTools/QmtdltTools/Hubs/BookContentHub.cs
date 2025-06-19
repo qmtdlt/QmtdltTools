@@ -116,7 +116,7 @@ public class BookContentHub:AbpHub
             {
                 
                 // make dictionary cache
-                bool success = bookReadingCache.TryGetValue(bookId, out var bookInfo);                              // try get from dictionary
+                bool success = bookReadingCache.TryGetValue(bookId, out BookReaderModel? bookInfo);                              // try get from dictionary
 
                 if (!success)
                 {
@@ -174,6 +174,7 @@ public class BookContentHub:AbpHub
             success = CurReadInfoEnQueue(bookId, out UIReadInfo enQueueInfo2);                   // en queue
         }
     }
+
     public async Task ResetPosition(Guid bookId ,int progress)
     {
         bookReadingCache[bookId].readQueue.Clear();

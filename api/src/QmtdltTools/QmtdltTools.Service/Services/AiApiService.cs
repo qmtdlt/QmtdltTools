@@ -49,5 +49,23 @@ namespace QmtdltTools.Service.Services
                     return await QianWenRestHelper.GetSentenctevaluate(sentence, word);
             }
         }
+        //GetExplainResult
+
+        public async Task<ExplainResultDto?> GetExplainResult(string phase)
+        {
+            switch (_AIFactorys)
+            {
+                case AIFactorys.GROK:
+                    return await GrokRestHelper.GetExplainResult(phase);
+                case AIFactorys.GEMINI:
+                    return await GeminiRestHelper.GetExplainResult(phase);
+                case AIFactorys.DOUBAO:
+                    return await DouBaoRestHelper.GetExplainResult(phase);
+                case AIFactorys.QIANWEN:
+                    return await QianWenRestHelper.GetExplainResult(phase);
+                default:
+                    return await QianWenRestHelper.GetExplainResult(phase);
+            }
+        }
     }
 }

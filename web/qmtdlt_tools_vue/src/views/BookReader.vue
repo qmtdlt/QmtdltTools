@@ -1,7 +1,8 @@
 <template>
   <el-container class="book-reader-container">
     <el-main class="book-reader-main">
-      <!-- 书籍内容 -->
+      <div class="div_left_content">
+        <!-- 书籍内容 -->
       <HighlightedText v-if="useModelType === '1'" :full-text="readContent.full_pragraph_text"
         :highlight-text="readContent.speaking_text" />
       <!-- 听写组件 -->
@@ -14,11 +15,14 @@
             <span class="listenwrite-text">{{ listenwrite_text }}</span>
           </el-card>
         </el-row>
-
       </div>
       <!-- 跟读组件 -->
       <div v-if="useModelType === '3'" class="shadowDiv">
         <ShadowingView ref="shadowingRef" :target-text="listenwrite_text" @completed="handleShadowingComplete" />
+      </div>
+      </div>
+      <div class="div_right_content">
+
       </div>
     </el-main>
     <el-footer class="book-reader-footer">
@@ -61,6 +65,11 @@
           <el-button @click="collectPharagraph" type="success"><el-icon>
               <Management />
           </el-icon>收藏段落</el-button>
+        </el-col>
+        <el-col :span="2">
+          <el-button @click="explainPhase" type="success"><el-icon>
+              <!-- <Management /> -->
+          </el-icon>段落讲解</el-button>
         </el-col>
       </el-row>
       </el-card>
@@ -135,6 +144,35 @@ const excerptChapter = async () => {
     }
 }
 
+interface ExplainResultDto {
+    explanation?: string
+    voiceBuffer?: string
+}
+const explainPhase = async () => {
+  const res = await ElMessageBox.confirm('是否要讲解这段话?', '提示', {
+    confirmButtonText: '讲解',
+    cancelButtonText: '取消',
+  })
+  if ("confirm" == res) {
+    // Handle the action when the user confirms
+    console.log('User confirmed:', res)
+    // TODO 调用接口获取讲解内容
+    const response = await request.post<ExplainResultDto>('/api/ReadBook/GetExplainResult', {
+      Phase: readContent.value.full_pragraph_text,
+      bookId: readContent.value.bookId,
+      PhaseIndex: readContent.value.curPosition.pragraphIndex,
+    });
+    
+    stopPlayBase64Audio();
+    startPlayBase64Audio(response.voiceBuffer??"", () => {
+      console.log("播放完成");
+    }); // 读取到的音频内容
+      ElMessage.success('讲解成功')
+    } else {
+      // Handle the action when the user cancels
+      console.log('User cancelled:', res)
+    }
+}
 onMounted(() => {
   // Add keyboard shortcut listener for ctrl+1
   window.addEventListener('keydown', handleKeyDown);

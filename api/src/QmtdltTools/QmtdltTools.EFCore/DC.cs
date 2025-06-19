@@ -32,4 +32,6 @@ public class DC:AbpDbContext<DC>
     public DbSet<ListenWriteRecord> ListenWriteRecords { get; set; }
     public DbSet<UserVocabulary> UserVocabularies { get; set; }
     public DbSet<VocabularyRecord> VocabularyRecords { get; set; }
+
+    public DbSet<ExplainRecord> ExplainRecords { get; set; }
 }
