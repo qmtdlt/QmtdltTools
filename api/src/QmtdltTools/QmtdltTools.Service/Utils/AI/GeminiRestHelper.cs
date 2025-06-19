@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Dtos;
+using QmtdltTools.Service.Utils.AI;
 using RestSharp;
 
 namespace QmtdltTools.Service.Utils
@@ -17,6 +18,40 @@ namespace QmtdltTools.Service.Utils
         public static string gemini_model = "gemini-2.0-flash-lite";
         public static string apiEndpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent?key={ApplicationConst.GEMINI_KEY}";
 
+        public static async Task<ExplainResultDto?> GetExplainResult(string phase)
+        {
+            // Construct the request body
+            var requestBody = new
+            {
+                contents = new[]
+                {
+                    new{
+                        parts = new []{
+                            new { text = PromptData.SentenceExplainerPrompt(phase) }
+                        }
+                    }
+                }
+            };
+            var result = await GetResult<string>(requestBody);
+
+            if (null != result)
+            {
+                try
+                {
+                    var buffer = MsTTSHelperRest.GetSpeakStreamRest(result, ApplicationConst.DefaultVoiceName);
+                    return new ExplainResultDto
+                    {
+                        Explanation = result,
+                        VoiceBuffer = buffer,
+                    };
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            return null;
+        }
         public static async Task<TranslateDto> GetTranslateResult(string word)
         {
             // Construct the request body
@@ -90,6 +125,10 @@ namespace QmtdltTools.Service.Utils
                     string assistantMessage = jsonResponse.candidates[0].content.parts[0].text.ToString();
                     assistantMessage = assistantMessage.Replace("```json", "").Replace("```", "");
                     // Deserialize the message into the VibeResponse class
+                    if (typeof(T) == typeof(string))
+                    {
+                        return (T)(object)assistantMessage;
+                    }
                     var result = JsonConvert.DeserializeObject<T>(assistantMessage);
 
                     return result;

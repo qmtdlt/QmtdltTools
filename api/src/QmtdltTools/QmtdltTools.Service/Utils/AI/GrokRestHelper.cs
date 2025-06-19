@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Dtos;
+using QmtdltTools.Service.Utils.AI;
 using RestSharp;
 
 namespace QmtdltTools.Service.Utils
@@ -10,7 +11,40 @@ namespace QmtdltTools.Service.Utils
         public static string grok_api_key = ApplicationConst.GROK_KEY;
         public static string apiEndpoint = "https://api.x.ai/v1/chat/completions";
         public static string grok_model = "grok-3-mini-beta";
+        public static async Task<ExplainResultDto?> GetExplainResult(string phase)
+        {
+            // Construct the request body
+            var requestBody = new
+            {
+                messages = new[]
+                {
+                    new { role = "system", content = "You are a helpful assistant." },
+                    new { role = "user", content = PromptData.SentenceExplainerPrompt(phase) }
+                },
+                model = grok_model,
+                stream = false,
+                temperature = 0
+            };
+            var result = await GetResult<string>(requestBody);
 
+            if (null != result)
+            {
+                try
+                {
+                    var buffer = MsTTSHelperRest.GetSpeakStreamRest(result, ApplicationConst.DefaultVoiceName);
+                    return new ExplainResultDto
+                    {
+                        Explanation = result,
+                        VoiceBuffer = buffer,
+                    };
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            return null;
+        }
         public static async Task<TranslateDto> GetTranslateResult(string word)
         {
             // Construct the request body
@@ -82,6 +116,10 @@ namespace QmtdltTools.Service.Utils
                     // Extract the assistant's message content
                     string assistantMessage = jsonResponse.choices[0].message.content.ToString();
                     // Deserialize the message into the VibeResponse class
+                    if (typeof(T) == typeof(string))
+                    {
+                        return (T)(object)assistantMessage;
+                    }
                     var result = JsonConvert.DeserializeObject<T>(assistantMessage);
 
                     return result;

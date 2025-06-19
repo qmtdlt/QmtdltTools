@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Dtos;
+using QmtdltTools.Service.Utils.AI;
 using RestSharp;
 
 namespace QmtdltTools.Service.Utils
@@ -10,6 +11,38 @@ namespace QmtdltTools.Service.Utils
         public static string doubao_api_key = ApplicationConst.DOU_BAO;
         public static string apiEndpoint = "https://ark.cn-beijing.volces.com/api/v3/chat/completions";
         public static string doubao_model = "doubao-1-5-lite-32k-250115";
+
+        public static async Task<ExplainResultDto?> GetExplainResult(string phase)
+        {
+            // Construct the request body
+            var requestBody = new
+            {
+                messages = new[]
+                {
+                    new { role = "system", content = PromptData.SentenceExplainerPrompt(phase) },
+                },
+                model = doubao_model
+            };
+            var result = await GetResult<string>(requestBody);
+
+            if (null != result)
+            {
+                try
+                {
+                    var buffer = MsTTSHelperRest.GetSpeakStreamRest(result, ApplicationConst.DefaultVoiceName);
+                    return new ExplainResultDto
+                    {
+                        Explanation = result,
+                        VoiceBuffer = buffer,
+                    };
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            return null;
+        }
 
         public static async Task<TranslateDto> GetTranslateResult(string word)
         {
@@ -76,6 +109,11 @@ namespace QmtdltTools.Service.Utils
                     var jsonResponse = JsonConvert.DeserializeObject<dynamic>(response.Content);
                     // Extract the assistant's message content
                     string assistantMessage = jsonResponse.choices[0].message.content.ToString();
+
+                    if (typeof(T) == typeof(string))
+                    {
+                        return (T)(object)assistantMessage;
+                    }
                     // Deserialize the message into the VibeResponse class
                     var result = JsonConvert.DeserializeObject<T>(assistantMessage);
 
