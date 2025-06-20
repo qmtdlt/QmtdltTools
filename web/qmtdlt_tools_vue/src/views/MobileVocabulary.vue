@@ -116,8 +116,9 @@ const ignoreInTimeRange = async () => {
   align-items: center;
   gap: 8px;
 }
-.sound-icon {
-  font-size: 1.2em;
+.sound-icon,
+.sound-btn .el-icon {
+  font-size: 2em !important;
   color: #409EFF;
 }
 .word-explanation {
@@ -146,8 +147,17 @@ const ignoreInTimeRange = async () => {
   font-size: 1em;
 }
 .sound-btn {
-  background: #f4f8fb;
-  color: #409EFF;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eaf6ff;
+  box-shadow: 0 2px 8px rgba(64,158,255,0.08);
   border: none;
+  margin-left: 8px;
 }
 </style>
