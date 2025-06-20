@@ -7,7 +7,7 @@
             <!--单词-->
             {{ curWordRef?.wordText }}
           </el-span>
-          <el-button v-if="curWordRef?.pronunciation" size="small" circle
+          <el-button v-if="curWordRef?.wordPronunciation" size="small" circle
             @click="startPlayBase64Audio(curWordRef?.wordPronunciation,()=>{})" title="播放发音">
             <el-icon>
               <Headset />
