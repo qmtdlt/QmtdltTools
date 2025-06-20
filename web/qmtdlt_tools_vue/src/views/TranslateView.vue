@@ -139,7 +139,7 @@ const realHandlePhaseSelect = async (phaseText: string) => {
     }
     try {
         translating.value = true; // Set loading immediately
-        ElMessage.info('正在翻译，请稍候...');
+        ElMessage.info('正在翻译，翻译结果即将呈现...');
         let res = await request.get<VocabularyRecord>(
             '/api/Vocabulary/Trans',
             {
