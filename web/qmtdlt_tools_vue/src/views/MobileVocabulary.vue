@@ -1,14 +1,5 @@
 <template>
   <div class="word-detail-mobile">
-    <div class="word-header">
-      <span class="word-title">
-        {{ curWordRef?.wordText }}
-        <el-button type="default" size="large" circle class="sound-btn" v-if="curWordRef?.wordPronunciation"
-        @click="startPlayBase64Audio(curWordRef?.wordPronunciation,()=>{})">
-        <el-icon><Headset /></el-icon>
-      </el-button>
-      </span>
-    </div>
     <div class="word-explanation">
       {{ curWordRef?.aiExplanation }}
     </div>
@@ -23,8 +14,19 @@
         <el-icon><Headset /></el-icon>
       </el-button>
     </div>
+    <!-- 将标题放到底部区域 -->
+    <div class="word-header bottom-header">
+      <span class="word-title">
+        {{ curWordRef?.wordText }}
+        <el-button type="default" size="large" circle class="sound-btn" v-if="curWordRef?.wordPronunciation"
+          @click="startPlayBase64Audio(curWordRef?.wordPronunciation,()=>{})">
+          <el-icon><Headset /></el-icon>
+        </el-button>
+      </span>
+    </div>
   </div>
 </template>
+
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
@@ -34,6 +36,7 @@ import { ElMessage, ElMessageBox } from 'element-plus' // 确保导入 ElDialog,
 import { Headset } from '@element-plus/icons-vue' // 移除未使用的图标
 import { isMobbile } from '@/utils/myutil'
 import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '../utils/audioplay';
+import { start } from 'repl'
 
 const isMobileRef = ref(isMobbile());
 const curWordRef = ref<VocabularyRecord>();
@@ -68,6 +71,22 @@ onMounted(() => {
   }
 })
 
+const isAutoPlay = ref(false);
+const stopAutoPlay = () => {
+  isAutoPlay.value = false;
+  stopPlayBase64Audio();
+  cleanupAudio();
+}
+const autoPlay = ()=>{
+  isAutoPlay.value = true;
+  getWord();
+  startPlayBase64Audio(curWordRef.value?.wordPronunciation??'', () => {
+    startPlayBase64Audio(curWordRef.value?.pronunciation ?? '', () => {
+      // 播放完毕后的回调
+      autoPlay();
+    });
+  });
+}
 const getWord = async () => {
   stopPlayBase64Audio();
   const res = await request.get<VocabularyRecord>('/api/Vocabulary/GetOneWord')
@@ -102,20 +121,6 @@ const ignoreInTimeRange = async () => {
   min-height: 100vh;
   box-sizing: border-box;
 }
-.word-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 18px;
-}
-.word-title {
-  font-size: 1.6em;
-  font-weight: bold;
-  color: #222;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 .sound-icon,
 .sound-btn .el-icon {
   font-size: 2em !important;
@@ -142,10 +147,6 @@ const ignoreInTimeRange = async () => {
   justify-content: center;
   flex-wrap: wrap;
 }
-.action-btn {
-  min-width: 110px;
-  font-size: 1em;
-}
 .sound-btn {
   width: 48px;
   height: 48px;
@@ -160,4 +161,35 @@ const ignoreInTimeRange = async () => {
   border: none;
   margin-left: 8px;
 }
+
+
+.word-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.bottom-header {
+  margin-top: 40px; /* 放到底部区域 */
+}
+
+.word-title {
+  font-size: 1.6em;
+  font-weight: bold;
+  color: #222;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .word-title {
+    font-size: 1.4em;
+  }
+  .action-btn {
+    font-size: 0.95em;
+  }
+}
+
 </style>
