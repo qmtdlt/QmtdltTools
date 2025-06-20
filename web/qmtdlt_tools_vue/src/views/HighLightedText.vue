@@ -138,7 +138,6 @@ watch(
   width: 99%; /* Consider if this should be less, e.g., 100% of its parent */
   background: url('../assets/background2.png') no-repeat center center;
   background-size: cover;
-  border-radius: 8px;
   font-size: 2rem; /* Adjusted for potentially smaller container */
   color: #c0c0c0;
   overflow-y: scroll;
@@ -149,7 +148,6 @@ watch(
 .highlightdiv::-webkit-scrollbar {
   width: 10px;
   background: transparent;
-  border-radius: 8px;
 }
 .highlightdiv::-webkit-scrollbar-thumb {
   background: rgba(64, 158, 255, 0.25);
@@ -162,7 +160,6 @@ watch(
 }
 .highlightdiv::-webkit-scrollbar-track {
   background: transparent;
-  border-radius: 8px;
 }
 
 /* Firefox */
@@ -183,8 +180,7 @@ watch(
   color: #ffffff;
   font-weight: bold;
   background-color: rgba(0, 0, 0, 0.2); /* Optional: slight background for highlighted text */
-  padding: 0.1em 0; /* Optional: slight padding if background is used */
-  border-radius: 3px; /* Optional: rounded corners for background */
+  padding: 0.2em 0.4em 0.4em 0.4em; /* Optional: slight padding if background is used */
 }
 
 /* Optional: to make the non-highlighted text slightly less prominent */

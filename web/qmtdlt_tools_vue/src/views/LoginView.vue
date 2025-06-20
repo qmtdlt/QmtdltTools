@@ -21,9 +21,12 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
+import { isMobbile } from '../utils/myutil'
+import { el } from 'element-plus/es/locales.mjs'
 
 const router = useRouter()
 const loading = ref(false)
+const isMobileRef = ref(isMobbile())
 
 const form = ref({
   username: '',
@@ -58,7 +61,14 @@ const handleLogin = async () => {
     
     ElMessage.success('登录成功')
     // 登录成功后跳转到首页
-    router.push('/vocabulary')
+
+    if(isMobileRef.value) {
+      router.push('/mvocabulary')     // 移动端跳转到移动词汇页面
+    }
+    else {
+      router.push('/vocabulary')      // 桌面端跳转到词汇页面
+    }
+    
   } catch (error) {
     console.error(error)
     ElMessage.error('登录失败')
@@ -75,6 +85,7 @@ const goToRegister = () => {
 <style scoped>
 .login-container {
   width: 380px;
+  height: 240px;
   margin: 100px auto;
   padding: 20px;
   border-radius: 5px;
