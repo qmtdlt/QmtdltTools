@@ -116,6 +116,7 @@ const handleSelection = () => {
 }
 
 .main-nav {
+  padding-right: 20px;
   display: flex;
   gap: 2rem; /* Increased gap for better spacing */
 }

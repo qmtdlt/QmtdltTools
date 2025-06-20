@@ -24,12 +24,12 @@ namespace QmtdltTools.Controllers
         [HttpPost("GetNext")]
         public async Task<ExplainRecord?> GetNext([FromBody] ExplainRecord? input)
         {
-            return await _service.GetNext(input);
+            return await _service.GetNext(HttpContext.GetUserId());
         }
         [HttpPost("GetExplainResult")]
         public async Task<ExplainResultDto?> GetExplainResult([FromBody] ExplainPhaseInputDto input)
         {
-            return await _service.GetExplainResult(input);
+            return await _service.GetExplainResult(input, HttpContext.GetUserId());
         }
     }
 }
