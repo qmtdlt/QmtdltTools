@@ -6,6 +6,13 @@ import RegisterView from '../views/RegisterView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    //MobileVocabulary
+    
+    {
+      path:'/mvocabulary',
+      name: 'mocabulary',
+      component: () => import('../views/MobileVocabulary.vue'),
+    },
     {
       path:'/vocabulary',
       name: 'vocabulary',
@@ -16,18 +23,9 @@ const router = createRouter({
       name: 'listenwrite',
       component: () => import('../views/ListenWriteList.vue'),
     },
-    // {
-    //   path: '/',
-    //   name: 'home',
-    //   component: HomeView,
-    //   meta: { requiresAuth: true }
-    // },
     {
       path: '/library',
       name: 'library',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/Library.vue'),
     },
     {
@@ -43,17 +41,11 @@ const router = createRouter({
     {
       path: '/bookview',
       name: 'bookview',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/BookReader.vue'),
     },
     {
       path: '/mobilebookview',
       name: 'mobilebookview',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/BookReader.vue'),
     },
   ]
