@@ -135,7 +135,7 @@ watch(
   padding: 1rem;
   /* IMPORTANT: Set a fixed height for the container to enable vertical centering and clipping */
   height: 100%; /* Example height, adjust as needed */
-  width: 99vw; /* Consider if this should be less, e.g., 100% of its parent */
+  width: 99%; /* Consider if this should be less, e.g., 100% of its parent */
   background: url('../assets/background2.png') no-repeat center center;
   background-size: cover;
   border-radius: 8px;
@@ -143,6 +143,34 @@ watch(
   color: #c0c0c0;
   overflow-y: scroll;
   scroll-behavior: smooth;
+}
+
+/* 美化滚动条样式 */
+.highlightdiv::-webkit-scrollbar {
+  width: 10px;
+  background: transparent;
+  border-radius: 8px;
+}
+.highlightdiv::-webkit-scrollbar-thumb {
+  background: rgba(64, 158, 255, 0.25);
+  border-radius: 8px;
+  border: 2px solid #f7fafd;
+  min-height: 40px;
+}
+.highlightdiv::-webkit-scrollbar-thumb:hover {
+  background: rgba(64, 158, 255, 0.45);
+}
+.highlightdiv::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 8px;
+}
+
+/* Firefox */
+.highlightdiv {
+  scrollbar-width: thin;
+  scrollbar-color: #a0cfff #f7fafd;
+  scrollbar-gutter: stable both-edges;
+  /* Firefox 允许 thumb 圆角通过 track/background 颜色对比实现 */
 }
 
 .highlightdiv p {
