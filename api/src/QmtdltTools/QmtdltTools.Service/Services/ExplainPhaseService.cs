@@ -21,6 +21,28 @@ namespace QmtdltTools.Service.Services
             _aiApiService = aiApiService;
             _dc = dc;
         }
+
+
+        public async Task<ExplainRecord?> GetNext(ExplainRecord? input)
+        {
+            // 如果 id 是合法 Guid
+            if (input != null && input.Id!= null && Guid.Empty != input.Id)
+            {
+                var findEntity = await _dc.Set<ExplainRecord>().Where(t => t.CreateTime > input.CreateTime).FirstOrDefaultAsync();
+                if(findEntity != null)
+                {
+                    return findEntity;
+                }
+                else
+                {
+                    return await _dc.Set<ExplainRecord>().OrderBy(t => t.CreateTime).FirstOrDefaultAsync();
+                }
+            }
+            else
+            {
+                return await _dc.Set<ExplainRecord>().OrderBy(t => t.CreateTime).FirstOrDefaultAsync();
+            }
+        }
         public async Task<ExplainResultDto?> GetExplainResult(ExplainPhaseInputDto input)
         {
             var findEntity = await _dc.Set<ExplainRecord>().Where(t => t.BookId == input.bookId && t.PhaseIndex == input.PhaseIndex).FirstOrDefaultAsync();

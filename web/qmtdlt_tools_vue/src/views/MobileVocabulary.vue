@@ -2,6 +2,10 @@
   <div class="word-detail-mobile">
     <div class="word-explanation">
       {{ curWordRef?.aiExplanation }}
+      <el-button type="default" size="large" circle class="sound-btn" v-if="curWordRef?.pronunciation"
+        @click="startPlayBase64Audio(curWordRef?.pronunciation,()=>{})">
+        <el-icon><Headset /></el-icon>
+      </el-button>
     </div>
     <div class="word-translation">
       {{ curWordRef?.aiTranslation }}
@@ -9,10 +13,10 @@
     <div class="word-actions">
       <el-button type="primary" size="large" class="action-btn" @click="ignoreInTimeRange">三天内忽略</el-button>
       <el-button type="primary" size="large" class="action-btn" @click="getWord">下一个</el-button>
-      <el-button type="default" size="large" circle class="sound-btn" v-if="curWordRef?.pronunciation"
-        @click="startPlayBase64Audio(curWordRef?.pronunciation,()=>{})">
-        <el-icon><Headset /></el-icon>
-      </el-button>
+    </div>
+    <div class="word-actions">
+      <el-button type="primary" size="large" class="action-btn" @click="autoPlay">自动播放</el-button>
+      <el-button type="primary" size="large" class="action-btn" @click="stopAutoPlay">停止循环</el-button>
     </div>
     <!-- 将标题放到底部区域 -->
     <div class="word-header bottom-header">
@@ -31,13 +35,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import request from '@/utils/request'
-import { ElMessage, ElMessageBox } from 'element-plus' // 确保导入 ElDialog, ElInput
+import { ElMessageBox } from 'element-plus' // 确保导入 ElDialog, ElInput
 // import icon
 import { Headset } from '@element-plus/icons-vue' // 移除未使用的图标
 import { isMobbile } from '@/utils/myutil'
 import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '../utils/audioplay';
-import { start } from 'repl'
-
 const isMobileRef = ref(isMobbile());
 const curWordRef = ref<VocabularyRecord>();
 
@@ -55,14 +57,11 @@ interface VocabularyRecord {
   pronunciation?: string // 新增字段
 }
 
-
 interface ApiResponse<T> {
   data: T
   success: boolean
   message?: string
 }
-
-const currentAudioSource = ref<AudioBufferSourceNode | null>(null)
 
 // --- 结束新增方法 ---
 onMounted(() => {
@@ -79,10 +78,10 @@ const stopAutoPlay = () => {
 }
 const autoPlay = ()=>{
   isAutoPlay.value = true;
-  getWord();
   startPlayBase64Audio(curWordRef.value?.wordPronunciation??'', () => {
-    startPlayBase64Audio(curWordRef.value?.pronunciation ?? '', () => {
+    startPlayBase64Audio(curWordRef.value?.pronunciation ?? '', async () => {
       // 播放完毕后的回调
+      await getWord();
       autoPlay();
     });
   });
@@ -91,7 +90,6 @@ const getWord = async () => {
   stopPlayBase64Audio();
   const res = await request.get<VocabularyRecord>('/api/Vocabulary/GetOneWord')
   curWordRef.value = res
-  console.log(curWordRef.value)
 }
 const ignoreInTimeRange = async () => {
   if (!curWordRef.value) return
@@ -144,7 +142,8 @@ const ignoreInTimeRange = async () => {
 .word-actions {
   display: flex;
   gap: 12px;
-  justify-content: center;
+  justify-content: left;
+  margin: 10px;
   flex-wrap: wrap;
 }
 .sound-btn {
