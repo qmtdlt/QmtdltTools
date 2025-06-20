@@ -9,6 +9,11 @@ const router = createRouter({
     //MobileVocabulary
     
     {
+      path:'/mreplay',
+      name: 'mreplay',
+      component: () => import('../views/MobileReplayExplaination.vue'),
+    },
+    {
       path:'/mvocabulary',
       name: 'mocabulary',
       component: () => import('../views/MobileVocabulary.vue'),

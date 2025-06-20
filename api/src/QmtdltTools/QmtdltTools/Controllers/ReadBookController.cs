@@ -20,7 +20,12 @@ namespace QmtdltTools.Controllers
         {
             _service = aiApiService;
         }
-       
+
+        [HttpPost("GetNext")]
+        public async Task<ExplainRecord?> GetNext([FromBody] ExplainRecord? input)
+        {
+            return await _service.GetNext(input);
+        }
         [HttpPost("GetExplainResult")]
         public async Task<ExplainResultDto?> GetExplainResult([FromBody] ExplainPhaseInputDto input)
         {

@@ -80,7 +80,6 @@ const handleSelection = () => {
 .container{
   height: calc(100vh - 60px); /* 原为100vh */
   width: 100%;
-  background-color: red;
 }
  
 .content {
