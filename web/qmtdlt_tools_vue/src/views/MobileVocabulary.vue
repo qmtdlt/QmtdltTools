@@ -1,71 +1,28 @@
 <template>
-  <div>
-    <el-card style="height: 85vh;">
-      <el-row>
-        <el-col :span="8">
-          <el-span>
-            <!--单词-->
-            {{ curWordRef?.wordText }}
-          </el-span>
-          <el-button v-if="curWordRef?.wordPronunciation" size="small" circle
-            @click="startPlayBase64Audio(curWordRef?.wordPronunciation,()=>{})" title="播放发音">
-            <el-icon>
-              <Headset />
-            </el-icon>
-          </el-button>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-span>
-          <!--AI 解释-->
-          {{ curWordRef?.aiExplanation }}
-        </el-span>
-      </el-row>
-      <el-row>
-        <el-span>
-          <!--翻译-->
-          {{ curWordRef?.aiTranslation }}
-        </el-span>
-      </el-row>
-      <el-row>
-        <el-span>
-          <!--你的造句-->
-          {{ curWordRef?.sentenceYouMade }}
-        </el-span>
-      </el-row>
-      <el-row>
-        <el-span>
-          <!--造句是否正确-->
-          {{ curWordRef?.ifUsageCorrect }}
-        </el-span>
-      </el-row>
-      <el-row>
-        <el-span>
-          <!--错误原因-->
-          {{ curWordRef?.incorrectReason }}
-        </el-span>
-      </el-row>
-      <el-row>
-        <el-col :span="12">
-          <el-button size="small" type="primary" title="ignore in three days" @click="ignoreInTimeRange">
-            ignore in three days
-          </el-button>
-        </el-col>
-        <el-col :span="8">
-          <el-button size="small" type="primary" title="next" @click="getWord">
-            next
-          </el-button>
-        </el-col>
-        <el-col :span="2">
-          <el-button v-if="curWordRef?.pronunciation" size="small" circle
-            @click="startPlayBase64Audio(curWordRef?.pronunciation,()=>{})" title="播放发音">
-            <el-icon>
-              <Headset />
-            </el-icon>
-          </el-button>
-        </el-col>
-      </el-row>
-    </el-card>
+  <div class="word-detail-mobile">
+    <div class="word-header">
+      <span class="word-title">
+        {{ curWordRef?.wordText }}
+        <el-button type="default" size="large" circle class="sound-btn" v-if="curWordRef?.wordPronunciation"
+        @click="startPlayBase64Audio(curWordRef?.wordPronunciation,()=>{})">
+        <el-icon><Headset /></el-icon>
+      </el-button>
+      </span>
+    </div>
+    <div class="word-explanation">
+      {{ curWordRef?.aiExplanation }}
+    </div>
+    <div class="word-translation">
+      {{ curWordRef?.aiTranslation }}
+    </div>
+    <div class="word-actions">
+      <el-button type="primary" size="large" class="action-btn" @click="ignoreInTimeRange">三天内忽略</el-button>
+      <el-button type="primary" size="large" class="action-btn" @click="getWord">下一个</el-button>
+      <el-button type="default" size="large" circle class="sound-btn" v-if="curWordRef?.pronunciation"
+        @click="startPlayBase64Audio(curWordRef?.pronunciation,()=>{})">
+        <el-icon><Headset /></el-icon>
+      </el-button>
+    </div>
   </div>
 </template>
 
@@ -137,8 +94,60 @@ const ignoreInTimeRange = async () => {
 </script>
 
 <style scoped>
-/* 可选：为对话框按钮添加一些间距 */
-.dialog-footer {
-  text-align: right;
+.word-detail-mobile {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 18px 8px 32px 8px;
+  background: #fff;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+.word-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+.word-title {
+  font-size: 1.6em;
+  font-weight: bold;
+  color: #222;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sound-icon {
+  font-size: 1.2em;
+  color: #409EFF;
+}
+.word-explanation {
+  font-size: 1.1em;
+  color: #444;
+  margin-bottom: 16px;
+  line-height: 1.7;
+  text-align: left;
+  word-break: break-word;
+}
+.word-translation {
+  font-size: 1.3em;
+  color: #67C23A;
+  font-weight: bold;
+  margin-bottom: 28px;
+  text-align: left;
+}
+.word-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.action-btn {
+  min-width: 110px;
+  font-size: 1em;
+}
+.sound-btn {
+  background: #f4f8fb;
+  color: #409EFF;
+  border: none;
 }
 </style>
