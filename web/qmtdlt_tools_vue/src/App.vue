@@ -35,45 +35,67 @@ const handleSelection = () => {
         <h1>YoungForYou</h1>
       </div>
       <nav class="main-nav">
-        <RouterLink 
+        
+        <RouterLink v-if="isMobileRef"
+          to="/mvocabulary" 
+          @click="activeRoute = '/mvocabulary'"
+          :class="{ active: activeRoute === '/mvocabulary' }" 
+        >Vocabulary</RouterLink>
+
+        
+        <RouterLink v-if="isMobileRef"
+          to="/mreplay" 
+          @click="activeRoute = '/mreplay'"
+          :class="{ active: activeRoute === '/mreplay' }" 
+        >Replay</RouterLink>
+
+        <RouterLink v-if="!isMobileRef"
           to="/vocabulary" 
           @click="activeRoute = '/vocabulary'"
           :class="{ active: activeRoute === '/vocabulary' }" 
         >Vocabulary</RouterLink>
-        <RouterLink 
-          to="/listenwritelist" 
-          @click="activeRoute = '/listenwritelist'"
-          :class="{ active: activeRoute === '/listenwritelist' }" 
-        >Records</RouterLink>
         
-        <RouterLink 
+        <RouterLink v-if="!isMobileRef"
           to="/library" 
           @click="activeRoute = '/library'" 
           :class="{ active: activeRoute === '/library' }"
         >Library</RouterLink>
+
+        
+        <RouterLink v-if="false"
+          to="/listenwritelist" 
+          @click="activeRoute = '/listenwritelist'"
+          :class="{ active: activeRoute === '/listenwritelist' }" 
+        >Records</RouterLink>
       </nav>
     </header>
-    <main class="content">
+    <div class="content">
       <RouterView class="content-view"/>
-    </main>
+    </div>
     <TranslateView ref="transRef" />
   </div>
 </template>
 
 <style scoped>
-
+.container{
+  height: calc(100vh - 60px); /* 原为100vh */
+  width: 100%;
+  background-color: red;
+}
  
 .content {
-  padding: 0.5rem; /* 原为2rem */
   width: 100%;
-  height: calc(100vh - 61px);
-  background: red;
+  height: 100%;
   box-sizing: border-box;
-  background-color: white;
   border-radius: 0px;
   margin-bottom: 1rem;
 }
-
+.content-view{
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  animation: fadeIn 0.5s ease-in-out; /* 添加淡入动画 */
+}
 .header {
   height: 60px;
   width: 100%;
@@ -82,7 +104,6 @@ const handleSelection = () => {
   align-items: center;
   background: linear-gradient(135deg, #3a7bd5, #3a6073);
   color: white;
-  padding: 1rem; /* 原为0 2rem */
   position: sticky;
   top: 0;
   z-index: 100;
@@ -126,11 +147,6 @@ const handleSelection = () => {
     height: auto;
     padding: 1rem;
     gap: 1rem;
-  }
-  
-  .content {
-    padding: 1rem;
-    margin-top: 1rem;
   }
 }
 </style>
