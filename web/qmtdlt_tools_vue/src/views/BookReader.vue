@@ -84,8 +84,8 @@
           </el-icon>收藏段落</el-button>
         </el-col>
         <el-col :span="2">
-          <el-button @click="explainPhase" type="success"><el-icon>
-              <!-- <Management /> -->
+          <el-button @click="explainPhase" type="success" :loading="explanationLoading"><el-icon>
+              
           </el-icon>段落讲解</el-button>
         </el-col>
       </el-row>
@@ -109,6 +109,7 @@ import IconStop from '../components/icons/IconStop.vue';
 import IconPlay from '../components/icons/IconPlay.vue';
 import request from '@/utils/request'; // 导入请求工具
 
+const explanationLoading = ref(false); // 控制讲解面板的显示
 const listenwrite_text_is_show = ref(false); // 控制文本是否显示
 const useModelType = ref("1"); // 1: 听书（听完一句自动read 下一句）2: 听写（听完一句，自动切换听写界面，听写成功回调后，下一句）3：跟读（听完一句，自动切换跟读界面，跟读成功回调后，下一句）
 const route = useRoute() // 使用路由
@@ -192,11 +193,13 @@ const explainPhase = async () => {
   })
   if ("confirm" == res) {
     // 调用接口获取讲解内容
+    explanationLoading.value = true; // 显示加载状态
     explainResult.value = await request.post<ExplainResultDto>('/api/ReadBook/GetExplainResult', {
       Phase: readContent.value.full_pragraph_text,
       bookId: readContent.value.bookId,
       PhaseIndex: readContent.value.curPosition.pragraphIndex,
     });
+    explanationLoading.value = false; // 隐藏加载状态
 
     stopPlayBase64Audio();
     startPlayBase64Audio(explainResult.value.voiceBuffer ?? "", () => {

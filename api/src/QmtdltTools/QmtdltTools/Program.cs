@@ -18,13 +18,13 @@ InitLog();
 var builder = WebApplication.CreateBuilder(args);           // got a web application builder
 
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(5083, listenOptions =>
-    {
-        listenOptions.UseHttps("/home/qmtdlt_tools/pem/youngforyou.top.pfx", "12000asdQWER");
-    });
-});
+//builder.WebHost.ConfigureKestrel(options =>
+//{
+//    options.ListenAnyIP(5083, listenOptions =>
+//    {
+//        listenOptions.UseHttps("/home/qmtdlt_tools/pem/youngforyou.top.pfx", "12000asdQWER");
+//    });
+//});
 
 
 builder.Host

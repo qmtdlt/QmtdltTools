@@ -73,6 +73,7 @@ import request from '@/utils/request';
 import { Headset, VideoPause, DocumentCopy, Close, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import IconTranslate from '@/components/icons/IconTranslate.vue'
 import IconExcerptChapter from '@/components/icons/IconExcerptChapter.vue'
+import { el } from 'element-plus/es/locales.mjs';
 const transSource = ref(''); // Store the selected text for translation
 const showTransDialog = ref(false) // 控制翻译弹窗显示
 const translating = ref(false); // 拖拽到右侧区域的文本
@@ -138,13 +139,15 @@ const realHandlePhaseSelect = async (phaseText: string) => {
     }
     try {
         translating.value = true; // Set loading immediately
-        showTransDialog.value = true; // Show dialog if it was open
+        ElMessage.info('正在翻译，请稍候...');
         let res = await request.get<VocabularyRecord>(
             '/api/Vocabulary/Trans',
             {
                 params: { word: phaseText },
             }
         );
+        
+        showTransDialog.value = true; // Show dialog if it was open
         transSource.value = phaseText;
         translating.value = false;
         transResult.value = res;
