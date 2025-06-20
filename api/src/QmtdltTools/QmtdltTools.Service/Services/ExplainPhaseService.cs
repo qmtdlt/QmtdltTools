@@ -15,7 +15,7 @@ using Volo.Abp.DependencyInjection;
 
 namespace QmtdltTools.Service.Services
 {
-    public class ExplainPhaseService:ISingletonDependency
+    public class ExplainPhaseService:IScopedDependency
     {
 
         private readonly AiApiService _aiApiService;
@@ -65,7 +65,7 @@ namespace QmtdltTools.Service.Services
 
             if(findEntity != null)
             {
-                _ = ExplainNext(input, uid);
+                //_ = ExplainNext(input, uid);
                 return new ExplainResultDto
                 {
                     Explanation = findEntity.Explanation,
@@ -92,8 +92,7 @@ namespace QmtdltTools.Service.Services
                     await _dc.SaveChangesAsync();
                 }
 
-                _ = ExplainNext(input,uid);
-
+                //_ = ExplainNext(input,uid);
 
                 return result;
             }
