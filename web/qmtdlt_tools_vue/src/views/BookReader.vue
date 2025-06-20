@@ -1,28 +1,45 @@
 <template>
   <el-container class="book-reader-container">
     <el-main class="book-reader-main">
-      <div class="div_left_content">
+      <div
+        class="div_left_content"
+        :class="{ 'with-explanation': showExplanation }"
+      >
         <!-- 书籍内容 -->
-      <HighlightedText v-if="useModelType === '1'" :full-text="readContent.full_pragraph_text"
-        :highlight-text="readContent.speaking_text" />
-      <!-- 听写组件 -->
-      <div v-if="useModelType === '2'" class="lwdiv">
-        <el-row>
-          <ListenWrite ref="listenWriteRef" :target-text="listenwrite_text" @completed="handleListenWriteComplete" />
-        </el-row>
-        <el-row v-if="listenwrite_text_is_show" justify="center" style="margin: 18px 0;">
-          <el-card class="listenwrite-text-card" shadow="hover">
-            <span class="listenwrite-text">{{ listenwrite_text }}</span>
-          </el-card>
-        </el-row>
+        <HighlightedText v-if="useModelType === '1'" :full-text="readContent.full_pragraph_text"
+          :highlight-text="readContent.speaking_text" />
+        <!-- 听写组件 -->
+        <div v-if="useModelType === '2'" class="lwdiv">
+          <el-row>
+            <ListenWrite ref="listenWriteRef" :target-text="listenwrite_text" @completed="handleListenWriteComplete" />
+          </el-row>
+          <el-row v-if="listenwrite_text_is_show" justify="center" style="margin: 18px 0;">
+            <el-card class="listenwrite-text-card" shadow="hover">
+              <span class="listenwrite-text">{{ listenwrite_text }}</span>
+            </el-card>
+          </el-row>
+        </div>
+        <!-- 跟读组件 -->
+        <div v-if="useModelType === '3'" class="shadowDiv">
+          <ShadowingView ref="shadowingRef" :target-text="listenwrite_text" @completed="handleShadowingComplete" />
+        </div>
       </div>
-      <!-- 跟读组件 -->
-      <div v-if="useModelType === '3'" class="shadowDiv">
-        <ShadowingView ref="shadowingRef" :target-text="listenwrite_text" @completed="handleShadowingComplete" />
-      </div>
-      </div>
-      <div class="div_right_content">
-
+      <div
+        class="div_right_content"
+        :class="{ 'show': showExplanation }"
+      >
+        <div v-if="showExplanation" class="explanation-panel">
+          <div class="explanation-title">
+            段落讲解
+            <el-icon @click="hideExplanation" style="cursor: pointer; margin-left: 20px;">
+              <Right />
+            </el-icon>
+            <el-icon @click="playExplaintion" style="cursor: pointer; margin-left: 20px;">
+              <Headset />
+            </el-icon>
+          </div>
+          <div class="explanation-content">{{ explanationText }}</div>
+        </div>
       </div>
     </el-main>
     <el-footer class="book-reader-footer">
@@ -86,7 +103,7 @@ import ShadowingView from './ShadowingView.vue'; // Import your ShadowingView co
 import { useRoute } from 'vue-router' // 导入 useRoute 获取路由参数
 import * as signalR from '@microsoft/signalr'
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Headset, MagicStick, CaretRight, Close, ArrowLeft, ArrowRight, Sort,Management } from '@element-plus/icons-vue'
+import { Headset, MagicStick, CaretRight, Close, ArrowLeft, ArrowRight, Sort,Management, Right } from '@element-plus/icons-vue'
 import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '../utils/audioplay';
 import IconStop from '../components/icons/IconStop.vue';
 import IconPlay from '../components/icons/IconPlay.vue';
@@ -100,6 +117,9 @@ const shadowingRef = ref<InstanceType<typeof ShadowingView> | null>(null); // �
 const listenwrite_buffer = ref('');   // 音频数据
 const listenwrite_text = ref('');     // 音频数据
 
+const showExplanation = ref(false)
+const explanationText = ref('')
+
 const switchMode = () => {
   if (useModelType.value === "1") {
     ElMessage.success("切换到听书模式");
@@ -112,6 +132,11 @@ const switchMode = () => {
   } else {
     ElMessage.error("未知模式");
   }
+}
+
+const hideExplanation = () => {
+  showExplanation.value = false; // 隐藏讲解
+  stopPlayBase64Audio(); // 停止播放音频
 }
 
 const listenWriteClick = () => {
@@ -148,30 +173,41 @@ interface ExplainResultDto {
     explanation?: string
     voiceBuffer?: string
 }
+
+const explainResult  = ref<ExplainResultDto>({}); // 用于存储讲解结果
+
+const playExplaintion = ()=>{
+  stopPlayBase64Audio();
+  startPlayBase64Audio(explainResult.value.voiceBuffer ?? "", () => {
+    console.log("播放完成");
+  });
+  explanationText.value = explainResult.value.explanation ?? '';
+  showExplanation.value = true;
+}
+
 const explainPhase = async () => {
   const res = await ElMessageBox.confirm('是否要讲解这段话?', '提示', {
     confirmButtonText: '讲解',
     cancelButtonText: '取消',
   })
   if ("confirm" == res) {
-    // Handle the action when the user confirms
-    console.log('User confirmed:', res)
-    // TODO 调用接口获取讲解内容
-    const response = await request.post<ExplainResultDto>('/api/ReadBook/GetExplainResult', {
+    // 调用接口获取讲解内容
+    explainResult.value = await request.post<ExplainResultDto>('/api/ReadBook/GetExplainResult', {
       Phase: readContent.value.full_pragraph_text,
       bookId: readContent.value.bookId,
       PhaseIndex: readContent.value.curPosition.pragraphIndex,
     });
-    
+
     stopPlayBase64Audio();
-    startPlayBase64Audio(response.voiceBuffer??"", () => {
+    startPlayBase64Audio(explainResult.value.voiceBuffer ?? "", () => {
       console.log("播放完成");
-    }); // 读取到的音频内容
-      ElMessage.success('讲解成功')
-    } else {
-      // Handle the action when the user cancels
-      console.log('User cancelled:', res)
-    }
+    });
+    explanationText.value = explainResult.value.explanation ?? '';
+    showExplanation.value = true;
+    ElMessage.success('讲解成功')
+  } else {
+    showExplanation.value = false;
+  }
 }
 onMounted(() => {
   // Add keyboard shortcut listener for ctrl+1
@@ -351,7 +387,57 @@ onBeforeUnmount(() => {
   padding: 0;
   margin: 0;
 }
-
+.div_left_content {
+  flex: 1 1 0%;
+  transition: width 0.3s;
+  min-width: 0;
+}
+.div_left_content.with-explanation {
+  flex: 0 0 calc(100% - 400px);
+  max-width: calc(100% - 400px);
+}
+.div_right_content {
+  width: 0;
+  transition: width 0.3s;
+  overflow: hidden;
+}
+.div_right_content.show {
+  width: 400px;
+  min-width: 400px;
+  max-width: 400px;
+  background: #f7fafd;
+  border-left: 1px solid #e6e8eb;
+  box-shadow: -2px 0 8px rgba(64,158,255,0.06);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+}
+.explanation-panel {
+  padding: 18px 16px 16px 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.explanation-title {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #409EFF;
+  margin-bottom: 12px;
+}
+.explanation-content {
+  flex: 1 1 0;
+  font-size: 1em;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-y: auto;
+  line-height: 1.7;
+  background: #fff;
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow: 0 1px 4px rgba(64,158,255,0.04);
+}
 .book-reader-footer {
   flex-shrink: 0;
   display: flex;
@@ -388,7 +474,7 @@ onBeforeUnmount(() => {
 }
 
 .lwdiv {
-  width: 99vw;
+  width: 99%;
   height: 100%;
   padding: 1rem;
   background-image: url('../assets/background1.png');
@@ -396,7 +482,7 @@ onBeforeUnmount(() => {
 }
 
 .shadowDiv {
-  width: 99vw;
+  width: 99%;
   height: 100%;
   padding: 1rem;
   background-image: url('../assets/background1.png');

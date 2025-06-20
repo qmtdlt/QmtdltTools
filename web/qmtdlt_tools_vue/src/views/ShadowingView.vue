@@ -359,6 +359,9 @@ onUnmounted(() => {
 }
 .result-card {
     min-height: 420px;
+    max-height: 72vh;
+    overflow-y: scroll;
+
     margin-bottom: 24px;
 }
 .target-text {

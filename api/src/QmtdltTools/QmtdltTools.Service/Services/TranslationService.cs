@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Dtos;
 using QmtdltTools.Domain.Entitys;
 using QmtdltTools.EFCore;
+using QmtdltTools.Service.Utils;
 using Volo.Abp.DependencyInjection;
 
 namespace QmtdltTools.Service.Services
@@ -66,6 +69,37 @@ namespace QmtdltTools.Service.Services
                 return entity;
             }
             return null;
+        }
+
+        public async Task TransOneBook(Guid? uid)
+        {
+            try
+            {
+                var bookId = Guid.Parse("08dd941a-332a-4c05-8192-21e288595e6b");
+                //var book = await _epubManageService.GetBookById(bookId);            // read book info from database
+
+                var book = await _dc.EBooks.Where(t => t.Id == bookId).FirstOrDefaultAsync();
+
+                var ebook = EpubHelper.GetEbook(book.BookPath, out string message);     // get ebook
+                var plist = EpubHelper.PrepareAllPragraphs(ebook);     // analyse book and get all pragraphs
+                foreach (Domain.Models.MyPragraph item in plist)
+                {
+                    var words = item.PragraphText.Split(" ");
+                    foreach (var word in words)
+                    {
+                        var tword = word.ToLower().Trim();
+                        if (!string.IsNullOrEmpty(tword))
+                        {
+                            await Trans(0, 0, "", tword, uid);
+                            Console.WriteLine($"tword trans finished:{tword}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return;
+            }
         }
     }
 }

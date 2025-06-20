@@ -6,7 +6,7 @@
         v-model="userInput"
         type="textarea"
         placeholder="输入听到的内容"
-        style="width: 100%;"
+        style="width: 98%;"
         clearable
         :disabled="!targetText"
         size="large"
@@ -110,7 +110,7 @@ const isComplete = computed(() => {
   box-shadow: 0 2px 12px 0 rgba(0,0,0,0.06);
   padding: 28px 18px 18px 18px;
   margin: 0 auto;
-  width: 100%;
+  width: 99%;
   min-height: 120px;
   display: flex;
   flex-direction: column;
@@ -123,7 +123,7 @@ const isComplete = computed(() => {
 }
 
 .feedback-display {
-  width: 100%;
+  width: 99%;
   min-height: 100px;
   padding: 8px 10px;
   border: 1px solid #e3e6eb;
@@ -176,10 +176,10 @@ const isComplete = computed(() => {
   margin-bottom: 0;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 99%) {
   .listenwrite-wrapper {
     padding: 12px 4px 10px 4px;
-    max-width: 100vw;
+    max-width: 99%;
   }
 }
 </style>

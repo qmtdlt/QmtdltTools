@@ -23,7 +23,7 @@ namespace QmtdltTools.Service.Services
         }
         public async Task<ExplainResultDto?> GetExplainResult(ExplainPhaseInputDto input)
         {
-            var findEntity = await _dc.Set<ExplainRecord>().Where(t => t.BookId == input.bookId && input.PhaseIndex == input.PhaseIndex).FirstOrDefaultAsync();
+            var findEntity = await _dc.Set<ExplainRecord>().Where(t => t.BookId == input.bookId && t.PhaseIndex == input.PhaseIndex).FirstOrDefaultAsync();
 
             if(findEntity != null)
             {

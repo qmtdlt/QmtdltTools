@@ -13,7 +13,7 @@ type RequestConfig = {
 // Create axios instance with base URL from environment variables
 const service = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '',
-  timeout: 30000, // 10 seconds
+  timeout: 360000, // 10 seconds
   headers: {
     'Content-Type': 'application/json'
   }
