@@ -101,7 +101,6 @@ const handleSelection = () => {
   box-sizing: border-box;
   border-radius: 0px;
   margin-bottom: 1rem;
-  overflow-y: scroll;
 }
 .content-view{
   width: 100%;
