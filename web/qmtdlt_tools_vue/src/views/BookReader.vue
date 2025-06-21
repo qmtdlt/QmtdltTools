@@ -73,8 +73,8 @@
               <Management />
             </el-icon><p v-if="!isMobileRef">收藏段落</p></el-button>
 
-          <el-button @click="explainPhase" type="success" :loading="explanationLoading" v-if="!isMobileRef">
-            <el-icon><DataAnalysis/></el-icon><p >段落讲解</p></el-button>
+          <el-button @click="explainPhase" type="success" :loading="explanationLoading" >
+            <el-icon><DataAnalysis/></el-icon><p v-if="!isMobileRef">段落讲解</p></el-button>
         </div>
       </div>
     </div>
@@ -375,7 +375,7 @@ onBeforeUnmount(() => {
   overflow: auto;
   padding: 0;
   margin: 0;
-  height: calc(100% - 230px); /* Adjust height to fit footer */
+  height: calc(100% - 120px); /* Adjust height to fit footer */
 }
 
 .div_left_content {

@@ -33,7 +33,7 @@
             </el-row>
         </div>
     </el-dialog>
-    <el-dialog v-model="showSelectDialog" width="480px" :show-close="false" center class="select-dialog">
+    <el-dialog v-model="showSelectDialog" width="90%" :show-close="false" center class="select-dialog">
         <div style="text-align:left;">
             <el-row justify="end" style="margin-bottom:10px;">
                 <div style="display: flex; gap: 8px; margin-right: 20px;">
