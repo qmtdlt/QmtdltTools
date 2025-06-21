@@ -30,7 +30,7 @@ const handleSelection = () => {
 
 <template>
   <div class="container" @mouseup="handleSelection">
-    <header class="header" >
+    <div class="header" >
       <div class="logo" v-if="!isMobileRef">
         <h1>YoungForYou</h1>
       </div>
@@ -68,7 +68,7 @@ const handleSelection = () => {
           :class="{ active: activeRoute === '/listenwritelist' }" 
         >Records</RouterLink>
       </nav>
-    </header>
+    </div>
     <div class="content">
       <RouterView class="content-view"/>
     </div>
@@ -78,22 +78,8 @@ const handleSelection = () => {
 
 <style scoped>
 .container{
-  height: calc(100vh - 60px); /* 原为100vh */
+  height: 100vh;
   width: 100%;
-}
- 
-.content {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  border-radius: 0px;
-  margin-bottom: 1rem;
-}
-.content-view{
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  animation: fadeIn 0.5s ease-in-out; /* 添加淡入动画 */
 }
 .header {
   height: 60px;
@@ -109,6 +95,20 @@ const handleSelection = () => {
   box-sizing: border-box;
 }
 
+.content {
+  width: 100%;
+  height: calc(100vh - 61px);
+  box-sizing: border-box;
+  border-radius: 0px;
+  margin-bottom: 1rem;
+  overflow-y: scroll;
+}
+.content-view{
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  animation: fadeIn 0.5s ease-in-out; /* 添加淡入动画 */
+}
 .logo h1 {
   margin-left: 1rem;
   font-size: 1.6rem;

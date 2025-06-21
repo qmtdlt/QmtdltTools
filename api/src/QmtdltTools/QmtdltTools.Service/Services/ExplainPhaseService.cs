@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.Domain.Entities;
 
 namespace QmtdltTools.Service.Services
 {
@@ -41,20 +42,34 @@ namespace QmtdltTools.Service.Services
                         .Where(t => t.CreateTime > dateTime).FirstOrDefaultAsync();
                     if (findEntity != null)
                     {
+                        if (findEntity != null && findEntity.CreateTime != null && uid != null)
+                        {
+                            UidReplayTimeDic.AddOrUpdate(uid.Value, findEntity.CreateTime.Value, (uid, old) => { return findEntity.CreateTime.Value; });
+                        }
                         return findEntity;
                     }
                     else
                     {
-                        return await _dc.Set<ExplainRecord>()
+                        var entity = await _dc.Set<ExplainRecord>()
                         .Where(t => t.CreateBy == uid)
                         .OrderBy(t => t.CreateTime).FirstOrDefaultAsync();
+                        if(entity != null && entity.CreateTime != null && uid != null)
+                        {
+                            UidReplayTimeDic.AddOrUpdate(uid.Value, entity.CreateTime.Value, (uid, old) => { return entity.CreateTime.Value; });
+                        }
+                        return entity;       // 返回第一条记录
                     }
                 }
                 else
                 {
-                    return await _dc.Set<ExplainRecord>()
+                    var entity = await _dc.Set<ExplainRecord>()
                         .Where(t => t.CreateBy == uid)
                         .OrderBy(t => t.CreateTime).FirstOrDefaultAsync();
+                    if (entity != null && entity.CreateTime != null && uid != null)
+                    {
+                        UidReplayTimeDic.AddOrUpdate(uid.Value, entity.CreateTime.Value, (uid, old) => { return entity.CreateTime.Value; });
+                    }
+                    return entity;
                 }
             }
             return null;
