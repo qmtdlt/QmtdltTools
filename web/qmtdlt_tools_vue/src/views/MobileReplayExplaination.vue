@@ -2,7 +2,6 @@
     <div class="replay_container">
         <div class="replay_content">
             {{ curRef?.explanation }}
-            
         </div>
         <div class="buttons_gp">
             <el-button type="primary" size="large" class="action-btn" @click="autoPlay">自动播放</el-button>
@@ -69,15 +68,13 @@ const getNext = async () => {
 .replay_container {
     width: 100%;
     height: calc(100vh - 190px);
-    display: flex;
-    flex-direction: column;
     overflow: hidden;
     position: relative; /* 重要，方便buttons_gp绝对定位 */
 }
 .replay_content {
-    flex: 1 1 auto;
     padding: 10px;
-    overflow-y: scroll;
+    height: calc(100% - 60px); /* 减去按钮区域的高度 */
+    overflow-y: auto;
 }
 .buttons_gp {
     position: absolute;
