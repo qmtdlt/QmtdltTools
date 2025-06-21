@@ -1,115 +1,103 @@
 <template>
     <div class="shadowing-view">
-        <el-row :gutter="16" justify="center" align="top">
-            <!-- 左侧：录音操作区 -->
-            <el-col :xs="22" :sm="6" :md="6" :lg="6">
-                <el-card shadow="hover" class="operate-card">
-                    <template #header>
-                        <span>跟读操作</span>
-                    </template>
-                    <div>
-                        <h3 style="margin-bottom: 10px;">请跟读以下文本：</h3>
-                        <p class="target-text">{{ targetText }}</p>
-                        <el-row :gutter="10" justify="center" style="margin-top: 20px;">
-                            <el-col :xs="12" :sm="24" :md="24">
-                                <el-button type="primary" @click="toggleRecording" :disabled="isProcessing" style="width: 100%;">
-                                    {{ isRecording ? '停止录音' : '开始录音' }}
-                                </el-button>
-                            </el-col>
-                            <el-col :xs="12" :sm="24" :md="24" style="margin-top: 10px;">
-                                <el-button type="success" @click="submitRecording"
-                                    :disabled="!recordedAudioUrl || isRecording || isProcessing" style="width: 100%;">
-                                    提交录音
-                                </el-button>
-                            </el-col>
-                        </el-row>
-                        <div style="margin-top: 24px;">
-                            <audio v-if="recordedAudioUrl" :src="recordedAudioUrl" controls style="width: 100%;"></audio>
+        <!-- 左侧：录音操作区 -->
+        <div shadow="hover" class="left">
+            <div class="card-header">
+                <span>跟读录音</span>
+            </div>
+            <div>
+                <h3 style="margin-bottom: 10px;">请跟读以下文本：</h3>
+                <p class="target-text">{{ targetText }}</p>
+                <div style="margin-top: 20px;">
+                    <el-col :xs="12" :sm="24" :md="24">
+                        <el-button type="primary" @click="toggleRecording" :disabled="isProcessing"
+                            style="width: 100%;">
+                            {{ isRecording ? '停止录音' : '开始录音' }}
+                        </el-button>
+                    </el-col>
+                    <el-col :xs="12" :sm="24" :md="24" style="margin-top: 10px;">
+                        <el-button type="success" @click="submitRecording"
+                            :disabled="!recordedAudioUrl || isRecording || isProcessing" style="width: 100%;">
+                            提交录音
+                        </el-button>
+                    </el-col>
+                </div>
+                <div style="margin-top: 24px;">
+                    <audio v-if="recordedAudioUrl" :src="recordedAudioUrl" controls style="width: 100%;"></audio>
+                </div>
+                <div style="margin-top: 16px;">
+                    <el-alert v-if="isRecording" title="正在录音..." type="info" show-icon />
+                    <el-alert v-if="statusMessage" :title="statusMessage" type="warning" show-icon />
+                </div>
+            </div>
+        </div>
+        <!-- 右侧：评估结果区 -->
+        <div class="right">
+            <div v-if="isProcessing" shadow="hover" class="result-card">
+                <div class="card-header">
+                    <span>跟读分析结果</span>
+                </div>
+                <div style="text-align:center;padding:60px 0;">
+                    <el-icon style="font-size:32px;color:#409EFF;"><i class="el-icon-loading"></i></el-icon>
+                    <div style="margin-top:16px;color:#888;">分析中，请稍候...</div>
+                </div>
+            </div>
+            <div v-else-if="shadowingResult" shadow="hover" class="result-card">
+                <div class="card-header">
+                    <span>跟读分析结果</span>
+                </div>
+                <div style="padding: 5px;">
+                    <div style="display: flex; height: 180px;">
+                        <div style="flex: 1;">
+                            <div ref="mainChart" style="height: 160px; "></div>
+                            <div style="text-align:center; margin-top: 8px; color:#888;flex: 2;">发音分数</div>
                         </div>
-                        <div style="margin-top: 16px;">
-                            <el-alert v-if="isRecording" title="正在录音..." type="info" show-icon />
-                            <el-alert v-if="statusMessage" :title="statusMessage" type="warning" show-icon />
-                        </div>
-                    </div>
-                </el-card>
-            </el-col>
-
-            <!-- 右侧：评估结果区 -->
-            <el-col :xs="24" :sm="16" :md="16" :lg="16">
-                <el-card v-if="isProcessing" shadow="hover" class="result-card">
-                    <template #header>
-                        <div class="card-header">
-                            <span>跟读分析结果</span>
-                        </div>
-                    </template>
-                    <div style="text-align:center;padding:60px 0;">
-                        <el-icon style="font-size:32px;color:#409EFF;"><i class="el-icon-loading"></i></el-icon>
-                        <div style="margin-top:16px;color:#888;">分析中，请稍候...</div>
-                    </div>
-                </el-card>
-                <el-card v-else-if="shadowingResult" shadow="hover" class="result-card">
-                    <template #header>
-                        <div class="card-header">
-                            <span>跟读分析结果</span>
-                        </div>
-                    </template>
-                    <div>
-                        <el-row>
-                            <el-col :span="6">
-                                <div ref="mainChart" style="height: 160px; width: 90%;"></div>
-                                <div style="text-align:center; margin-top: 8px; color:#888;">发音分数</div>
-                            </el-col>
-                            <el-col :span="16">
-                                <div ref="detailChart" style="height: 170px; width: 90%;"></div>
-                            </el-col>
-                        </el-row>
-                        <el-divider />
-                        <h4 style="margin-bottom: 12px;">逐词分析</h4>
-                        <div class="word-card-flow">
-                            <el-card
-                                v-for="(word, idx) in shadowingResult.words"
-                                :key="idx"
-                                class="word-mini-card"
-                                :body-style="{ padding: '12px' }"
-                                shadow="never"
-                            >
-                                <div style="display: flex; align-items: center; justify-content: space-between;">
-                                    <el-tag :type="getWordTagType(word.errorType)" effect="plain" size="small">
-                                        {{ word.errorType }}
-                                    </el-tag>
-                                    <span class="word-score">分数: {{ word.accuracyScore }}</span>
-                                </div>
-                                <div class="word-main">
-                                    <strong>{{ word.word }}</strong>
-                                </div>
-                                <el-collapse>
-                                    <el-collapse-item title="音节详情" v-if="word.syllables && word.syllables.length">
-                                        <ul>
-                                            <li v-for="(syll, sidx) in word.syllables" :key="sidx">
-                                                {{ syll.syllable }} <span v-if="syll.grapheme">({{ syll.grapheme }})</span> - 分数: {{ syll.accuracyScore }}
-                                            </li>
-                                        </ul>
-                                    </el-collapse-item>
-                                    <el-collapse-item title="音素详情" v-if="word.phonemes && word.phonemes.length">
-                                        <ul>
-                                            <li v-for="(ph, pidx) in word.phonemes" :key="pidx">
-                                                {{ ph.phoneme }} - 分数: {{ ph.accuracyScore }}
-                                            </li>
-                                        </ul>
-                                    </el-collapse-item>
-                                </el-collapse>
-                            </el-card>
+                        <div style="flex: 2;">
+                            <div ref="detailChart" style="height: 170px;"></div>
                         </div>
                     </div>
-                </el-card>
-                <el-empty v-else description="暂无评估结果" style="margin-top: 40px;" />
-            </el-col>
-        </el-row>
+                    <el-divider />
+                    <h4 style="margin-bottom: 12px;">逐词分析</h4>
+                    <div class="word-card-flow">
+                        <el-card v-for="(word, idx) in shadowingResult.words" :key="idx" class="word-mini-card"
+                            :body-style="{ padding: '12px' }" shadow="never">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <el-tag :type="getWordTagType(word.errorType)" effect="plain" size="small">
+                                    {{ word.errorType }}
+                                </el-tag>
+                                <span class="word-score">分数: {{ word.accuracyScore }}</span>
+                            </div>
+                            <div class="word-main">
+                                <strong>{{ word.word }}</strong>
+                            </div>
+                            <el-collapse>
+                                <el-collapse-item title="音节详情" v-if="word.syllables && word.syllables.length">
+                                    <ul>
+                                        <li v-for="(syll, sidx) in word.syllables" :key="sidx">
+                                            {{ syll.syllable }} <span v-if="syll.grapheme">({{ syll.grapheme }})</span>
+                                            - 分数: {{
+                                                syll.accuracyScore }}
+                                        </li>
+                                    </ul>
+                                </el-collapse-item>
+                                <el-collapse-item title="音素详情" v-if="word.phonemes && word.phonemes.length">
+                                    <ul>
+                                        <li v-for="(ph, pidx) in word.phonemes" :key="pidx">
+                                            {{ ph.phoneme }} - 分数: {{ ph.accuracyScore }}
+                                        </li>
+                                    </ul>
+                                </el-collapse-item>
+                            </el-collapse>
+                        </el-card>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch, nextTick ,onUnmounted} from 'vue'
+import { onMounted, ref, watch, nextTick, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 import Recorder from 'recorder-core' // 如果你用npm引入
@@ -156,7 +144,7 @@ interface PronunciationAssessmentResult {
 // const stream = ref<MediaStream| null>(null);
 
 // 结果数据
-const shadowingResult = ref<PronunciationAssessmentResult| null>(null);
+const shadowingResult = ref<PronunciationAssessmentResult | null>(null);
 
 const mainChart = ref<HTMLElement | null>(null);
 const detailChart = ref<HTMLElement | null>(null);
@@ -255,28 +243,28 @@ onMounted(() => {
 let rec: any = null;
 const startRecording = async () => {
     rec = Recorder({
-        type: "wav",          
-        sampleRate: 16000,    
-        bitRate: 16,          
-        mono: true,           
+        type: "wav",
+        sampleRate: 16000,
+        bitRate: 16,
+        mono: true,
     });
-    rec.open(function(){
+    rec.open(function () {
         rec.start();
         isRecording.value = true;
         statusMessage.value = "录音中...";
-    }, function(msg:string, isUserNotAllow:boolean){
+    }, function (msg: string, isUserNotAllow: boolean) {
         ElMessage.error('无法获取麦克风权限，请检查设置。')
     });
 };
 
 const stopRecordingLogic = () => {
     if (rec && isRecording.value) {
-        rec.stop(function(blob: Blob, duration: number){
+        rec.stop(function (blob: Blob, duration: number) {
             recordedAudio.value = blob;
             recordedAudioUrl.value = URL.createObjectURL(blob);
             isRecording.value = false;
             statusMessage.value = '录音已停止。可以播放或提交。'
-        }, function(msg: string){
+        }, function (msg: string) {
             ElMessage.error('录音停止失败: ' + msg);
         });
     }
@@ -336,7 +324,7 @@ const getWordTagType = (type: string) => {
 }
 
 onUnmounted(() => {
-  if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
+    if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
         mediaRecorder.value.stop()
     }
     // if (stream) {
@@ -350,20 +338,40 @@ onUnmounted(() => {
 
 <style scoped>
 .shadowing-view {
-    padding: 10px 0;
-    min-height: 100%;
+    padding: 5px;
+    height: 100%;
+    display: flex;
 }
-.operate-card {
-    min-height: 420px;
-    margin-bottom: 24px;
-}
-.result-card {
-    min-height: 420px;
-    max-height: 72vh;
-    overflow-y: scroll;
 
-    margin-bottom: 24px;
+.left {
+    flex: 1;
+    width: 25%;
+    height: 100%;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    overflow-y: auto;
 }
+
+.right {
+    flex: 2;
+    width: calc(75% - 20px);
+    height: 100%;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    overflow-y: auto;
+    margin: 0px 0 0 10px;
+}
+
+
+.result-card {
+    width: 100%;
+    height: 100%;
+}
+
 .target-text {
     font-size: 1.15em;
     color: #333;
@@ -374,24 +382,24 @@ onUnmounted(() => {
     margin-top: 8px;
     display: block;
 }
-.score-row {
-    margin-bottom: 10px;
-}
-.score-label {
-    color: #888;
-    font-weight: bold;
-}
+
+
 .score-value {
     color: #409EFF;
     font-weight: bold;
     margin-left: 6px;
 }
+
 .word-card-flow {
     display: flex;
     flex-wrap: wrap;
     gap: 18px;
     margin-top: 10px;
+    overflow-y: scroll;
+    height: calc(100% - 200px); /* Adjust height to fit within the card */
+    padding: 10px 0;
 }
+
 .word-mini-card {
     max-width: 300px;
     min-width: 220px;
@@ -400,18 +408,21 @@ onUnmounted(() => {
     border: 1px solid #e5e6eb;
     border-radius: 8px;
     background: #fff;
-    box-shadow: 0 1px 4px 0 rgba(0,0,0,0.03);
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.03);
     transition: box-shadow 0.2s;
 }
+
 .word-mini-card:hover {
-    box-shadow: 0 4px 16px 0 rgba(64,158,255,0.10);
+    box-shadow: 0 4px 16px 0 rgba(64, 158, 255, 0.10);
 }
+
 .word-main {
     font-size: 1.12em;
     margin: 8px 0 4px 0;
     color: #222;
     text-align: left;
 }
+
 .word-score {
     color: #67c23a;
     font-weight: bold;
