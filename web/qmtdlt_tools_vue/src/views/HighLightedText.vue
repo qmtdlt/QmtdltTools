@@ -18,9 +18,6 @@ const props = defineProps<{
 
 const containerRef = ref<HTMLElement | null>(null);
 const highlightSpanRef = ref<HTMLElement | null>(null);
-// Optional: if you need to reference the paragraph for complex offset calculations,
-// but usually offsetTop of the span relative to the scrollable container (containerRef) is enough.
-// const paragraphRef = ref<HTMLParagraphElement | null>(null);
 
 const findStartIndex = computed(() => {
   if (!props.fullText || !props.highlightText) return -1;
@@ -61,8 +58,6 @@ function handleSelection() {
     containerRef.value.contains(selection.anchorNode)
   ) {
     emit('phaseSelect', selection.toString());
-    // It's usually good practice to clear the selection after processing it if it's a custom interaction
-    // selection.removeAllRanges(); // Uncomment if you want to clear programmatic/mouse selection after emitting
   }
 }
 
@@ -175,6 +170,8 @@ watch(
 .highlightdiv p {
   margin: 0; /* Remove default paragraph margins if they interfere with offset calculations */
   padding: 0; /* Remove default paragraph padding */
+  font-family: 'Arial', sans-serif; /* Use a standard font for better cross-browser consistency */
+  
   /* line-height: 1.4; /* Adjust line height for better readability and consistent spacing */
 }
 

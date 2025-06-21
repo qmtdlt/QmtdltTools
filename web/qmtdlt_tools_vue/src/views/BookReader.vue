@@ -119,13 +119,13 @@ const explanationText = ref('')
 
 const switchMode = () => {
   if (useModelType.value === "1") {
-    ElMessage.success("切换到听书模式");
+    // ElMessage.success("切换到听书模式");
   } else if (useModelType.value === "2") {
-    ElMessage.success("切换到听写模式");
+    // ElMessage.success("切换到听写模式");
     listenWriteRef.value?.focusInput(); // 调用子组件的方法
     stopPlayBase64Audio();
   } else if (useModelType.value === "3") {
-    ElMessage.success("切换到跟读模式");
+    // ElMessage.success("切换到跟读模式");
   } else {
     ElMessage.error("未知模式");
   }
