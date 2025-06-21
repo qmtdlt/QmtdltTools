@@ -98,6 +98,7 @@ import request from '@/utils/request'; // 导入请求工具
 import { isMobbile } from '@/utils/myutil';
 
 const isMobileRef = ref(isMobbile()); // 判断是否为移动端
+// const subHeight = ref(isMobileRef.value ? '' : '60px'); // 用于存储子组件的高度
 const explanationLoading = ref(false); // 控制讲解面板的显示
 const listenwrite_text_is_show = ref(false); // 控制文本是否显示
 const useModelType = ref("1"); // 1: 听书（听完一句自动read 下一句）2: 听写（听完一句，自动切换听写界面，听写成功回调后，下一句）3：跟读（听完一句，自动切换跟读界面，跟读成功回调后，下一句）
@@ -375,7 +376,20 @@ onBeforeUnmount(() => {
   overflow: auto;
   padding: 0;
   margin: 0;
-  height: calc(100% - 120px); /* Adjust height to fit footer */
+  height: calc(100% - 130px); /* Adjust height to fit footer */
+}
+
+.book-reader-footer {
+  flex-shrink: 0;
+  height: 120px;
+  position: sticky;
+  z-index: 10;
+  width: calc(100% - 20px);
+  margin: 0px 10px 10px 10px !important;
+  background-color: #f7f6f2;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.06);
 }
 
 .div_left_content {
@@ -438,21 +452,6 @@ onBeforeUnmount(() => {
   border-radius: 6px;
   padding: 12px;
   box-shadow: 0 1px 4px rgba(64, 158, 255, 0.04);
-}
-
-.book-reader-footer {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  height: 120px;
-  position: sticky;
-  z-index: 10;
-  width: calc(100% - 20px);
-  margin: 0px 10px 10px 10px !important;
-  background-color: #f7f6f2;
-  padding: 10px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.06);
 }
 
 

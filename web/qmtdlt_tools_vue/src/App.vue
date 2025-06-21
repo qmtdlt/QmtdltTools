@@ -11,6 +11,10 @@ const activeRoute = ref('')
 
 onMounted(() => {
   activeRoute.value = window.location.pathname
+  if(isMobileRef.value)
+  {
+    document.addEventListener('selectionchange', handleSelection)
+  }
 })
 
 const handleSelection = () => {
@@ -22,7 +26,19 @@ const handleSelection = () => {
       selection.removeAllRanges()
 
       // Emit the selected text to the parent component
-      transRef.value?.handlePhaseSelect(selectedText); // 调用子组件的方法
+
+      if(isMobileRef.value)
+      {
+        // 在移动端，selectedText 使用空格分割的第一个单词
+        const words = selectedText.split(' ');
+        if (words.length > 0) {
+          transRef.value?.handlePhaseSelect(words[0]); // 调用子组件的方法
+        }
+      }
+      else
+      {
+        transRef.value?.handlePhaseSelect(selectedText); // 调用子组件的方法
+      }
     }
   }
 }
