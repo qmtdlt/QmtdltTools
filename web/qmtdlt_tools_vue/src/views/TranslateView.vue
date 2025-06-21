@@ -1,43 +1,42 @@
 <template>
-    <el-dialog v-model="showTransDialog" title="翻译结果" width="85%">
-        <div v-loading="translating">
-            <el-row>
-                <h1>{{ transResult.wordText }}</h1>
-                <el-button @click="playTransVoice(transResult.wordPronunciation)" type="primary" plain circle>
+    <el-dialog v-model="showTransDialog" title="翻译结果" width="90%" class="trans-dialog">
+        <div v-loading="translating" class="trans-content">
+            <el-row class="trans-row word-row" align="middle" justify="center">
+                <h1 class="word-title">{{ transResult.wordText }}</h1>
+                <el-button @click="playTransVoice(transResult.wordPronunciation)" class="sound-btn" circle>
                     <el-icon>
                         <Headset />
                     </el-icon>
                 </el-button>
             </el-row>
-            <el-row>
-                <h2>Explanation:</h2>
-                <el-button @click="playTransVoice(transResult.pronunciation)" type="primary" plain circle>
+            <el-row class="trans-row" align="middle" style="margin-top: 10px;">
+                <h2 class="section-title">Explanation</h2>
+                <el-button @click="playTransVoice(transResult.pronunciation)" class="sound-btn" circle>
                     <el-icon>
                         <Headset />
                     </el-icon>
                 </el-button>
-                <el-button @click="stopPlayBase64Audio" type="primary" plain circle>
+                <el-button @click="stopPlayBase64Audio" class="sound-btn" circle>
                     <el-icon>
                         <VideoPause />
                     </el-icon>
                 </el-button>
             </el-row>
-            <el-row>
-                <h3>{{ transResult.aiExplanation }}</h3>
+            <el-row class="trans-row">
+                <div class="explanation-text">{{ transResult.aiExplanation }}</div>
             </el-row>
-            <el-row>
-                <h2>Translation:</h2>
+            <el-row class="trans-row" style="margin-top: 10px;">
+                <h2 class="section-title">Translation</h2>
             </el-row>
-            <el-row>
-                <h3>{{ transResult.aiTranslation }}</h3>
+            <el-row class="trans-row">
+                <div class="translation-text">{{ transResult.aiTranslation }}</div>
             </el-row>
         </div>
     </el-dialog>
-    <el-dialog v-model="showSelectDialog" width="480px" :show-close="false" center
-        style="padding: 0px; padding-bottom: 20px;padding-left: 20px;padding-right: 20px;">
+    <el-dialog v-model="showSelectDialog" width="480px" :show-close="false" center class="select-dialog">
         <div style="text-align:left;">
             <el-row justify="end" style="margin-bottom:10px;">
-                <div style="display: flex; gap: 0px; margin-right: 20px;">
+                <div style="display: flex; gap: 8px; margin-right: 20px;">
                     <el-button @click="confirmTrans" type="success" plain circle>
                         <el-icon size="large">
                             <IconTranslate />
@@ -52,7 +51,7 @@
                         <el-icon size="large">
                             <IconExcerptChapter />
                         </el-icon>
-                    </el-button>                    
+                    </el-button>
                     <el-button @click="cancelSelect" type="danger" plain circle>
                         <el-icon size="large">
                             <Close />
@@ -60,7 +59,7 @@
                     </el-button>
                 </div>
             </el-row>
-            <h1 style="margin: 0px 0px 10px 0px;">{{ selectDialogText }}</h1>
+            <h1 class="select-dialog-title">{{ selectDialogText }}</h1>
         </div>
     </el-dialog>
 </template>
@@ -175,3 +174,83 @@ defineExpose({
     handlePhaseSelect
 });
 </script>
+
+<style scoped>
+.trans-dialog .el-dialog__header {
+  background: linear-gradient(90deg, #3a7bd5 0%, #3a6073 100%);
+  color: #fff;
+  border-radius: 12px 12px 0 0;
+  padding-bottom: 12px;
+}
+.trans-content {
+  padding: 18px 8px 8px 8px;
+  background: #f8fafd;
+  border-radius: 0 0 12px 12px;
+}
+.trans-row {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.word-row {
+  justify-content: center;
+  margin-bottom: 18px;
+}
+.word-title {
+  font-size: 2.2em;
+  font-weight: bold;
+  color: #222;
+  margin-right: 10px;
+  letter-spacing: 1px;
+}
+.section-title {
+  font-size: 1.2em;
+  font-weight: 600;
+  color: #409EFF;
+  margin-right: 10px;
+}
+.sound-btn {
+  width: 48px;
+  height: 48px;
+  background: #eaf6ff;
+  border: none;
+  color: #409EFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(64,158,255,0.10);
+  transition: background 0.2s, transform 0.2s;
+}
+.sound-btn:hover {
+  background: #b3d8fd;
+  transform: scale(1.08);
+}
+.explanation-text, .translation-text {
+  font-size: 1.15em;
+  color: #444;
+  background: #fff;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 0;
+  box-shadow: 0 2px 8px rgba(64,158,255,0.04);
+  word-break: break-word;
+  line-height: 1.7;
+}
+.translation-text {
+  color: #67C23A;
+  font-weight: bold;
+  font-size: 1.25em;
+}
+.select-dialog .el-dialog__body {
+  padding: 18px 8px 8px 8px;
+}
+.select-dialog-title {
+  font-size: 1.3em;
+  color: #222;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  word-break: break-word;
+}
+</style>
