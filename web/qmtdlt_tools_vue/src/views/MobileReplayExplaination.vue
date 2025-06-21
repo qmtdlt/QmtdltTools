@@ -42,7 +42,7 @@ interface ExplainRecord {
 // --- 结束新增方法 ---
 onMounted(() => {
     getNext();
-    autoPlay();
+    // autoPlay();
 })
 
 const isAutoPlay = ref(false);

@@ -55,7 +55,7 @@ const handleSelection = () => {
           :class="{ active: activeRoute === '/vocabulary' }" 
         >Vocabulary</RouterLink>
         
-        <RouterLink v-if="!isMobileRef"
+        <RouterLink
           to="/library" 
           @click="activeRoute = '/library'" 
           :class="{ active: activeRoute === '/library' }"
