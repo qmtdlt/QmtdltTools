@@ -1,10 +1,8 @@
 <template>
-  <el-container class="book-reader-container">
-    <el-main class="book-reader-main">
-      <div
-        class="div_left_content"
-        :class="{ 'with-explanation': showExplanation }"
-      >
+  <div class="book-reader-container">
+    <div class="book-reader-main">
+      <!-- 左侧书籍内容,三种模式切换 -->
+      <div class="div_left_content" :class="{ 'with-explanation': showExplanation }" >
         <!-- 书籍内容 -->
         <HighlightedText v-if="useModelType === '1'" :full-text="readContent.full_pragraph_text"
           :highlight-text="readContent.speaking_text" />
@@ -24,10 +22,8 @@
           <ShadowingView ref="shadowingRef" :target-text="listenwrite_text" @completed="handleShadowingComplete" />
         </div>
       </div>
-      <div
-        class="div_right_content"
-        :class="{ 'show': showExplanation }"
-      >
+      <!-- 右侧讲解面板 -->
+      <div class="div_right_content" :class="{ 'show': showExplanation }" >
         <div v-if="showExplanation" class="explanation-panel">
           <div class="explanation-title">
             段落讲解
@@ -41,8 +37,8 @@
           <div class="explanation-content">{{ explanationText }}</div>
         </div>
       </div>
-    </el-main>
-    <el-footer class="book-reader-footer">
+    </div>
+    <div class="book-reader-footer">
       <!-- 进度条 -->
       <el-card>
         <el-row justify="right">
@@ -90,8 +86,8 @@
         </el-col>
       </el-row>
       </el-card>
-    </el-footer>
-  </el-container>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -448,8 +444,8 @@ onBeforeUnmount(() => {
   height: 120px;
   position: sticky;
   z-index: 10;
-  width: 100%;
-  margin: 10px 0px 0px 0px !important;
+  width: calc(100% - 20px);
+  margin: 0px 10px 0px 10px !important;
 }
 
 .el-footer{
@@ -477,11 +473,12 @@ onBeforeUnmount(() => {
 }
 
 .lwdiv {
-  width: 99%;
-  height: 100%;
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
   padding: 1rem;
   background-image: url('../assets/background1.png');
   border-radius: 5px;
+  margin: 10px;
 }
 
 .shadowDiv {
@@ -490,5 +487,8 @@ onBeforeUnmount(() => {
   padding: 1rem;
   background-image: url('../assets/background1.png');
   border-radius: 5px;
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  margin: 10px;
 }
 </style>

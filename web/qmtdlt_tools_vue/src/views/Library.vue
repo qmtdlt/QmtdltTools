@@ -335,7 +335,8 @@ export default defineComponent({
 .library-container {
   padding: 24px;
   background-color: #fff;
-  min-height: 100vh;
+  height: 100%;
+  overflow-y: auto;
 }
 
 /* 顶部操作区域 */

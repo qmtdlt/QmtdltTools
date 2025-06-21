@@ -134,14 +134,16 @@ watch(
 .highlightdiv {
   padding: 1rem;
   /* IMPORTANT: Set a fixed height for the container to enable vertical centering and clipping */
-  height: 100%; /* Example height, adjust as needed */
-  width: 99%; /* Consider if this should be less, e.g., 100% of its parent */
+  height: calc(100% - 20px); /* Example height, adjust as needed */
+  border-radius: 8px;
+  width: calc(100% - 20px); /* Consider if this should be less, e.g., 100% of its parent */
   background: url('../assets/background2.png') no-repeat center center;
   background-size: cover;
   font-size: 2rem; /* Adjusted for potentially smaller container */
   color: #c0c0c0;
-  overflow-y: scroll;
+  overflow-y: auto;
   scroll-behavior: smooth;
+  margin: 10px 10px 0px 10px;
 }
 
 /* 美化滚动条样式 */
@@ -183,8 +185,4 @@ watch(
   padding: 0.2em 0.4em 0.4em 0.4em; /* Optional: slight padding if background is used */
 }
 
-/* Optional: to make the non-highlighted text slightly less prominent */
-/* .highlightdiv > p > span:not(.highlight) { */
-  /* opacity: 0.7; */
-/* } */
 </style>

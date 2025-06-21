@@ -116,6 +116,7 @@ const isComplete = computed(() => {
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
+  margin: 10px 10px 0px 10px;
 }
 
 .listenwrite-input {
