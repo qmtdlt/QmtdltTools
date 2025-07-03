@@ -7,7 +7,11 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     //MobileVocabulary
-    
+    {
+      path:'/vidoes',
+      name: 'vidoes',
+      component: () => import('../views/MVideo.vue'),
+    },
     {
       path:'/mreplay',
       name: 'mreplay',
