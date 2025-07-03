@@ -1,4 +1,33 @@
 <template>
+    <el-dialog v-model="showSelectDialog" width="90%" :show-close="false" center class="select-dialog">
+        <div style="text-align:left;">
+            <el-row justify="end" style="margin-bottom:10px;">
+                <div style="display: flex; gap: 8px; margin-right: 20px;">
+                    <el-button @click="confirmTrans" type="success" plain circle>
+                        <el-icon size="large">
+                            <IconTranslate />
+                        </el-icon>
+                    </el-button>
+                    <el-button @click="copyPhaseText" type="primary" plain circle>
+                        <el-icon size="large">
+                            <DocumentCopy />
+                        </el-icon>
+                    </el-button>
+                    <el-button @click="excerptChapter" type="primary" plain circle>
+                        <el-icon size="large">
+                            <IconExcerptChapter />
+                        </el-icon>
+                    </el-button>
+                    <el-button @click="cancelSelect" type="danger" plain circle>
+                        <el-icon size="large">
+                            <Close />
+                        </el-icon>
+                    </el-button>
+                </div>
+            </el-row>
+            <h1 class="select-dialog-title">{{ selectDialogText }}</h1>
+        </div>
+    </el-dialog>
     <el-dialog v-model="showTransDialog" title="翻译结果" width="90%" class="trans-dialog">
         <div v-loading="translating" class="trans-content">
             <el-row class="trans-row word-row" align="middle" justify="center">
@@ -31,35 +60,6 @@
             <el-row class="trans-row">
                 <div class="translation-text">{{ transResult.aiTranslation }}</div>
             </el-row>
-        </div>
-    </el-dialog>
-    <el-dialog v-model="showSelectDialog" width="90%" :show-close="false" center class="select-dialog">
-        <div style="text-align:left;">
-            <el-row justify="end" style="margin-bottom:10px;">
-                <div style="display: flex; gap: 8px; margin-right: 20px;">
-                    <el-button @click="confirmTrans" type="success" plain circle>
-                        <el-icon size="large">
-                            <IconTranslate />
-                        </el-icon>
-                    </el-button>
-                    <el-button @click="copyPhaseText" type="primary" plain circle>
-                        <el-icon size="large">
-                            <DocumentCopy />
-                        </el-icon>
-                    </el-button>
-                    <el-button @click="excerptChapter" type="primary" plain circle>
-                        <el-icon size="large">
-                            <IconExcerptChapter />
-                        </el-icon>
-                    </el-button>
-                    <el-button @click="cancelSelect" type="danger" plain circle>
-                        <el-icon size="large">
-                            <Close />
-                        </el-icon>
-                    </el-button>
-                </div>
-            </el-row>
-            <h1 class="select-dialog-title">{{ selectDialogText }}</h1>
         </div>
     </el-dialog>
 </template>
@@ -132,10 +132,7 @@ const handlePhaseSelect = async (phaseText: string) => {
 
 }
 const realHandlePhaseSelect = async (phaseText: string) => {
-    if (translating.value) {
-        console.log("Translation already in progress. Ignoring phase select.");
-        return; // Prevent multiple translation requests
-    }
+    
     try {
         translating.value = true; // Set loading immediately
         ElMessage.info('正在翻译，翻译结果即将呈现...');
