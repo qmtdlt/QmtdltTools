@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Dtos;
 using QmtdltTools.Domain.Entitys;
@@ -67,6 +60,10 @@ namespace QmtdltTools.Service.Services
                     await _dc.SaveChangesAsync();
                 }
                 return entity;
+            }
+            if(uid != null)
+            {
+                _vocabularyService.UsrTransNew(uid.Value);
             }
             return null;
         }
