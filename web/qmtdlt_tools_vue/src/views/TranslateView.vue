@@ -38,7 +38,7 @@
             :close-on-click-modal="false" 
             :append-to-body="true"
             :top="'auto'"
-            :style="{ position: 'fixed', right: '20px', bottom: `${20 + 170 * (transDialogs.indexOf(dialog))}px`, width: '500px', minHeight: '150px', zIndex: 2000 + dialog.id }"
+            :style="{ position: 'fixed', right: '20px', bottom: `${ 170 * (transDialogs.indexOf(dialog))}px`, width: '500px', minHeight: '150px', zIndex: 2000 + dialog.id }"
             @close="closeDialog(dialog.id)"
         >
             <div class="trans-content">
