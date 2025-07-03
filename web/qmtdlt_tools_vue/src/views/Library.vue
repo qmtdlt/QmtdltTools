@@ -440,7 +440,7 @@ export default defineComponent({
 }
 .txt-icon-wrap {
   width: 100%;
-  height: 160px;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;

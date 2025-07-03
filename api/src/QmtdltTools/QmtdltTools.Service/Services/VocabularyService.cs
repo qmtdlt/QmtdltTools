@@ -105,7 +105,6 @@ namespace QmtdltTools.Service.Services
                             IncorrectReason = uv.IncorrectReason,
                             CorrectSentence = uv.CorrectSentence,
                             CreateTime = uv.CreateTime,
-
                             WordText = vr != null ? vr.WordText : null,
                             WordPronunciation = vr != null ? vr.WordPronunciation : null,
                             AIExplanation = vr != null ? vr.AIExplanation : null,
@@ -114,6 +113,11 @@ namespace QmtdltTools.Service.Services
                         };
             var list = await query.OrderByDescending(t => t.CreateTime).ToListAsync();
             return list;
+        }
+
+        public void UsrTransNew(Guid uid)
+        {
+            userViewWordIndexCache.AddOrUpdate(uid, 0, (key, oldValue) => 0);
         }
         public async Task<VocabularyDto?> GetOneWord(Guid? uid)
         {
