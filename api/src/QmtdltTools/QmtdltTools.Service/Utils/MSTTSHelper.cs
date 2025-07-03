@@ -70,6 +70,7 @@ public class MsTTSHelperRest
                     string errorMessage = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                     // Log the error (replace with your logging mechanism)
                     // Log.Error($"Speech synthesis REST API failed: {response.StatusCode} - {errorMessage}");
+                    Console.WriteLine($"Speech synthesis REST API failed: {response.StatusCode} - {errorMessage}");
                     Log.Error($"Speech synthesis REST API failed: {response.StatusCode} - {errorMessage}"); // Example logging
                     // Return empty array or throw exception based on desired behavior
                     return new byte[0];
