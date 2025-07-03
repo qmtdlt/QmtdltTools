@@ -32,25 +32,27 @@
         <el-dialog
             v-model="dialog.visible"
             title="翻译结果"
-            width="90%"
+            width="500px"
             class="trans-dialog"
             :modal="false"
+            :close-on-click-modal="false" 
             :append-to-body="true"
             :top="'auto'"
-            :style="{ position: 'fixed', right: '20px', bottom: `${20 + 120 * (transDialogs.indexOf(dialog))}px`, width: '350px', zIndex: 2000 + dialog.id }"
+            :style="{ position: 'fixed', right: '20px', bottom: `${20 + 170 * (transDialogs.indexOf(dialog))}px`, width: '500px', minHeight: '150px', zIndex: 2000 + dialog.id }"
             @close="closeDialog(dialog.id)"
         >
             <div class="trans-content">
-                <el-row class="trans-row word-row" align="middle" justify="center">
-                    <h1 class="word-title">{{ dialog.result.wordText }}</h1>
+                <div class="word-translation-row">
+                    <span >{{ dialog.result.wordText }}</span>
                     <el-button @click="playTransVoice(dialog.result.wordPronunciation)" class="sound-btn" circle>
                         <el-icon>
                             <Headset />
                         </el-icon>
                     </el-button>
-                </el-row>
-                <el-row class="trans-row" align="middle" style="margin-top: 10px;">
-                    <h2 class="section-title">Explanation</h2>
+                    <span>{{ dialog.result.aiTranslation }}</span>
+                </div>
+                <div class="explanation-row">
+                    <span class="explanation-text">{{ dialog.result.aiExplanation }}</span>
                     <el-button @click="playTransVoice(dialog.result.pronunciation)" class="sound-btn" circle>
                         <el-icon>
                             <Headset />
@@ -61,16 +63,7 @@
                             <VideoPause />
                         </el-icon>
                     </el-button>
-                </el-row>
-                <el-row class="trans-row">
-                    <div class="explanation-text">{{ dialog.result.aiExplanation }}</div>
-                </el-row>
-                <el-row class="trans-row" style="margin-top: 10px;">
-                    <h2 class="section-title">Translation</h2>
-                </el-row>
-                <el-row class="trans-row">
-                    <div class="translation-text">{{ dialog.result.aiTranslation }}</div>
-                </el-row>
+                </div>
             </div>
         </el-dialog>
     </template>
@@ -155,21 +148,39 @@ const handlePhaseSelect = async (phaseText: string) => {
 }
 const realHandlePhaseSelect = async (phaseText: string) => {
     try {
-        ElMessage.info('正在翻译，翻译结果即将呈现...');
+        await enTransQueue(phaseText);
+    } catch (e: any) {
+        ElMessage.info('已取消');
+    }
+}
+const transQueue = ref<string[]>([]);
+const enTransQueue = async (phaseText:string) => {
+    ElMessage.info('正在翻译，翻译结果即将呈现...');
+
+    transQueue.value.push(phaseText);               // 加入队列
+
+    while (transQueue.value.length > 0) {
+        let tmpTransText = transQueue.value.shift() ?? "";
+
+        // 如果 tmpTransText 为空，则跳过
+        if (tmpTransText == "") {
+            continue;
+        }
+
         let res = await request.get<VocabularyRecord>(
             '/api/Vocabulary/Trans',
-            { params: { word: phaseText } }
+            { params: { word: tmpTransText } }
         );
         // 新建一个 dialog 项
         transDialogs.value.push({
             id: ++dialogId,
-            word: phaseText,
+            word: tmpTransText,
             result: res,
             visible: true
         })
-    } catch (e: any) {
-        ElMessage.info('已取消');
     }
+
+    
 }
 
 const playTransVoice = (voiceBuffer: string) => {
@@ -216,11 +227,10 @@ defineExpose({
   margin-bottom: 18px;
 }
 .word-title {
-  font-size: 2.2em;
+  font-size: 2em;
   font-weight: bold;
   color: #222;
   margin-right: 10px;
-  letter-spacing: 1px;
 }
 .section-title {
   font-size: 1.2em;
@@ -270,5 +280,50 @@ defineExpose({
   font-weight: bold;
   margin: 0 0 10px 0;
   word-break: break-word;
+}
+.word-translation-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0 10px;
+}
+.word-title {
+  font-size: 1.6em;
+  font-weight: bold;
+  color: #222;
+  margin-right: 10px;
+  flex: 1;
+  text-align: left;
+}
+.translation-text {
+  color: #67C23A;
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-left: 10px;
+  flex: 1;
+  text-align: right;
+}
+.explanation-row {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+}
+.explanation-label {
+  font-weight: 600;
+  color: #409EFF;
+  margin-right: 8px;
+}
+.explanation-text {
+  font-size: 1.1em;
+  color: #444;
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 0 10px 0 0;
+  box-shadow: 0 2px 8px rgba(64,158,255,0.04);
+  word-break: break-word;
+  line-height: 1.7;
+  flex: 1;
 }
 </style>
