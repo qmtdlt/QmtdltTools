@@ -28,44 +28,56 @@
             <h1 class="select-dialog-title">{{ selectDialogText }}</h1>
         </div>
     </el-dialog>
-    <el-dialog v-model="showTransDialog" title="翻译结果" width="90%" class="trans-dialog">
-        <div v-loading="translating" class="trans-content">
-            <el-row class="trans-row word-row" align="middle" justify="center">
-                <h1 class="word-title">{{ transResult.wordText }}</h1>
-                <el-button @click="playTransVoice(transResult.wordPronunciation)" class="sound-btn" circle>
-                    <el-icon>
-                        <Headset />
-                    </el-icon>
-                </el-button>
-            </el-row>
-            <el-row class="trans-row" align="middle" style="margin-top: 10px;">
-                <h2 class="section-title">Explanation</h2>
-                <el-button @click="playTransVoice(transResult.pronunciation)" class="sound-btn" circle>
-                    <el-icon>
-                        <Headset />
-                    </el-icon>
-                </el-button>
-                <el-button @click="stopPlayBase64Audio" class="sound-btn" circle>
-                    <el-icon>
-                        <VideoPause />
-                    </el-icon>
-                </el-button>
-            </el-row>
-            <el-row class="trans-row">
-                <div class="explanation-text">{{ transResult.aiExplanation }}</div>
-            </el-row>
-            <el-row class="trans-row" style="margin-top: 10px;">
-                <h2 class="section-title">Translation</h2>
-            </el-row>
-            <el-row class="trans-row">
-                <div class="translation-text">{{ transResult.aiTranslation }}</div>
-            </el-row>
-        </div>
-    </el-dialog>
+    <template v-for="dialog in transDialogs" :key="dialog.id">
+        <el-dialog
+            v-model="dialog.visible"
+            title="翻译结果"
+            width="90%"
+            class="trans-dialog"
+            :modal="false"
+            :append-to-body="true"
+            :top="'auto'"
+            :style="{ position: 'fixed', right: '20px', bottom: `${20 + 120 * (transDialogs.indexOf(dialog))}px`, width: '350px', zIndex: 2000 + dialog.id }"
+            @close="closeDialog(dialog.id)"
+        >
+            <div class="trans-content">
+                <el-row class="trans-row word-row" align="middle" justify="center">
+                    <h1 class="word-title">{{ dialog.result.wordText }}</h1>
+                    <el-button @click="playTransVoice(dialog.result.wordPronunciation)" class="sound-btn" circle>
+                        <el-icon>
+                            <Headset />
+                        </el-icon>
+                    </el-button>
+                </el-row>
+                <el-row class="trans-row" align="middle" style="margin-top: 10px;">
+                    <h2 class="section-title">Explanation</h2>
+                    <el-button @click="playTransVoice(dialog.result.pronunciation)" class="sound-btn" circle>
+                        <el-icon>
+                            <Headset />
+                        </el-icon>
+                    </el-button>
+                    <el-button @click="stopPlayBase64Audio" class="sound-btn" circle>
+                        <el-icon>
+                            <VideoPause />
+                        </el-icon>
+                    </el-button>
+                </el-row>
+                <el-row class="trans-row">
+                    <div class="explanation-text">{{ dialog.result.aiExplanation }}</div>
+                </el-row>
+                <el-row class="trans-row" style="margin-top: 10px;">
+                    <h2 class="section-title">Translation</h2>
+                </el-row>
+                <el-row class="trans-row">
+                    <div class="translation-text">{{ dialog.result.aiTranslation }}</div>
+                </el-row>
+            </div>
+        </el-dialog>
+    </template>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { startPlayBase64Audio, stopPlayBase64Audio, cleanupAudio } from '../utils/audioplay';
 import request from '@/utils/request';
@@ -79,6 +91,16 @@ const translating = ref(false); // 拖拽到右侧区域的文本
 const transResult = ref<VocabularyRecord>({} as VocabularyRecord); // Store translation result pronunciation is base64 string
 const showSelectDialog = ref(false)
 const selectDialogText = ref('')
+
+interface TransDialogItem {
+    id: number
+    word: string
+    result: VocabularyRecord
+    visible: boolean
+}
+
+const transDialogs = ref<TransDialogItem[]>([])
+let dialogId = 0
 
 const copyPhaseText = async () => {
     await navigator.clipboard.writeText(selectDialogText.value)
@@ -132,29 +154,21 @@ const handlePhaseSelect = async (phaseText: string) => {
 
 }
 const realHandlePhaseSelect = async (phaseText: string) => {
-    
     try {
-        translating.value = true; // Set loading immediately
         ElMessage.info('正在翻译，翻译结果即将呈现...');
         let res = await request.get<VocabularyRecord>(
             '/api/Vocabulary/Trans',
-            {
-                params: { word: phaseText },
-            }
+            { params: { word: phaseText } }
         );
-        
-        showTransDialog.value = true; // Show dialog if it was open
-        transSource.value = phaseText;
-        translating.value = false;
-        transResult.value = res;
-        startPlayBase64Audio(transResult.value.pronunciation, () => {
-            console.log("Translation audio playback finished.");
-        });
+        // 新建一个 dialog 项
+        transDialogs.value.push({
+            id: ++dialogId,
+            word: phaseText,
+            result: res,
+            visible: true
+        })
     } catch (e: any) {
-        console.log("User cancelled translation or confirm failed:", e);
         ElMessage.info('已取消');
-        translating.value = false;
-        showTransDialog.value = false;
     }
 }
 
@@ -167,6 +181,13 @@ const playTransVoice = (voiceBuffer: string) => {
         ElMessage.error("没有翻译语音!");
     }
 }
+
+// 关闭 dialog 时调用
+const closeDialog = (id: number) => {
+    const idx = transDialogs.value.findIndex(d => d.id === id)
+    if (idx !== -1) transDialogs.value.splice(idx, 1)
+}
+
 defineExpose({
     handlePhaseSelect
 });
