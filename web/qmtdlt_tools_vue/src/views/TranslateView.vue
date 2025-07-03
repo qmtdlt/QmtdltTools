@@ -178,9 +178,14 @@ const enTransQueue = async (phaseText:string) => {
             result: res,
             visible: true
         })
+        await sleep(500);
     }
 
     
+}
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 const playTransVoice = (voiceBuffer: string) => {
@@ -196,7 +201,10 @@ const playTransVoice = (voiceBuffer: string) => {
 // 关闭 dialog 时调用
 const closeDialog = (id: number) => {
     const idx = transDialogs.value.findIndex(d => d.id === id)
-    if (idx !== -1) transDialogs.value.splice(idx, 1)
+    if (idx !== -1) {
+        transDialogs.value.splice(idx, 1)
+        stopPlayBase64Audio();
+    }
 }
 
 defineExpose({

@@ -293,10 +293,13 @@ const progChange = () => {
 
 const startRead = async () => {
   console.log("startRead called. Invoking 'Read' on SignalR.");
+  isStopRead.value = false;
   readNext();
 }
 
+const isStopRead = ref(false);
 const stopRead = async () => {
+  isStopRead.value = true;
   console.log("stopRead called.");
   stopPlayBase64Audio(); // Now suspends the context
 }
@@ -321,7 +324,7 @@ connection.on("UIReadInfo", (input: any) => {
 
   // Start playing the received audio buffer
   startPlayBase64Audio(input.speaking_buffer, () => {
-    if (useModelType.value === "1") {
+    if (useModelType.value === "1" && isStopRead.value == false) {
       readNext(); // 继续读取下一段
     }
   });
