@@ -43,9 +43,6 @@ namespace QmtdltTools.Service.Services
         {
             try
             {
-                var users = _dc.SysUsers.ToList();
-                //var nam = users.Where(t => t.Name == "qmtdlt" && t.PasswordHash == "12000asd").First().Name;
-                var usr = users.Where(t => t.Name == username && t.PasswordHash == password).First();
                 var user = await _dc.SysUsers.AsNoTracking()
                     .Where(t => t.Name == username && t.PasswordHash == password).FirstOrDefaultAsync();
                 if (user == null)
