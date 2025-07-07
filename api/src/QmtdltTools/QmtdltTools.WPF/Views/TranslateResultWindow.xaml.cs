@@ -1,6 +1,7 @@
 ﻿using QmtdltTools.Domain.Entitys;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,42 +27,66 @@ namespace QmtdltTools.WPF.Views
             InitializeComponent();
             DataContext = vm;
         }
-
+        VocabularyRecord _data;
         public void setData(VocabularyRecord data)
         {
-            if(DataContext is TranslateResultWindowVm vm)
+            _data = data;
+            if (DataContext is TranslateResultWindowVm vm)
             {
                 vm.setData(data);
             }
+        }
+
+        public void PlayAudio(byte[] audioData)
+        {
+            if (audioData == null || audioData.Length == 0) return;
+
+            // 写入临时文件
+            var tempFile = System.IO.Path.GetTempFileName() + ".wav";
+            File.WriteAllBytes(tempFile, audioData);
+
+            mediaElement.Source = new Uri(tempFile, UriKind.Absolute);
+            mediaElement.Position = TimeSpan.Zero;
+            mediaElement.Play();
+        }
+
+        public void StopAudio()
+        {
+            mediaElement.Stop();
+            mediaElement.Source = null;
+        }
+
+        private void playWord(object sender, RoutedEventArgs e)
+        {
+            if(_data.WordPronunciation  != null)
+            {
+                PlayAudio(_data.WordPronunciation);
+            }            
+        }
+
+        private void playExplain(object sender, RoutedEventArgs e)
+        {
+            if (_data.Pronunciation != null)
+            {
+                PlayAudio(_data.Pronunciation);
+            }
+        }
+
+        private void stopAudio(object sender, RoutedEventArgs e)
+        {
+            StopAudio();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            StopAudio();
         }
     }
 
     public class TranslateResultWindowVm : BindableBase, ITransientDependency
     {
-        public DelegateCommand playWordCmd { get; set; }
-        public DelegateCommand playExplainCmd { get; set; }
-        public DelegateCommand stopCmd { get; set; }
-
         public TranslateResultWindowVm()
         {
-            playWordCmd = new DelegateCommand(playWord);
-            playExplainCmd = new DelegateCommand(playExplain);
-            stopCmd = new DelegateCommand(stopPlay);
-        }
-
-        private void stopPlay()
-        {
-            
-        }
-
-        private void playExplain()
-        {
-            
-        }
-
-        private void playWord()
-        {
-            
         }
 
         private VocabularyRecord resData;

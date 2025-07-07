@@ -18,6 +18,8 @@ using QmtdltTools.Service.Services;
 using Microsoft.AspNetCore.Http;
 using QmtdltTools.Domain.Entitys;
 using ScottPlot.Palettes;
+using QmtdltTools.WPF.Views;
+using QmtdltTools.WPF.Utils;
 
 namespace QmtdltTools.WPF;
 
@@ -34,12 +36,29 @@ public partial class MainWindow : Window
         Browser.LifeSpanHandler = new CustomLifeSpanHandler();
         DataContext = vm;
         this.Closing += MainWindow_Closing;
+
+        Loaded += MainWindow_Loaded;
+    }
+
+    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (!string.IsNullOrEmpty(AppSettingHelper.lastUrl))
+        {
+            var res = MessageBox.Show($"是否上次打开的地址：{AppSettingHelper.lastUrl}", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (res == MessageBoxResult.OK)
+            {
+                Browser.LoadUrl(AppSettingHelper.lastUrl);
+            }
+        }
     }
 
     private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
-        if(DataContext is MainWindowVm vm)
+        if (DataContext is MainWindowVm vm)
         {
+            // 获取当前url，并记录，下次启动直接打开
+            AppSettingHelper.lastUrl = Browser.Address;
+
             vm.onClose();
         }
     }
@@ -57,7 +76,24 @@ public partial class MainWindow : Window
             {
                 VocabularyRecord? findRes = await _translationService.Trans(0, 0, "", selectedText, Guid.Parse("08dd7e88-9af1-4775-8a21-554610976784"));
 
-                Console.WriteLine("asdf");
+                if (findRes != null)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        var wd = App.Get<TranslateResultWindow>();
+                        wd.setData(findRes);
+                        if (DataContext is MainWindowVm vm1)
+                        {
+                            vm1.pauseWork();
+                        }
+                        wd.ShowDialog();
+
+                        if (DataContext is MainWindowVm vm2)
+                        {
+                            vm2.continueWork();
+                        }
+                    });
+                }
             });
         }
     }
@@ -91,7 +127,7 @@ public class MainWindowVm : BindableBase, ISingletonDependency
         }
     }
     #region ms speech
-   
+
 
     async Task FromSystemAudio(SpeechConfig speechConfig)
     {
@@ -111,7 +147,7 @@ public class MainWindowVm : BindableBase, ISingletonDependency
         // 当捕获到音频数据时，将其写入 audioStream
         capture.DataAvailable += (s, e) =>
         {
-            if (e.Buffer.Length > 0)
+            if (e.Buffer.Length > 0 && working)
             {
                 audioStream.Write(e.Buffer);
             }
@@ -129,7 +165,10 @@ public class MainWindowVm : BindableBase, ISingletonDependency
         // 设置事件处理程序以获取实时识别结果
         speechRecognizer.Recognizing += (s, e) =>
         {
-            CurSubtitle = $"{e.Result.Text}";
+            if (working)
+            {
+                CurSubtitle = $"{e.Result.Text}";
+            }
         };
 
         speechRecognizer.Recognized += (s, e) =>
@@ -137,7 +176,7 @@ public class MainWindowVm : BindableBase, ISingletonDependency
             if (e.Result.Reason == ResultReason.RecognizedSpeech)
             {
                 //Console.WriteLine($"已识别: 文本={e.Result.Text}");
-                if (!string.IsNullOrEmpty(e.Result.Text))
+                if (!string.IsNullOrEmpty(e.Result.Text) && working)
                 {
                     CurSubtitle = e.Result.Text;
                 }
@@ -158,6 +197,17 @@ public class MainWindowVm : BindableBase, ISingletonDependency
         // 停止捕获系统音频
         capture.StopRecording();
     }
+    bool working = true;
+    internal void pauseWork()
+    {
+        working = false;
+    }
+
+    internal void continueWork()
+    {
+        working = true;
+    }
+
     bool isStop = false;
     #endregion
 }

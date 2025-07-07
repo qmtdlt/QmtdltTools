@@ -6,16 +6,23 @@
         xmlns:local="clr-namespace:QmtdltTools.WPF"
         mc:Ignorable="d"
         xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800" WindowState="Maximized">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="500"/>
         </Grid.RowDefinitions>
 
-        <wpf:ChromiumWebBrowser x:Name="Browser" Address="https://www.youtube.com/" />
-
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <wpf:ChromiumWebBrowser x:Name="Browser" Address="https://www.youtube.com/" />
+        </Grid>
+        
         <TextBox TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10"
+                 FontSize="28" FontWeight="Bold"
                  Text="{Binding CurSubtitle}" Grid.Row="1" MouseDoubleClick="TextBox_MouseDoubleClick"></TextBox>        
     </Grid>
 </Window>
