@@ -16,6 +16,6 @@
         <wpf:ChromiumWebBrowser x:Name="Browser" Address="https://www.youtube.com/" />
 
         <TextBox TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10"
-                 Text="{Binding CurSubtitle}" Grid.Row="1" MouseDoubleClick="TextBox_MouseDoubleClick"></TextBox>
+                 Text="{Binding CurSubtitle}" Grid.Row="1" MouseDoubleClick="TextBox_MouseDoubleClick"></TextBox>        
     </Grid>
 </Window>
