@@ -1,13 +1,13 @@
+// src/views/MVideo.vue
+
 <template>
+  <h1>MVideo</h1>
     <RealtimeCaption
-      video-url="https://www.youtube.com/watch?v=your_video_id"
-      azure-key="你的Azure订阅Key"
-      azure-region="你的Azure订阅Region"
+      video-url="https://www.youtube.com/watch?v=xmeVhetSzxg" 
       language="en-US"
     />
-  </template>
+    </template>
   
   <script setup lang="ts">
   import RealtimeCaption from '@/components/RealtimeCaption.vue';
   </script>
-  

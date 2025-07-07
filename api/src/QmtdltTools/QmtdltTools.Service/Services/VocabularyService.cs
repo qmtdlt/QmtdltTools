@@ -25,7 +25,12 @@ namespace QmtdltTools.Service.Services
             _dc = dc;
             _aiApiService = aiApiService;
         }
-
+        public async Task UpdateRecord(VocabularyRecord input)
+        {
+            input.UpdateTime = DateTime.Now;
+            _dc.VocabularyRecords.Update(input);
+            await _dc.SaveChangesAsync();
+        }
         public async Task AddRecord(VocabularyRecord input)
         {
             input.Id = Guid.NewGuid();

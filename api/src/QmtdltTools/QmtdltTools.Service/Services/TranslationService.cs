@@ -44,6 +44,21 @@ namespace QmtdltTools.Service.Services
                     return entity;
                 }
             }
+            else if(entity.Pronunciation == null || entity.WordPronunciation == null
+                || entity.Pronunciation.Length == 0 || entity.WordPronunciation.Length == 0)
+            {
+                TranslateDto? res = await _aiApiService.GetTranslateResult(word);       // 翻译
+                if (res != null)
+                {
+                    entity.WordPronunciation = MsTTSHelperRest.GetSpeakStreamRest(word, ApplicationConst.DefaultVoiceName); // 单词配音
+                    entity.Pronunciation = res.VoiceBuffer;
+                    entity.AIExplanation = res.Explanation;
+                    entity.AITranslation = res.Translation;
+
+                    await _vocabularyService.UpdateRecord(entity);
+                    return entity;
+                }
+            }
             else
             {
                 var userVoclbular = _dc.UserVocabularies.Where(t => t.VocabularyId == entity.Id && t.CreateBy == uid).FirstOrDefault();     // 查找当前用户是否有该单词
