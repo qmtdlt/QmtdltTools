@@ -49,6 +49,8 @@ public partial class App : Application
             ApplicationConst.DOU_BAO = _configuration.GetSection("MySecret:DOU_BAO").Value ?? "";
             ApplicationConst.QIAN_WEN = _configuration.GetSection("MySecret:QIAN_WEN").Value ?? "";
 
+            ApplicationConst.AIType = int.Parse(_configuration.GetSection("MySecret:AIType").Value ??"4");
+
             _abpApplication.Services.GetRequiredService<MainWindow>()?.Show();
 
         }

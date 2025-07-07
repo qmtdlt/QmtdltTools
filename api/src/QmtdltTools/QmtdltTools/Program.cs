@@ -64,6 +64,7 @@ ApplicationConst.GROK_KEY = configuration.GetSection("MySecret:GROK_KEY").Get<st
 ApplicationConst.GEMINI_KEY = configuration.GetSection("MySecret:GEMINI_KEY").Get<string>();
 ApplicationConst.DOU_BAO = configuration.GetSection("MySecret:DOU_BAO").Get<string>();
 ApplicationConst.QIAN_WEN = configuration.GetSection("MySecret:QIAN_WEN").Get<string>();
+ApplicationConst.AIType = configuration.GetSection("MySecret:AIType").Get<int>();
 
 var Issuer = configuration.GetSection("Jwt:Issuer").Get<string>();
 var Audience = configuration.GetSection("Jwt:Audience").Get<string>();
