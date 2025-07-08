@@ -1,4 +1,8 @@
 ﻿using QmtdltTools.Domain.Entitys;
+using QmtdltTools.Service.Services;
+using QmtdltTools.WPF.Dto;
+using QmtdltTools.WPF.Services;
+using QmtdltTools.WPF.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,9 +26,11 @@ namespace QmtdltTools.WPF.Views
     /// </summary>
     public partial class TranslateResultWindow : Window,ITransientDependency
     {
-        public TranslateResultWindow(TranslateResultWindowVm vm)
+        private readonly TransService _transService;
+        public TranslateResultWindow(TranslateResultWindowVm vm, TransService transService)
         {
             InitializeComponent();
+            _transService = transService;
             DataContext = vm;
         }
         VocabularyRecord _data;
@@ -80,6 +86,15 @@ namespace QmtdltTools.WPF.Views
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             StopAudio();
+        }
+
+        private void TextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is TextBox textBox)
+            {
+                string selectedText = textBox.SelectedText;
+                _ = _transService.Trans(selectedText);
+            }
         }
     }
 

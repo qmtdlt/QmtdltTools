@@ -7,6 +7,10 @@ using QmtdltTools.Domain.Entitys;
 using QmtdltTools.WPF.Views;
 using QmtdltTools.WPF.Utils;
 using QmtdltTools.WPF.IServices;
+using QmtdltTools.WPF.Dto;
+using System.Collections.Concurrent;
+using System.Linq;
+using QmtdltTools.WPF.Services;
 
 namespace QmtdltTools.WPF;
 
@@ -15,11 +19,12 @@ namespace QmtdltTools.WPF;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private readonly TranslationService _translationService;
-    public MainWindow(MainWindowVm vm, TranslationService translationService)
+    private readonly TransService _transService;
+    
+    public MainWindow(MainWindowVm vm, TransService transService)
     {
         InitializeComponent();
-        _translationService = translationService;
+        _transService = transService;
         DataContext = vm;
         this.Closing += MainWindow_Closing;
 
@@ -28,7 +33,7 @@ public partial class MainWindow : Window
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        
+        _ = RestHelper.login("qmtdlt", "12000asd");
     }
 
     private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -42,32 +47,7 @@ public partial class MainWindow : Window
         if (sender is TextBox textBox)
         {
             string selectedText = textBox.SelectedText;
-            // 示例：显示选中的文本
-            //System.Windows.MessageBox.Show("选中的文本: " + selectedText);
-            // 您可以在这里添加其他逻辑，例如：
-            Task.Run(async () =>
-            {
-                VocabularyRecord? findRes = await _translationService.Trans(0, 0, "", selectedText, Guid.Parse("08dd7e88-9af1-4775-8a21-554610976784"));
-
-                if (findRes != null)
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        var wd = App.Get<TranslateResultWindow>();
-                        wd.setData(findRes);
-                        if (DataContext is MainWindowVm vm1)
-                        {
-                            vm1.pauseWork();
-                        }
-                        wd.ShowDialog();
-
-                        if (DataContext is MainWindowVm vm2)
-                        {
-                            vm2.continueWork();
-                        }
-                    });
-                }
-            });
+            _ = _transService.Trans(selectedText);
         }
     }
 }
@@ -80,7 +60,7 @@ public class MainWindowVm : BindableBase, ISingletonDependency
         _subtitleService = subtitleService;
         _ = Task.Run(async () =>
         {
-            await _subtitleService.StartAsync(SetSubTitle);
+            await _subtitleService.StartAsync(updatingTitle,SetSubTitle);
         });
 
         VideoView = App.Get<WebVideoView>();
@@ -90,18 +70,28 @@ public class MainWindowVm : BindableBase, ISingletonDependency
     {
         _subtitleService.StopAsync();
     }
-    public void pauseWork()
-    {
-        _subtitleService.Pause();
-    }
-
-    public void continueWork()
-    {
-        _subtitleService.Resume();
-    }
-    void SetSubTitle(string  subTitle)
+    
+    ConcurrentQueue<string> subtitleQueue = new ConcurrentQueue<string>();
+    void updatingTitle(string  subTitle)
     {
         CurSubtitle = subTitle;
+    }
+    void SetSubTitle(string subTitle)
+    {
+        subtitleQueue.Enqueue(subTitle);
+        updatePastSubtitles();
+    }
+    void updatePastSubtitles()
+    {
+        if(subtitleQueue.Count > 4)
+        {
+            subtitleQueue.TryDequeue(out string? data);
+        }
+        var list = subtitleQueue.ToList();
+        if(list.Count > 1)
+        {
+            PastSubtitle = string.Join("\n", list);
+        }
     }
     private string curSubtitle;
     public string CurSubtitle
@@ -113,7 +103,16 @@ public class MainWindowVm : BindableBase, ISingletonDependency
             this.RaisePropertyChanged("CurSubtitle");
         }
     }
-
+    private string pastSubtitle;
+    public string PastSubtitle
+    {
+        get { return pastSubtitle; }
+        set
+        {
+            pastSubtitle = value;
+            this.RaisePropertyChanged("PastSubtitle");
+        }
+    }
     private IVideoView videoView;
     public IVideoView VideoView
     {

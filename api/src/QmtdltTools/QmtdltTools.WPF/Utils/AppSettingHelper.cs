@@ -14,6 +14,12 @@ namespace QmtdltTools.WPF.Utils
             get { return GetValue(nameof(lastUrl)); }
             set { SetValue(nameof(lastUrl), value.ToString()); }
         }
+        public static string ApiServer
+        {
+            get { return GetValue(nameof(ApiServer)); }
+            set { SetValue(nameof(ApiServer), value.ToString()); }
+        }
+        #region GET SET
         public static string GetValue(string key, string value = default(string))
         {
             try
@@ -36,5 +42,6 @@ namespace QmtdltTools.WPF.Utils
 
             cfa.Save();
         }
+        #endregion
     }
 }

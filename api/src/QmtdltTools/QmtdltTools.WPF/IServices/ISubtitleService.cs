@@ -9,7 +9,7 @@ namespace QmtdltTools.WPF.IServices
 {
     public interface ISubtitleService : ISingletonDependency
     {
-        Task StartAsync(Action<string> setSubtitle, CancellationToken cancellationToken = default);
+        Task StartAsync(Action<string> updating, Action<string> recoginized, CancellationToken cancellationToken = default);
         void Pause();
         void Resume();
         Task StopAsync();

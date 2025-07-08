@@ -15,7 +15,6 @@ namespace QmtdltTools.WPF.Services
         private readonly ILogger<SubtitleService> _logger;
         private volatile bool _isWorking;
         private bool _isRunning;
-        private Action<string>? _setSubtitle;
         private CancellationTokenSource? _cts;
         private SpeechRecognizer? _speechRecognizer;
         private WasapiLoopbackCapture? _capture;
@@ -28,7 +27,7 @@ namespace QmtdltTools.WPF.Services
             _isRunning = false;
         }
 
-        public async Task StartAsync(Action<string> setSubtitle, CancellationToken cancellationToken = default)
+        public async Task StartAsync(Action<string> updating, Action<string> recoginized, CancellationToken cancellationToken = default)
         {
             if (_isRunning)
             {
@@ -36,7 +35,7 @@ namespace QmtdltTools.WPF.Services
                 return;
             }
 
-            _setSubtitle = setSubtitle ?? throw new ArgumentNullException(nameof(setSubtitle));
+            //_setSubtitle = setSubtitle ?? throw new ArgumentNullException(nameof(setSubtitle));
             _isWorking = true;
             _isRunning = true;
             _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -59,6 +58,7 @@ namespace QmtdltTools.WPF.Services
                     if (_isWorking && !string.IsNullOrEmpty(e.Result.Text))
                     {
                         //_setSubtitle.Invoke(e.Result.Text);
+                        updating?.Invoke(e.Result.Text);
                     }
                 };
 
@@ -66,8 +66,7 @@ namespace QmtdltTools.WPF.Services
                 {
                     if (e.Result.Reason == ResultReason.RecognizedSpeech && _isWorking && !string.IsNullOrEmpty(e.Result.Text))
                     {
-                        _setSubtitle.Invoke(e.Result.Text);
-                        _logger.LogInformation($"Recognized: {e.Result.Text}");
+                        recoginized?.Invoke(e.Result.Text);
                     }
                 };
 
@@ -162,7 +161,6 @@ namespace QmtdltTools.WPF.Services
 
                 _cts?.Dispose();
                 _cts = null;
-                _setSubtitle = null;
 
                 _logger.LogInformation("SubtitleService stopped.");
             }
