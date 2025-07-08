@@ -28,9 +28,9 @@
             <RowDefinition Height="30"/>
             <RowDefinition/>
             <RowDefinition Height="60"/>
-            <!-- 控制条高度 -->
+             <!--控制条高度--> 
         </Grid.RowDefinitions>
-        <!-- 顶部打开区域 -->
+         <!--顶部打开区域--> 
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
@@ -39,16 +39,13 @@
             <TextBox x:Name="targetVideoPath"/>
             <Button Grid.Column="1" Content="转到" Click="OpenVideo"/>
         </Grid>
-        <!-- 视频区 -->
+         <!--视频区--> 
         <vlc:VideoView x:Name="VideoView" Grid.Row="1"/>
-        <!-- 控制条 -->
+         <!--控制条--> 
         <StackPanel Orientation="Horizontal" Grid.Row="2" VerticalAlignment="Center" Margin="10,0">
             <Button x:Name="PlayBtn" Content="▶" Width="40" Click="PlayBtn_Click"/>
             <Button x:Name="PauseBtn" Content="⏸" Width="40" Click="PauseBtn_Click" Margin="5,0"/>
-            <!--<Slider x:Name="ProgressSlider" Width="400" ValueChanged="ProgressSlider_ValueChanged"/>-->
-            <Slider x:Name="ProgressSlider"
-        Width="400"
-        ValueChanged="ProgressSlider_ValueChanged"/>
+            <Slider x:Name="ProgressSlider" Width="400" ValueChanged="ProgressSlider_ValueChanged"/>
 
             <TextBlock x:Name="TimeText" Width="80" Margin="10,0"/>
             <Slider x:Name="VolumeSlider" Width="80" Minimum="0" Maximum="100" ValueChanged="VolumeSlider_ValueChanged" Margin="10,0"/>

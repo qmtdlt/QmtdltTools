@@ -100,9 +100,6 @@ namespace QmtdltTools.WPF.Views
                 VideoView.MediaPlayer = _mediaPlayer;
                 _mediaPlayer.Play(new Media(_libVLC, new Uri(dialog.FileName)));
                 _timer.Start();
-
-                //ProgressSlider.AddHandler(Slider.DragStartedEvent, new System.Windows.Controls.Primitives.DragStartedEventHandler(ProgressSlider_DragStarted));
-                //ProgressSlider.AddHandler(Slider.DragCompletedEvent, new System.Windows.Controls.Primitives.DragCompletedEventHandler(ProgressSlider_DragCompleted));
             }
         }
 
