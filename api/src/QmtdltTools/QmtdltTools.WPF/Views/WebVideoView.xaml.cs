@@ -1,4 +1,6 @@
-﻿using QmtdltTools.WPF.IServices;
+﻿using CefSharp;
+using CefSharp.Wpf;
+using QmtdltTools.WPF.IServices;
 using QmtdltTools.WPF.Utils;
 using System;
 using System.Collections.Generic;
@@ -33,7 +35,7 @@ namespace QmtdltTools.WPF.Views
         {
             if (!string.IsNullOrEmpty(AppSettingHelper.lastUrl))
             {
-                var res = MessageBox.Show($"是否上次打开的地址：{AppSettingHelper.lastUrl}", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                var res = MessageBox.Show($"是否上次打开的地址：{AppSettingHelper.lastUrl}", "提示", MessageBoxButton.OKCancel, MessageBoxImage.Information);
                 if (res == MessageBoxResult.OK)
                 {
                     Browser.LoadUrl(AppSettingHelper.lastUrl);
@@ -43,7 +45,16 @@ namespace QmtdltTools.WPF.Views
 
         private void GoToUrl(object sender, RoutedEventArgs e)
         {
-            Browser.LoadUrl(targetUrl.Text);
+            LoadUrl(targetUrl.Text);
+        }
+        public void LoadUrl(string url)
+        {
+            Browser.LoadUrl(url);
+        }
+
+        internal void onClose()
+        {
+            AppSettingHelper.lastUrl = Browser.Address;
         }
     }
 }

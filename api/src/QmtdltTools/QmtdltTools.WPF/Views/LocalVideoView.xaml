@@ -3,10 +3,55 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:QmtdltTools.WPF.Views"
+             xmlns:local="clr-namespace:QmtdltTools.WPF.Views" xmlns:vlc="clr-namespace:LibVLCSharp.WPF;assembly=LibVLCSharp.WPF"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+
+    <!--<Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="100"/>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="targetVideoPath"></TextBox>
+            <Button Grid.Column="1" Content="转到" Click="OpenVideo"/>
+        </Grid>
+        <vlc:VideoView x:Name="VideoView" Grid.Row="1"/>
+    </Grid>-->
+
     <Grid>
-            
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition/>
+            <RowDefinition Height="60"/>
+            <!-- 控制条高度 -->
+        </Grid.RowDefinitions>
+        <!-- 顶部打开区域 -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="100"/>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="targetVideoPath"/>
+            <Button Grid.Column="1" Content="转到" Click="OpenVideo"/>
+        </Grid>
+        <!-- 视频区 -->
+        <vlc:VideoView x:Name="VideoView" Grid.Row="1"/>
+        <!-- 控制条 -->
+        <StackPanel Orientation="Horizontal" Grid.Row="2" VerticalAlignment="Center" Margin="10,0">
+            <Button x:Name="PlayBtn" Content="▶" Width="40" Click="PlayBtn_Click"/>
+            <Button x:Name="PauseBtn" Content="⏸" Width="40" Click="PauseBtn_Click" Margin="5,0"/>
+            <!--<Slider x:Name="ProgressSlider" Width="400" ValueChanged="ProgressSlider_ValueChanged"/>-->
+            <Slider x:Name="ProgressSlider"
+        Width="400"
+        ValueChanged="ProgressSlider_ValueChanged"/>
+
+            <TextBlock x:Name="TimeText" Width="80" Margin="10,0"/>
+            <Slider x:Name="VolumeSlider" Width="80" Minimum="0" Maximum="100" ValueChanged="VolumeSlider_ValueChanged" Margin="10,0"/>
+        </StackPanel>
     </Grid>
 </UserControl>

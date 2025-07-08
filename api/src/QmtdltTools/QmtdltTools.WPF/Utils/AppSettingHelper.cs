@@ -19,6 +19,16 @@ namespace QmtdltTools.WPF.Utils
             get { return GetValue(nameof(ApiServer)); }
             set { SetValue(nameof(ApiServer), value.ToString()); }
         }
+        public static string OnLineCfg
+        {
+            get { return GetValue(nameof(OnLineCfg)); }
+            set { SetValue(nameof(OnLineCfg), value.ToString()); }
+        }
+        public static string OffLineCfg
+        {
+            get { return GetValue(nameof(OffLineCfg)); }
+            set { SetValue(nameof(OffLineCfg), value.ToString()); }
+        }
         #region GET SET
         public static string GetValue(string key, string value = default(string))
         {
