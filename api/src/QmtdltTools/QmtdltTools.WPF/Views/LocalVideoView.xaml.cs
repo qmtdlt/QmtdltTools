@@ -38,7 +38,7 @@ namespace QmtdltTools.WPF.Views
             _timer.Start();
         }
 
-        private void PauseBtn_Click(object sender, RoutedEventArgs e)
+        public void PauseBtn_Click(object sender, RoutedEventArgs e)
         {
             _mediaPlayer?.Pause();
         }
@@ -48,7 +48,7 @@ namespace QmtdltTools.WPF.Views
             if (_mediaPlayer != null)
                 _mediaPlayer.Volume = (int)VolumeSlider.Value;
         }
-
+        private int _lastSubtitleIndex = -1;
         private void Timer_Tick(object sender, EventArgs e)
         {
             if (_mediaPlayer == null || _mediaPlayer.Length <= 0) return;
@@ -59,6 +59,26 @@ namespace QmtdltTools.WPF.Views
                 ProgressSlider.Value = _mediaPlayer.Time;
             }
             TimeText.Text = $"{TimeSpan.FromMilliseconds(_mediaPlayer.Time):mm\\:ss}/{TimeSpan.FromMilliseconds(_mediaPlayer.Length):mm\\:ss}";
+
+            var position = TimeSpan.FromMilliseconds(_mediaPlayer.Time);
+            var current = subtitles.FirstOrDefault(s => position >= s.Start && position <= s.End);
+            if (current != null)
+            {
+                if (current.Index != _lastSubtitleIndex)
+                {
+                    _setSubTitle(current.Text);
+                    _updatingSubTitle(current.Text);
+                    _lastSubtitleIndex = current.Index;
+                }
+            }
+            else
+            {
+                if (_lastSubtitleIndex != -1)
+                {
+                    _setSubTitle("");  // 清空字幕
+                    _lastSubtitleIndex = -1;
+                }
+            }
         }
 
         private void ProgressSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -90,10 +110,23 @@ namespace QmtdltTools.WPF.Views
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 targetVideoPath.Text = dialog.FileName;
+
+                // 构造字幕文件路径（同名、同目录）
+                string subtitlePath = System.IO.Path.ChangeExtension(targetVideoPath.Text, "英文.srt");
+                bool subtitleExists = System.IO.File.Exists(subtitlePath);
+
                 _libVLC = new LibVLC();
                 _mediaPlayer = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
                 VideoView.MediaPlayer = _mediaPlayer; // 假设 VideoView 是 XAML 中的控件
                 _mediaPlayer.Play(new Media(_libVLC, new Uri(dialog.FileName)));
+
+                if (subtitleExists)
+                {
+                    // AddSlave: 类型, 字幕路径, 是否优先
+                    //_mediaPlayer.AddSlave(MediaSlaveType.Subtitle, subtitlePath, true);
+
+                    ParseSrt(subtitlePath);
+                }
             }
             if (_mediaPlayer != null)
             {
@@ -119,5 +152,56 @@ namespace QmtdltTools.WPF.Views
                 Log.Error(ex.Message);
             }
         }
+        Action<string> _updatingSubTitle;
+        Action<string> _setSubTitle;
+        internal void InitAction(Action<string> updatingSubTitle, Action<string> setSubTitle1)
+        {
+            _updatingSubTitle = updatingSubTitle;
+            _setSubTitle = setSubTitle1;
+        }
+
+        List<SubtitleItem> subtitles = new List<SubtitleItem>();
+        public List<SubtitleItem> ParseSrt(string filePath)
+        {
+            var lines = System.IO.File.ReadAllLines(filePath);
+            int i = 0;
+            while (i < lines.Length)
+            {
+                if (int.TryParse(lines[i], out int index))
+                {
+                    var times = lines[i + 1].Split(new string[] { " --> " }, StringSplitOptions.None);
+                    var start = TimeSpan.Parse(times[0].Replace(',', '.'));
+                    var end = TimeSpan.Parse(times[1].Replace(',', '.'));
+                    var text = "";
+                    int j = i + 2;
+                    while (j < lines.Length && !string.IsNullOrWhiteSpace(lines[j]))
+                    {
+                        text += lines[j] + Environment.NewLine;
+                        j++;
+                    }
+                    subtitles.Add(new SubtitleItem
+                    {
+                        Index = index,
+                        Start = start,
+                        End = end,
+                        Text = text.Trim()
+                    });
+                    i = j;
+                }
+                else
+                {
+                    i++;
+                }
+            }
+            return subtitles;
+        }
+    }
+
+    public class SubtitleItem
+    {
+        public int Index { get; set; }
+        public TimeSpan Start { get; set; }
+        public TimeSpan End { get; set; }
+        public string Text { get; set; }
     }
 }

@@ -7,7 +7,7 @@ using Volo.Abp.DependencyInjection;
 
 namespace QmtdltTools.WPF.IServices
 {
-    public interface IVideoView:ITransientDependency
+    public interface IVideoView : ITransientDependency
     {
         
     }

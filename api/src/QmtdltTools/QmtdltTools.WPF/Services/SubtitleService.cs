@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using QmtdltTools.Domain.Data;
 using QmtdltTools.WPF.IServices;
+using System.Windows;
 
 namespace QmtdltTools.WPF.Services
 {
@@ -27,7 +28,7 @@ namespace QmtdltTools.WPF.Services
             _isRunning = false;
         }
 
-        public async Task StartAsync(Action<string> updating, Action<string> recoginized, CancellationToken cancellationToken = default)
+        public async Task StartRecognizeAsync(Action<string> updating, Action<string> recoginized, CancellationToken cancellationToken = default)
         {
             if (_isRunning)
             {
@@ -72,6 +73,7 @@ namespace QmtdltTools.WPF.Services
 
                 _speechRecognizer.SessionStopped += (s, e) =>
                 {
+                    MessageBox.Show("Speech recognition session stopped.");
                     _logger.LogInformation("Speech recognition session stopped.");
                     StopAsync().GetAwaiter().GetResult();
                 };

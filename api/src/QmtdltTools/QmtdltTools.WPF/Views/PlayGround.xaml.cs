@@ -63,6 +63,17 @@ namespace QmtdltTools.WPF.Views
                 vm.LoadUrl(videoUrl);
             }
         }
+
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.Key == Key.Space)
+            {
+                if (DataContext is PlayGroundVm vm)
+                {
+                    vm.PauseVideo();
+                }
+            }
+        }
     }
 
     public class PlayGroundVm : BindableBase, ITransientDependency
@@ -70,13 +81,7 @@ namespace QmtdltTools.WPF.Views
         ISubtitleService _subtitleService;
         public PlayGroundVm(ISubtitleService subtitleService)
         {
-            _subtitleService = subtitleService;
-            _ = Task.Run(async () =>
-            {
-                await _subtitleService.StartAsync(updatingTitle, SetSubTitle);
-            });
-
-            
+            _subtitleService = subtitleService;            
         }
         public void onClose()
         {
@@ -109,7 +114,14 @@ namespace QmtdltTools.WPF.Views
             var list = subtitleQueue.ToList();
             if (list.Count > 1)
             {
-                PastSubtitle = string.Join("\n", list);
+                if(_videoCollectionType == VideoCollectionType.OffLine)
+                {
+                    PastSubtitle = string.Join("\n", list.Take(list.Count - 1));
+                }
+                else
+                {
+                    PastSubtitle = string.Join("\n", list);
+                }
             }
         }
 
@@ -120,16 +132,42 @@ namespace QmtdltTools.WPF.Views
                 view.LoadUrl(url);
             }
         }
-
+        VideoCollectionType _videoCollectionType;
         internal void SetType(VideoCollectionType videoCollectionType)
         {
-            if(videoCollectionType == VideoCollectionType.OnLine)
+            _videoCollectionType = videoCollectionType;
+            if (videoCollectionType == VideoCollectionType.OnLine)
             {
+                _ = Task.Run(async () =>
+                {
+                    await _subtitleService.StopAsync();
+                    await _subtitleService.StartRecognizeAsync(updatingTitle, SetSubTitle);
+                });
                 VideoView = App.Get<WebVideoView>();
             }
             else
             {
-                VideoView = App.Get<LocalVideoView>();
+                var view = App.Get<LocalVideoView>();
+                view.InitAction(updatingTitle,SetSubTitle);
+                VideoView = view;
+            }
+        }
+
+        internal void PauseVideo()
+        {
+            if (_videoCollectionType == VideoCollectionType.OnLine)
+            {
+                if (VideoView is WebVideoView view1)
+                {
+                    //view1.pause();
+                }
+            }
+            else
+            {
+                if (VideoView is LocalVideoView view2)
+                {
+                    view2.PauseBtn_Click(null,null);
+                }
             }
         }
 
