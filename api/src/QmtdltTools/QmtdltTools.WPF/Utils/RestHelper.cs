@@ -69,5 +69,7 @@ namespace QmtdltTools.WPF.Utils
             var dto = JsonSerializer.Deserialize<VocabularyRecordDto>(response.Content);
             return dto;
         }
+
+
     }
 }

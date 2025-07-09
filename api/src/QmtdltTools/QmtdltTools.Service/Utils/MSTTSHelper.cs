@@ -140,6 +140,53 @@ public class MsTTSHelperRest
         }
     }
 
+    public static async Task<PronunciationAssessmentResult?> PronunciationAssessmentWithLocalWavFileAsync(string wavFile, string referenceText)
+    {
+        try
+        {
+            // 2. 创建 SpeechConfig
+            var speechKey = ApplicationConst.SPEECH_KEY;
+            var speechRegion = ApplicationConst.SPEECH_REGION;
+            var speechConfig = SpeechConfig.FromSubscription(speechKey, speechRegion);
+            speechConfig.SpeechRecognitionLanguage = "en-US";
+
+            // 3. 用FromWavFileInput创建AudioConfig
+            using var audioConfig = AudioConfig.FromWavFileInput(wavFile);
+
+            // 4. 创建 SpeechRecognizer
+            using var recognizer = new SpeechRecognizer(speechConfig, "en-US", audioConfig);
+
+            // 5. 设置发音评估参数
+            var pronConfig = new PronunciationAssessmentConfig(
+                referenceText,
+                GradingSystem.HundredMark,
+                Granularity.Phoneme,
+                enableMiscue: false
+            );
+            pronConfig.EnableProsodyAssessment();
+            pronConfig.ApplyTo(recognizer);
+
+            // 6. 开始识别
+            var result = await recognizer.RecognizeOnceAsync();
+
+            // 7. 判断并返回结果
+            if (result.Reason == ResultReason.RecognizedSpeech)
+            {
+                return PronunciationAssessmentResult.FromResult(result);
+            }
+            else
+            {
+                // 可选：记录NoMatch/Canceled等情况
+                return null;
+            }
+        }
+        finally
+        {
+            // 8. 删除临时文件
+            if (File.Exists(wavFile)) File.Delete(wavFile);
+        }
+    }
+
     public static async Task<PronunciationAssessmentResult> PronunciationAssessmentWithStream(IFormFile audioFile, string referenceText)
     {
         // Creates an instance of a speech config with specified endpoint and subscription key.

@@ -1,9 +1,13 @@
-﻿using QmtdltTools.Domain.Enums;
+﻿using Microsoft.CognitiveServices.Speech.PronunciationAssessment;
+using NAudio.Wave;
+using QmtdltTools.Domain.Enums;
 using QmtdltTools.WPF.IServices;
 using QmtdltTools.WPF.Services;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,7 +26,7 @@ namespace QmtdltTools.WPF.Views
     /// <summary>
     /// PlayGround.xaml 的交互逻辑
     /// </summary>
-    public partial class PlayGround : Window,ITransientDependency
+    public partial class PlayGround : Window, ITransientDependency
     {
         private readonly TransService _transService;
         public PlayGround(PlayGroundVm vm, TransService transService)
@@ -66,7 +70,7 @@ namespace QmtdltTools.WPF.Views
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if(e.Key == Key.Space)
+            if (e.Key == Key.Space)
             {
                 if (DataContext is PlayGroundVm vm)
                 {
@@ -78,10 +82,92 @@ namespace QmtdltTools.WPF.Views
 
     public class PlayGroundVm : BindableBase, ITransientDependency
     {
+        const string startRecord = "开始录音";
+        const string stopRecord = "停止录音";
         ISubtitleService _subtitleService;
+        public DelegateCommand AudioRecordCmd { get; set; }
+        public DelegateCommand CheckShadowingCmd { get; set; }
         public PlayGroundVm(ISubtitleService subtitleService)
         {
-            _subtitleService = subtitleService;            
+            _subtitleService = subtitleService;
+
+            CheckShadowingCmd = new DelegateCommand(checkShadowing);
+
+            AudioRecordCmd = new DelegateCommand(onRecordClick);
+            RecordBtnContent = startRecord;
+        }
+
+        private async void checkShadowing()
+        {
+            if (File.Exists(tempAudioFilePath))
+            {
+                PronunciationResult = await MsTTSHelperRest.PronunciationAssessmentWithLocalWavFileAsync(tempAudioFilePath, CurSubtitle);
+            }
+        }
+
+        private WaveInEvent waveIn;
+        private MemoryStream audioStream;
+        private WaveFileWriter waveFileWriter;
+        private bool isRecording = false;
+        private void onRecordClick()
+        {
+            if (!isRecording)
+            {
+                StartRecording();
+            }
+            else
+            {
+                StopRecording();
+            }
+        }
+        private void StartRecording()
+        {
+            try
+            {
+                waveIn = new WaveInEvent();
+                waveIn.WaveFormat = new WaveFormat(16000, 1); // 16kHz, mono
+                audioStream = new MemoryStream();
+                waveFileWriter = new WaveFileWriter(audioStream, waveIn.WaveFormat);
+
+                waveIn.DataAvailable += (s, a) =>
+                {
+                    waveFileWriter.Write(a.Buffer, 0, a.BytesRecorded);
+                };
+
+                waveIn.StartRecording();
+                isRecording = true;
+                RecordBtnContent = stopRecord;
+                IsSubmitEnable = false;
+                StatusText = "正在录音...";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"录音启动失败: {ex.Message}");
+            }
+        }
+        string tempAudioFilePath = "";
+        private void StopRecording()
+        {
+            try
+            {
+                waveIn.StopRecording();
+                waveFileWriter.Flush();
+                isRecording = false;
+                RecordBtnContent = startRecord;
+                IsSubmitEnable = true;
+                StatusText = "录音已停止，可以提交或播放";
+
+                // Save audio to a temporary file
+                tempAudioFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"recording_submit.wav");
+                File.WriteAllBytes(tempAudioFilePath, audioStream.ToArray());
+
+                // Prepare audio for playback
+                RecordAudioUri = new Uri(tempAudioFilePath, UriKind.Absolute);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"录音停止失败: {ex.Message}");
+            }
         }
         public void onClose()
         {
@@ -114,7 +200,7 @@ namespace QmtdltTools.WPF.Views
             var list = subtitleQueue.ToList();
             if (list.Count > 1)
             {
-                if(_videoCollectionType == VideoCollectionType.OffLine)
+                if (_videoCollectionType == VideoCollectionType.OffLine)
                 {
                     PastSubtitle = string.Join("\n", list.Take(list.Count - 1));
                 }
@@ -148,7 +234,7 @@ namespace QmtdltTools.WPF.Views
             else
             {
                 var view = App.Get<LocalVideoView>();
-                view.InitAction(updatingTitle,SetSubTitle);
+                view.InitAction(updatingTitle, SetSubTitle);
                 VideoView = view;
             }
         }
@@ -166,11 +252,50 @@ namespace QmtdltTools.WPF.Views
             {
                 if (VideoView is LocalVideoView view2)
                 {
-                    view2.PauseBtn_Click(null,null);
+                    view2.PauseBtn_Click(null, null);
                 }
             }
         }
-
+        private Uri recordAudioUri;
+        public Uri RecordAudioUri
+        {
+            get { return recordAudioUri; }
+            set
+            {
+                recordAudioUri = value;
+                this.RaisePropertyChanged("RecordAudioUri");
+            }
+        }
+        private bool isSubmitEnable;
+        public bool IsSubmitEnable
+        {
+            get { return isSubmitEnable; }
+            set
+            {
+                isSubmitEnable = value;
+                this.RaisePropertyChanged("IsSubmitEnable");
+            }
+        }
+        private string statusText;
+        public string StatusText
+        {
+            get { return statusText; }
+            set
+            {
+                statusText = value;
+                this.RaisePropertyChanged("StatusText");
+            }
+        }
+        private string recordBtnContent;
+        public string RecordBtnContent
+        {
+            get { return recordBtnContent; }
+            set
+            {
+                recordBtnContent = value;
+                this.RaisePropertyChanged("RecordBtnContent");
+            }
+        }
         private string curSubtitle;
         public string CurSubtitle
         {
@@ -199,6 +324,16 @@ namespace QmtdltTools.WPF.Views
             {
                 videoView = value;
                 this.RaisePropertyChanged("VideoView");
+            }
+        }
+        private PronunciationAssessmentResult? pronunciationResult;
+        public PronunciationAssessmentResult? PronunciationResult
+        {
+            get { return pronunciationResult; }
+            set
+            {
+                pronunciationResult = value;
+                this.RaisePropertyChanged("PronunciationResult");
             }
         }
     }
