@@ -3,6 +3,9 @@ using NAudio.Wave;
 using QmtdltTools.Domain.Enums;
 using QmtdltTools.WPF.IServices;
 using QmtdltTools.WPF.Services;
+using ScottPlot;
+using ScottPlot.Plottables;
+using SkiaSharp;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -125,8 +128,20 @@ namespace QmtdltTools.WPF.Views
             {
                 if (File.Exists(tempAudioFilePath))
                 {
+                    StatusText = "正在进行评估...";
                     PronunciationResult = null;
+
+                    OverAllPlot = null;
+
                     PronunciationResult = await MsTTSHelperRest.PronunciationAssessmentWithLocalWavFileAsync(tempAudioFilePath, CurSubtitle);
+
+                    if(PronunciationResult != null)
+                    {
+                        var view = App.Get<PronunciationEvaluation>();
+                        view.SetScores(PronunciationResult);
+                        OverAllPlot = view;
+                        StatusText = "请查看发音评价。";
+                    }
                 }
             }
             catch (Exception ex)
@@ -356,6 +371,17 @@ namespace QmtdltTools.WPF.Views
             {
                 pronunciationResult = value;
                 this.RaisePropertyChanged("PronunciationResult");
+            }
+        }
+
+        private object overAllPlot;
+        public object OverAllPlot
+        {
+            get { return overAllPlot; }
+            set
+            {
+                overAllPlot = value;
+                this.RaisePropertyChanged("OverAllPlot");
             }
         }
     }

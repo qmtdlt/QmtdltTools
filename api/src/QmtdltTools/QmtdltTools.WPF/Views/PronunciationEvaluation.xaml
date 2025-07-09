@@ -1,0 +1,100 @@
+﻿<UserControl x:Class="QmtdltTools.WPF.Views.PronunciationEvaluation"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:QmtdltTools.WPF.Views" 
+             xmlns:ScottPlot="http://schemas.scottplot.net/2008/xaml/presentation"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="300"/>
+            <RowDefinition Height="3*"/>
+        </Grid.RowDefinitions>
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="发音分数" VerticalAlignment="Bottom" HorizontalAlignment="Center" FontSize="24"/>
+                <TextBlock x:Name="overAllScore" VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="24" Grid.Row="1"/>
+            </Grid>
+            <ScottPlot:WpfPlot Name="plot" Grid.Column="1"/>
+        </Grid>
+        <!--这里显示结果-->
+        <ScrollViewer Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding WordsData}" Grid.Column="1" Margin="5">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="#e4e7ed" BorderThickness="1" CornerRadius="8" Margin="5" Padding="10" Background="#FAFAFA" Width="200">
+                            <StackPanel>
+                                <!-- 顶部 标签与分数 -->
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,6">
+                                    <TextBlock Text="{Binding ErrorType}" 
+                                        Foreground="White" 
+                                        Background="#409EFF" 
+                                        FontWeight="Bold" 
+                                        Padding="3,0" 
+                                        Margin="0,0,8,0"
+                                        FontSize="12"
+                                        VerticalAlignment="Center"/>  
+                                    <TextBlock Text="分数:" FontSize="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding AccuracyScore, StringFormat={}{0:0.#}}" Margin="2,0,0,0" FontSize="12" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <!-- 单词 -->
+                                <TextBlock Text="{Binding Word}" FontSize="18" FontWeight="Bold" Margin="0,0,0,6" Foreground="#222"/>
+
+                                <!-- 音节详情（可折叠）-->
+                                <Expander Header="音节详情" Margin="0,2,0,0" IsExpanded="False">
+                                    <ItemsControl ItemsSource="{Binding Syllables}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock>
+                                    <Run Text="{Binding Syllable, Mode=OneWay}" />
+                                    <Run Text=" "/>
+                                    <Run Text="(" Foreground="#888"/>
+                                    <Run Text="{Binding Grapheme, Mode=OneWay}" Foreground="#888"/>
+                                    <Run Text=") " Foreground="#888"/>
+                                    <Run Text="- 分数: "/>
+                                    <Run Text="{Binding AccuracyScore, Mode=OneWay, StringFormat={}{0:0.#}}" />
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Expander>
+
+                                <!-- 音素详情（可折叠）-->
+                                <Expander Header="音素详情" Margin="0,2,0,0"
+                            IsExpanded="False">
+                                    <ItemsControl ItemsSource="{Binding Phonemes, Mode=OneWay}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock>
+                                    <Run Text="{Binding Phoneme, Mode=OneWay}" />
+                                    <Run Text=" - 分数: " />
+                                    <Run Text="{Binding AccuracyScore, Mode=OneWay, StringFormat={}{0:0.#}}" />
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Expander>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

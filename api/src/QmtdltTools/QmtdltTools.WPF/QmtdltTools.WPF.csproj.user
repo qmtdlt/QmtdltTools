@@ -11,6 +11,9 @@
     <Compile Update="Views\PlayGround.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\PronunciationEvaluation.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\StartupEntry.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
