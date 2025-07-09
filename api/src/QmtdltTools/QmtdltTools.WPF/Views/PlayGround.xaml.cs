@@ -101,6 +101,7 @@ namespace QmtdltTools.WPF.Views
         {
             if (File.Exists(tempAudioFilePath))
             {
+                PronunciationResult = null;
                 PronunciationResult = await MsTTSHelperRest.PronunciationAssessmentWithLocalWavFileAsync(tempAudioFilePath, CurSubtitle);
             }
         }

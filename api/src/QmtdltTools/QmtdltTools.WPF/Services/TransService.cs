@@ -23,7 +23,7 @@ namespace QmtdltTools.WPF.Services
 
         public async Task Trans(string selectedText)
         {
-            var dialogRes = MessageBox.Show($"是否翻译选中的内容：{selectedText}", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            var dialogRes = MessageBox.Show($"是否翻译选中的内容：{selectedText}", "提示", MessageBoxButton.OKCancel, MessageBoxImage.Information);
             if(dialogRes == MessageBoxResult.OK)
             {
                 //VocabularyRecord? findRes = await _translationService.Trans(0, 0, "", selectedText, Guid.Parse("08dd7e88-9af1-4775-8a21-554610976784"));
