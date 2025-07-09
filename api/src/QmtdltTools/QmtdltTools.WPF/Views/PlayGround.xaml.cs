@@ -45,11 +45,13 @@ namespace QmtdltTools.WPF.Views
         }
         private void TextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            // 获取选中的文本
-            if (sender is TextBox textBox)
+            if (sender is TextBox tb)
             {
-                string selectedText = textBox.SelectedText;
-                _ = _transService.Trans(selectedText);
+                string selectedText = tb.SelectedText;
+                if (!string.IsNullOrEmpty(selectedText))
+                {
+                    _ = _transService.Trans(selectedText);
+                }
             }
         }
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -78,12 +80,32 @@ namespace QmtdltTools.WPF.Views
                 }
             }
         }
+
+        private void TextBox_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is TextBox tb)
+            {
+                string selectedText = tb.SelectedText;
+                if (!string.IsNullOrEmpty(selectedText))
+                {
+                    _ = _transService.Trans(selectedText);
+                }
+            }
+        }
     }
 
     public class PlayGroundVm : BindableBase, ITransientDependency
     {
         const string startRecord = "开始录音";
         const string stopRecord = "停止录音";
+        private WaveInEvent waveIn;
+        private MemoryStream audioStream;
+        private WaveFileWriter waveFileWriter;
+        private bool isRecording = false;
+        string tempAudioFilePath = "";
+        VideoCollectionType _videoCollectionType;
+        ConcurrentQueue<string> subtitleQueue = new ConcurrentQueue<string>();          // 字幕队列
+
         ISubtitleService _subtitleService;
         public DelegateCommand AudioRecordCmd { get; set; }
         public DelegateCommand CheckShadowingCmd { get; set; }
@@ -105,20 +127,15 @@ namespace QmtdltTools.WPF.Views
                 PronunciationResult = await MsTTSHelperRest.PronunciationAssessmentWithLocalWavFileAsync(tempAudioFilePath, CurSubtitle);
             }
         }
-
-        private WaveInEvent waveIn;
-        private MemoryStream audioStream;
-        private WaveFileWriter waveFileWriter;
-        private bool isRecording = false;
         private void onRecordClick()
         {
             if (!isRecording)
             {
-                StartRecording();
+                StartRecording();           // 录音
             }
             else
             {
-                StopRecording();
+                StopRecording();            // 停止录音
             }
         }
         private void StartRecording()
@@ -146,7 +163,6 @@ namespace QmtdltTools.WPF.Views
                 MessageBox.Show($"录音启动失败: {ex.Message}");
             }
         }
-        string tempAudioFilePath = "";
         private void StopRecording()
         {
             try
@@ -182,7 +198,6 @@ namespace QmtdltTools.WPF.Views
             }
         }
 
-        ConcurrentQueue<string> subtitleQueue = new ConcurrentQueue<string>();
         void updatingTitle(string subTitle)
         {
             CurSubtitle = subTitle;
@@ -219,7 +234,6 @@ namespace QmtdltTools.WPF.Views
                 view.LoadUrl(url);
             }
         }
-        VideoCollectionType _videoCollectionType;
         internal void SetType(VideoCollectionType videoCollectionType)
         {
             _videoCollectionType = videoCollectionType;
@@ -253,7 +267,7 @@ namespace QmtdltTools.WPF.Views
             {
                 if (VideoView is LocalVideoView view2)
                 {
-                    view2.PauseBtn_Click(null, null);
+                    view2.PauseMedia();
                 }
             }
         }

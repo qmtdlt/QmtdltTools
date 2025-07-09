@@ -9,29 +9,32 @@
     <Grid Margin="10,10,10,15">
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
-            <RowDefinition/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="50"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="{Binding ResData.WordText}" VerticalAlignment="Center" FontSize="32" TextWrapping="Wrap"/>
+        <Button Click="playWord" VerticalAlignment="Center" Grid.Column="1">play</Button>
+        <StackPanel>
+            <TextBlock Text="{Binding ResData.AITranslation}" Margin="10,0,0,0" VerticalAlignment="Top" FontSize="28" TextWrapping="Wrap" Grid.ColumnSpan="2" Grid.Row="1"/> +
 
-        <StackPanel Orientation="Horizontal">
-            <TextBlock Text="{Binding ResData.WordText}" VerticalAlignment="Center" FontSize="32"/>
-            <TextBlock Text="{Binding ResData.AITranslation}" Margin="10,0,0,0" VerticalAlignment="Center" FontSize="28"/>
-            <Button Click="playWord" VerticalAlignment="Center" Margin="10,0,0,0">play</Button>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="50"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Text="{Binding ResData.AIExplanation}" TextWrapping="Wrap" FontSize="18" VerticalContentAlignment="Top" Padding="5" MouseDoubleClick="TextBox_MouseDoubleClick"/>
+                <Grid Grid.Column="1">
+                    <Button Click="playExplain" VerticalAlignment="Top">play</Button>
+                </Grid>
+            </Grid>
         </StackPanel>
 
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="50"/>
-            </Grid.ColumnDefinitions>
-            <TextBox Text="{Binding ResData.AIExplanation}" TextWrapping="Wrap" FontSize="18" VerticalContentAlignment="Top" Padding="5" MouseDoubleClick="TextBox_MouseDoubleClick"/>
-            <Grid Grid.Column="1">
-                <Button Click="playExplain" VerticalAlignment="Top">play</Button>
-            </Grid>
-        </Grid>
-
         <MediaElement x:Name="mediaElement"
-               LoadedBehavior="Manual"
-               UnloadedBehavior="Manual"
-               Visibility="Collapsed"/>
+       LoadedBehavior="Manual"
+       UnloadedBehavior="Manual"
+       Visibility="Collapsed"/>
     </Grid>
 </Window>

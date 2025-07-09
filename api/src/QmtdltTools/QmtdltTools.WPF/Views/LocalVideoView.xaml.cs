@@ -1,6 +1,7 @@
 ﻿using LibVLCSharp.Shared;
 using LibVLCSharp.WPF;
 using Serilog;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -94,11 +95,18 @@ namespace QmtdltTools.WPF.Views
         {
             _mediaPlayer?.Play();
             _timer.Start();
+            // 移走焦点
+            //PlayBtn.Focusable = false;
         }
 
-        public void PauseBtn_Click(object sender, RoutedEventArgs e)
+        private void PauseBtn_Click(object sender, RoutedEventArgs e)
         {
             _mediaPlayer?.Pause();
+        }
+
+        public void PauseMedia()
+        {
+            PauseBtn.Focus();
         }
 
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
