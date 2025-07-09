@@ -13,6 +13,8 @@ namespace QmtdltTools.WPF.Views
     {
         private bool _isDragging = false;
         private DispatcherTimer _timer;
+        private bool _isRepeating = false; // 是否正在单句重复
+        private int _repeatIndex = -1;     // 当前单句重复的字幕 index
         public LocalVideoView()
         {
             InitializeComponent();
@@ -32,6 +34,62 @@ namespace QmtdltTools.WPF.Views
             _timer.Interval = TimeSpan.FromMilliseconds(500);
             _timer.Tick += Timer_Tick;
         }
+        private void PrevSubtitleBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (_mediaPlayer == null || subtitles.Count == 0) return;
+
+            var currentTime = TimeSpan.FromMilliseconds(_mediaPlayer.Time);
+            int currIdx = subtitles.FindIndex(s => currentTime >= s.Start && currentTime <= s.End);
+
+            // 如果未命中，currIdx = -1，此时找第一个大于当前时间的字幕，回退一位
+            if (currIdx == -1)
+                currIdx = subtitles.FindIndex(s => currentTime < s.Start);
+            if (currIdx == -1)
+                currIdx = subtitles.Count - 1; // 当前时间大于所有字幕，取最后一句
+            int prevIdx = Math.Max(currIdx - 1, 0);
+
+            var prevSub = subtitles[prevIdx];
+            _mediaPlayer.Time = (long)prevSub.Start.TotalMilliseconds;
+            _lastSubtitleIndex = prevSub.Index;
+
+            updateSubtitle();
+        }
+
+        private void NextSubtitleBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (_mediaPlayer == null || subtitles.Count == 0) return;
+
+            var currentTime = TimeSpan.FromMilliseconds(_mediaPlayer.Time);
+            int currIdx = subtitles.FindIndex(s => currentTime >= s.Start && currentTime <= s.End);
+            if (currIdx == -1)
+                currIdx = subtitles.FindIndex(s => currentTime < s.Start);
+            if (currIdx == -1)
+                currIdx = subtitles.Count - 1;
+
+            int nextIdx = Math.Min(currIdx + 1, subtitles.Count - 1);
+
+            var nextSub = subtitles[nextIdx];
+            _mediaPlayer.Time = (long)nextSub.Start.TotalMilliseconds;
+            _lastSubtitleIndex = nextSub.Index;
+
+            updateSubtitle();
+        }
+        private void RepeatBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_isRepeating)
+            {
+                _isRepeating = true;
+                _repeatIndex = _lastSubtitleIndex;
+                RepeatBtn.Content = "❌";
+            }
+            else
+            {
+                _isRepeating = false;
+                _repeatIndex = -1;
+                RepeatBtn.Content = "🔁";
+            }
+        }
+
         private void PlayBtn_Click(object sender, RoutedEventArgs e)
         {
             _mediaPlayer?.Play();
@@ -60,6 +118,34 @@ namespace QmtdltTools.WPF.Views
             }
             TimeText.Text = $"{TimeSpan.FromMilliseconds(_mediaPlayer.Time):mm\\:ss}/{TimeSpan.FromMilliseconds(_mediaPlayer.Length):mm\\:ss}";
 
+            updateSubtitle();
+            // 单句循环逻辑
+            if (_isRepeating && _repeatIndex != -1)
+            {
+                var sub = subtitles.FirstOrDefault(s => s.Index == _repeatIndex);
+                var nextSub = subtitles.FirstOrDefault(s => s.Index == _repeatIndex + 1);
+
+                if (sub != null && nextSub != null && _mediaPlayer != null)
+                {
+                    // 当前时间超过下句开头就回到本句开头
+                    if (_mediaPlayer.Time >= nextSub.Start.TotalMilliseconds)
+                    {
+                        _mediaPlayer.Time = (long)sub.Start.TotalMilliseconds;
+                    }
+                }
+                else if (sub != null && _mediaPlayer != null && sub.End != TimeSpan.Zero)
+                {
+                    // 没有下一句的情况（最后一句）
+                    if (_mediaPlayer.Time >= sub.End.TotalMilliseconds)
+                    {
+                        _mediaPlayer.Time = (long)sub.Start.TotalMilliseconds;
+                    }
+                }
+            }
+
+        }
+        void updateSubtitle()
+        {
             var position = TimeSpan.FromMilliseconds(_mediaPlayer.Time);
             var current = subtitles.FirstOrDefault(s => position >= s.Start && position <= s.End);
             if (current != null)
@@ -80,7 +166,6 @@ namespace QmtdltTools.WPF.Views
                 }
             }
         }
-
         private void ProgressSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (_mediaPlayer != null && _isDragging)
