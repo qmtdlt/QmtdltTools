@@ -93,7 +93,22 @@ namespace QmtdltTools.WPF.Views
             if (sender is TextBox textBox)
             {
                 string selectedText = textBox.SelectedText;
-                _ = _transService.Trans(selectedText);
+                if (!string.IsNullOrEmpty(selectedText))
+                {
+                    _ = _transService.Trans(selectedText);
+                }
+            }
+        }
+
+        private void TextBox_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is TextBox textBox)
+            {
+                string selectedText = textBox.SelectedText;
+                if (!string.IsNullOrEmpty(selectedText))
+                {
+                    _ = _transService.Trans(selectedText);
+                }
             }
         }
     }

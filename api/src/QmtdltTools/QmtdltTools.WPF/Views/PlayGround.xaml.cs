@@ -121,10 +121,17 @@ namespace QmtdltTools.WPF.Views
 
         private async void checkShadowing()
         {
-            if (File.Exists(tempAudioFilePath))
+            try
             {
-                PronunciationResult = null;
-                PronunciationResult = await MsTTSHelperRest.PronunciationAssessmentWithLocalWavFileAsync(tempAudioFilePath, CurSubtitle);
+                if (File.Exists(tempAudioFilePath))
+                {
+                    PronunciationResult = null;
+                    PronunciationResult = await MsTTSHelperRest.PronunciationAssessmentWithLocalWavFileAsync(tempAudioFilePath, CurSubtitle);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
         private void onRecordClick()

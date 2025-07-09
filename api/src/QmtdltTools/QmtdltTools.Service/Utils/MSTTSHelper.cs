@@ -183,7 +183,17 @@ public class MsTTSHelperRest
         finally
         {
             // 8. É¾³ýÁÙÊ±ÎÄ¼þ
-            if (File.Exists(wavFile)) File.Delete(wavFile);
+            if (File.Exists(wavFile))
+            {
+                try
+                {
+                    File.Delete(wavFile);
+                }
+                catch (Exception ex)
+                {
+
+                }
+            }
         }
     }
 

@@ -58,12 +58,13 @@ public class MainWindowVm:BindableBase,ITransientDependency
     public DelegateCommand OpenLocalPalyGround { get; set; }
     public MainWindowVm()
     {
-        VideoTypeSelection = new ObservableCollection<ComboxSelectItem<VideoCollectionType>>();
-        VideoTypeSelection.AddRange(EnumHelper.GetComboxList<VideoCollectionType>());
+        //VideoTypeSelection = new ObservableCollection<ComboxSelectItem<VideoCollectionType>>();
+        //VideoTypeSelection.AddRange(EnumHelper.GetComboxList<VideoCollectionType>());
 
         SelectedVideoType = VideoCollectionType.OnLine; // 默认选择在线
         AddNew = new DelegateCommand(addNew);
         OpenLocalPalyGround = new DelegateCommand(openLocal);
+        query();
     }
 
     private void openLocal()
@@ -101,14 +102,13 @@ public class MainWindowVm:BindableBase,ITransientDependency
                 AppSettingHelper.OnLineCfg = JsonSerializer.Serialize(cfg);
             }
         }
-            
+        query();
     }
 
     void query()
     {
         try
         {
-            if (selectedVideoType == VideoCollectionType.OnLine)
             {
                 if (!string.IsNullOrEmpty(AppSettingHelper.OnLineCfg))
                 {
@@ -145,16 +145,16 @@ public class MainWindowVm:BindableBase,ITransientDependency
             this.RaisePropertyChanged("OnLineViews");
         }
     }
-    private ObservableCollection<ComboxSelectItem<VideoCollectionType>> videoTypeSelection;
-    public ObservableCollection<ComboxSelectItem<VideoCollectionType>> VideoTypeSelection
-    {
-        get { return videoTypeSelection; }
-        set
-        {
-            videoTypeSelection = value;
-            this.RaisePropertyChanged("VideoTypeSelection");
-        }
-    }
+    //private ObservableCollection<ComboxSelectItem<VideoCollectionType>> videoTypeSelection;
+    //public ObservableCollection<ComboxSelectItem<VideoCollectionType>> VideoTypeSelection
+    //{
+    //    get { return videoTypeSelection; }
+    //    set
+    //    {
+    //        videoTypeSelection = value;
+    //        this.RaisePropertyChanged("VideoTypeSelection");
+    //    }
+    //}
     private string inputUrl;
     public string InputUrl
     {
@@ -172,28 +172,9 @@ public class MainWindowVm:BindableBase,ITransientDependency
         set
         {
             selectedVideoType = value;
-            onSelVideoTypeChange();
             this.RaisePropertyChanged("SelectedVideoType");
         }
     }
-
-    private void onSelVideoTypeChange()
-    {
-        if(selectedVideoType == VideoCollectionType.OnLine)
-        {
-            // 显示在线
-            UrlInputIsShow = Visibility.Visible;
-            OffLineIsShow = Visibility.Hidden;
-        }
-        else
-        {
-            // 显示离线
-            UrlInputIsShow = Visibility.Hidden;
-            OffLineIsShow = Visibility.Visible;
-        }
-        query();
-    }
-
     private Visibility urlInputIsShow;
     public Visibility UrlInputIsShow
     {

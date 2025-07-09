@@ -1,7 +1,9 @@
 ﻿using LibVLCSharp.Shared;
 using LibVLCSharp.WPF;
+using QmtdltTools.WPF.Utils;
 using Serilog;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -34,7 +36,14 @@ namespace QmtdltTools.WPF.Views
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromMilliseconds(500);
             _timer.Tick += Timer_Tick;
+            Loaded += LocalVideoView_Loaded;
         }
+
+        private void LocalVideoView_Loaded(object sender, RoutedEventArgs e)
+        {
+            LoadAppsettingProgress();
+        }
+
         private void PrevSubtitleBtn_Click(object sender, RoutedEventArgs e)
         {
             if (_mediaPlayer == null || subtitles.Count == 0) return;
@@ -95,8 +104,6 @@ namespace QmtdltTools.WPF.Views
         {
             _mediaPlayer?.Play();
             _timer.Start();
-            // 移走焦点
-            //PlayBtn.Focusable = false;
         }
 
         private void PauseBtn_Click(object sender, RoutedEventArgs e)
@@ -203,36 +210,57 @@ namespace QmtdltTools.WPF.Views
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 targetVideoPath.Text = dialog.FileName;
+                loadVideo();
+            }
+        }
+        void loadVideo()
+        {
+            // 构造字幕文件路径（同名、同目录）
+            string subtitlePath = System.IO.Path.ChangeExtension(targetVideoPath.Text, "英文.srt");
+            bool subtitleExists = System.IO.File.Exists(subtitlePath);
 
-                // 构造字幕文件路径（同名、同目录）
-                string subtitlePath = System.IO.Path.ChangeExtension(targetVideoPath.Text, "英文.srt");
-                bool subtitleExists = System.IO.File.Exists(subtitlePath);
+            _libVLC = new LibVLC();
+            _mediaPlayer = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
+            VideoView.MediaPlayer = _mediaPlayer; // 假设 VideoView 是 XAML 中的控件
+            _mediaPlayer.Play(new Media(_libVLC, new Uri(targetVideoPath.Text)));
 
-                _libVLC = new LibVLC();
-                _mediaPlayer = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
-                VideoView.MediaPlayer = _mediaPlayer; // 假设 VideoView 是 XAML 中的控件
-                _mediaPlayer.Play(new Media(_libVLC, new Uri(dialog.FileName)));
-
-                if (subtitleExists)
-                {
-                    // AddSlave: 类型, 字幕路径, 是否优先
-                    //_mediaPlayer.AddSlave(MediaSlaveType.Subtitle, subtitlePath, true);
-
-                    ParseSrt(subtitlePath);
-                }
+            if (subtitleExists)
+            {
+                ParseSrt(subtitlePath);
             }
             if (_mediaPlayer != null)
             {
                 VideoView.MediaPlayer = _mediaPlayer;
-                _mediaPlayer.Play(new Media(_libVLC, new Uri(dialog.FileName)));
+                _mediaPlayer.Play(new Media(_libVLC, new Uri(targetVideoPath.Text)));
                 _timer.Start();
             }
         }
-
+        void LoadAppsettingProgress()
+        {
+            if(File.Exists(AppSettingHelper.LastVideoPath))
+            {
+                targetVideoPath.Text = AppSettingHelper.LastVideoPath;
+                loadVideo();
+                // 定位进度
+                try
+                {
+                    if (AppSettingHelper.LastVideoProgress > 0)
+                    {
+                        _mediaPlayer.Time = AppSettingHelper.LastVideoProgress;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex.Message);
+                }
+            }            
+        }
         internal void onClose()
         {
             try
             {
+                AppSettingHelper.LastVideoPath = targetVideoPath.Text;
+                AppSettingHelper.LastVideoProgress = _mediaPlayer.Time;
                 _timer.Stop();
                 // 释放资源
                 _mediaPlayer?.Stop();

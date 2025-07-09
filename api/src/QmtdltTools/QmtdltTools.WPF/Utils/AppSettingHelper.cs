@@ -9,6 +9,17 @@ namespace QmtdltTools.WPF.Utils
 {
     public class AppSettingHelper
     {
+        
+        public static long LastVideoProgress
+        {
+            get { return long.Parse(GetValue(nameof(LastVideoProgress))); }
+            set { SetValue(nameof(LastVideoProgress), value.ToString()); }
+        }
+        public static string LastVideoPath
+        {
+            get { return GetValue(nameof(LastVideoPath)); }
+            set { SetValue(nameof(LastVideoPath), value.ToString()); }
+        }
         public static string lastUrl
         {
             get { return GetValue(nameof(lastUrl)); }
