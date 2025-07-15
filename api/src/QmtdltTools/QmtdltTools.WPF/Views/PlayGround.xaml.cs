@@ -82,6 +82,34 @@ namespace QmtdltTools.WPF.Views
                     vm.PauseVideo();
                 }
             }
+            if (e.Key == Key.Left)
+            {
+                if (DataContext is PlayGroundVm vm)
+                {
+                    vm.GoLastSentence();
+                }
+            }
+            if (e.Key == Key.Right)
+            {
+                if (DataContext is PlayGroundVm vm)
+                {
+                    vm.GoNextSentence();
+                }
+            }
+            if (e.Key == Key.Up)
+            {
+                if (DataContext is PlayGroundVm vm)
+                {
+                    vm.RepeatOne();
+                }
+            }
+            if (e.Key == Key.Down)
+            {
+                if (DataContext is PlayGroundVm vm)
+                {
+                    vm.CancelRepeat();
+                }
+            }
         }
 
         private void TextBox_PreviewMouseUp(object sender, MouseButtonEventArgs e)
@@ -141,6 +169,10 @@ namespace QmtdltTools.WPF.Views
                         view.SetScores(PronunciationResult);
                         OverAllPlot = view;
                         StatusText = "请查看发音评价。";
+                    }
+                    else
+                    {
+                        MessageBox.Show("未获取到评价，请重试");
                     }
                 }
             }
@@ -293,6 +325,79 @@ namespace QmtdltTools.WPF.Views
                 }
             }
         }
+
+        internal void GoLastSentence()
+        {
+            if (_videoCollectionType == VideoCollectionType.OnLine)
+            {
+                if (VideoView is WebVideoView view1)
+                {
+                    //view1.pause();
+                }
+            }
+            else
+            {
+                if (VideoView is LocalVideoView view2)
+                {
+                    view2.GoLastSentence();
+                }
+            }
+        }
+
+        internal void GoNextSentence()
+        {
+            if (_videoCollectionType == VideoCollectionType.OnLine)
+            {
+                if (VideoView is WebVideoView view1)
+                {
+                    //view1.pause();
+                }
+            }
+            else
+            {
+                if (VideoView is LocalVideoView view2)
+                {
+                    view2.GoNextSentence();
+                }
+            }
+        }
+
+        internal void RepeatOne()
+        {
+            if (_videoCollectionType == VideoCollectionType.OnLine)
+            {
+                if (VideoView is WebVideoView view1)
+                {
+                    //view1.pause();
+                }
+            }
+            else
+            {
+                if (VideoView is LocalVideoView view2)
+                {
+                    view2.RepeatOne();
+                }
+            }
+        }
+
+        internal void CancelRepeat()
+        {
+            if (_videoCollectionType == VideoCollectionType.OnLine)
+            {
+                if (VideoView is WebVideoView view1)
+                {
+                    //view1.pause();
+                }
+            }
+            else
+            {
+                if (VideoView is LocalVideoView view2)
+                {
+                    view2.CancelRepeat();
+                }
+            }
+        }
+
         private Uri recordAudioUri;
         public Uri RecordAudioUri
         {

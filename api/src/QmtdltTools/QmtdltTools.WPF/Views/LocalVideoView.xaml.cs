@@ -108,6 +108,14 @@ namespace QmtdltTools.WPF.Views
 
         private void PauseBtn_Click(object sender, RoutedEventArgs e)
         {
+            if(PauseBtn.Content.ToString() == "▶")
+            {
+                PauseBtn.Content = "⏸";
+            }
+            else
+            {
+                PauseBtn.Content = "▶";
+            }
             _mediaPlayer?.Pause();
         }
 
@@ -315,6 +323,48 @@ namespace QmtdltTools.WPF.Views
                 }
             }
             return subtitles;
+        }
+
+        internal void GoLastSentence()
+        {
+            PrevSubtitleBtn_Click(null, null);
+        }
+
+        internal void GoNextSentence()
+        {
+            NextSubtitleBtn_Click(null, null);
+        }
+
+        internal void RepeatOne()
+        {
+            if (!_isRepeating)
+            {
+                _isRepeating = true;
+                _repeatIndex = _lastSubtitleIndex;
+                RepeatBtn.Content = "❌";
+            }
+            else
+            {
+                _isRepeating = false;
+                _repeatIndex = -1;
+                RepeatBtn.Content = "🔁";
+            }
+        }
+
+        internal void CancelRepeat()
+        {
+            if (!_isRepeating)
+            {
+                _isRepeating = true;
+                _repeatIndex = _lastSubtitleIndex;
+                RepeatBtn.Content = "❌";
+            }
+            else
+            {
+                _isRepeating = false;
+                _repeatIndex = -1;
+                RepeatBtn.Content = "🔁";
+            }
         }
     }
 
