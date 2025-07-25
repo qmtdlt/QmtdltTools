@@ -57,6 +57,7 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         source: "backend_publish/*"
         target: "/home/qmtdlt_tools/api"
+        strip_components: 1
 
     # 上传前端
     - name: Upload frontend to server
@@ -65,8 +66,9 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_KEY }}
-        source: "web/qmtdlt_tools_vue/dist/*"
+        source: "./web/qmtdlt_tools_vue/dist/**/*"
         target: "/home/qmtdlt_tools/dist"
+        strip_components: 3
 
     # 启动服务
     - name: Start backend service
