@@ -33,7 +33,7 @@ namespace QmtdltTools.WPF.Services
                 {
                     WordText = res.wordText,
                     WordPronunciation = res.wordPronunciation.Base64ToBytes(),
-                    Pronunciation = res.pronunciation.Base64ToBytes(),
+                    //Pronunciation = res.pronunciation.Base64ToBytes(),
                     AIExplanation = res.aiExplanation,
                     AITranslation = res.aiTranslation
                 };

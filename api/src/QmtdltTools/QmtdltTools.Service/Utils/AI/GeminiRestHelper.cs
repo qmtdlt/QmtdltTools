@@ -18,6 +18,35 @@ namespace QmtdltTools.Service.Utils
         public static string gemini_model = "gemini-2.0-flash-lite";
         public static string apiEndpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent?key={ApplicationConst.GEMINI_KEY}";
 
+        public static async Task<string> GetEnglishArticle(string chineseArticle)
+        {
+            // Construct the request body
+            var requestBody = new
+            {
+                contents = new[]
+                {
+                    new{
+                        parts = new []{
+                            new { text = PromptData.EnglishArticleGenerateFromChinese(chineseArticle) }
+                        }
+                    }
+                }
+            };
+            var result = await GetResult<string>(requestBody);
+
+            if (!string.IsNullOrEmpty(result))
+            {
+                try
+                {
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            return "";
+        }
         public static async Task<ExplainResultDto?> GetExplainResult(string phase)
         {
             // Construct the request body
@@ -42,7 +71,7 @@ namespace QmtdltTools.Service.Utils
                     return new ExplainResultDto
                     {
                         Explanation = result,
-                        VoiceBuffer = buffer,
+                        //VoiceBuffer = buffer,
                     };
                 }
                 catch (Exception ex)
@@ -72,7 +101,7 @@ namespace QmtdltTools.Service.Utils
             {
                 try
                 {
-                    result.VoiceBuffer = MsTTSHelperRest.GetSpeakStreamRest(result.Explanation, ApplicationConst.DefaultVoiceName);
+                    //result.VoiceBuffer = MsTTSHelperRest.GetSpeakStreamRest(result.Explanation, ApplicationConst.DefaultVoiceName);
                 }
                 catch (Exception ex)
                 {

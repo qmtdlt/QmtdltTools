@@ -11,6 +11,33 @@ namespace QmtdltTools.Service.Utils
         public static string api_key = ApplicationConst.QIAN_WEN;
         public static string apiEndpoint = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
         public static string model = "qwen-plus";
+
+        public static async Task<string> GetEnglishArticle(string chineseArticle)
+        {
+            // Construct the request body
+            var requestBody = new
+            {
+                messages = new[]
+                {
+                    new { role = "system", content = PromptData.EnglishArticleGenerateFromChinese(chineseArticle) },
+                },
+                model = model
+            };
+            var result = await GetResult<string>(requestBody);
+
+            if (!string.IsNullOrEmpty(result))
+            {
+                try
+                {
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            return "";
+        }
         public static async Task<ExplainResultDto?> GetExplainResult(string phase)
         {
             // Construct the request body
@@ -32,7 +59,7 @@ namespace QmtdltTools.Service.Utils
                     return new ExplainResultDto
                     {
                         Explanation = result,
-                        VoiceBuffer = buffer,
+                        //VoiceBuffer = buffer,
                     };
                 }
                 catch (Exception ex)
@@ -59,7 +86,7 @@ namespace QmtdltTools.Service.Utils
             {
                 try
                 {
-                    result.VoiceBuffer = MsTTSHelperRest.GetSpeakStreamRest(result.Explanation, ApplicationConst.DefaultVoiceName);
+                    //result.VoiceBuffer = MsTTSHelperRest.GetSpeakStreamRest(result.Explanation, ApplicationConst.DefaultVoiceName);
                 }
                 catch (Exception ex)
                 {

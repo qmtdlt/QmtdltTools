@@ -53,7 +53,7 @@
                 </div>
                 <div class="explanation-row">
                     <span class="explanation-text">{{ dialog.result.aiExplanation }}</span>
-                    <el-button @click="playTransVoice(dialog.result.pronunciation)" class="sound-btn" circle>
+                    <!-- <el-button @click="playTransVoice(dialog.result.pronunciation)" class="sound-btn" circle>
                         <el-icon>
                             <Headset />
                         </el-icon>
@@ -62,7 +62,7 @@
                         <el-icon>
                             <VideoPause />
                         </el-icon>
-                    </el-button>
+                    </el-button> -->
                 </div>
             </div>
         </el-dialog>

@@ -8,9 +8,9 @@ const router = createRouter({
   routes: [
     //MobileVocabulary
     {
-      path:'/vidoes',
-      name: 'vidoes',
-      component: () => import('../views/MVideo.vue'),
+      path:'/articles',
+      name: 'articles',
+      component: () => import('../views/MArticle.vue'),
     },
     {
       path:'/mreplay',

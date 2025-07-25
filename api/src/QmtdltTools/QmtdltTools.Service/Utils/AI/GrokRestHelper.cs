@@ -11,6 +11,36 @@ namespace QmtdltTools.Service.Utils
         public static string grok_api_key = ApplicationConst.GROK_KEY;
         public static string apiEndpoint = "https://api.x.ai/v1/chat/completions";
         public static string grok_model = "grok-3-mini-beta";
+
+        public static async Task<string> GetEnglishArticle(string chineseArticle)
+        {
+            // Construct the request body
+            var requestBody = new
+            {
+                messages = new[]
+                {
+                    new { role = "system", content = "You are a helpful assistant." },
+                    new { role = "user", content = PromptData.EnglishArticleGenerateFromChinese(chineseArticle) }
+                },
+                model = grok_model,
+                stream = false,
+                temperature = 0
+            };
+            var result = await GetResult<string>(requestBody);
+
+            if (!string.IsNullOrEmpty(result))
+            {
+                try
+                {
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            return "";
+        }
         public static async Task<ExplainResultDto?> GetExplainResult(string phase)
         {
             // Construct the request body
@@ -35,7 +65,7 @@ namespace QmtdltTools.Service.Utils
                     return new ExplainResultDto
                     {
                         Explanation = result,
-                        VoiceBuffer = buffer,
+                        //VoiceBuffer = buffer,
                     };
                 }
                 catch (Exception ex)
@@ -65,7 +95,7 @@ namespace QmtdltTools.Service.Utils
             {
                 try
                 {
-                    result.VoiceBuffer = MsTTSHelperRest.GetSpeakStreamRest(result.Explanation, ApplicationConst.DefaultVoiceName);
+                    //result.VoiceBuffer = MsTTSHelperRest.GetSpeakStreamRest(result.Explanation, ApplicationConst.DefaultVoiceName);
                 }
                 catch (Exception ex)
                 {

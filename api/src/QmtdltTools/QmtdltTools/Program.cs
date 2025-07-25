@@ -19,15 +19,25 @@ var builder = WebApplication.CreateBuilder(args);           // got a web applica
 
 
 //if (!builder.Environment.IsDevelopment())
+//{
+//    builder.WebHost.ConfigureKestrel(options =>
+//    {
+//        options.ListenAnyIP(5083, listenOptions =>
+//        {
+//            listenOptions.UseHttps("/home/qmtdlt_tools/pem/youngforyou.top.pfx", "12000asdQWER");
+//        });
+//    });
+//}
+
+#if !DEBUG
+builder.WebHost.ConfigureKestrel(options =>
 {
-    builder.WebHost.ConfigureKestrel(options =>
+    options.ListenAnyIP(5083, listenOptions =>
     {
-        options.ListenAnyIP(5083, listenOptions =>
-        {
-            listenOptions.UseHttps("/home/qmtdlt_tools/pem/youngforyou.top.pfx", "12000asdQWER");
-        });
+        listenOptions.UseHttps("/home/qmtdlt_tools/pem/youngforyou.top.pfx", "12000asdQWER");
     });
-}
+});
+#endif
 
 
 builder.Host

@@ -14,22 +14,6 @@
                     <Button Command="{Binding OpenLocalPalyGround}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="300">离线播放</Button>
                 </Grid>
             </TabItem>
-            <TabItem Header="on line">
-                <Grid Grid.Row="1">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="50"/>
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal" Margin="10">
-                        <TextBox Text="{Binding InputUrl}" Visibility="{Binding UrlInputIsShow}" Width="500"/>
-                        <Button Command="{Binding AddNew}" MinWidth="100" Visibility="{Binding UrlInputIsShow}">添加</Button>
-                    </StackPanel>
-
-                    <WrapPanel Grid.Row="1">
-                        <ItemsControl ItemsSource="{Binding OnLineViews}"></ItemsControl>
-                    </WrapPanel>
-                </Grid>
-            </TabItem>
         </TabControl>
     </Grid>
 </Window>

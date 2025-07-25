@@ -84,7 +84,7 @@ namespace QmtdltTools.Service.Services
                 return new ExplainResultDto
                 {
                     Explanation = findEntity.Explanation,
-                    VoiceBuffer = findEntity.VoiceBuffer
+                    //VoiceBuffer = findEntity.VoiceBuffer
                 };
             }
             else
@@ -99,7 +99,7 @@ namespace QmtdltTools.Service.Services
                         PhaseIndex = input.PhaseIndex,
                         Phase = input.Phase,
                         Explanation = result.Explanation,
-                        VoiceBuffer = result.VoiceBuffer,
+                        //VoiceBuffer = result.VoiceBuffer,
                         CreateTime = DateTime.Now,
                         CreateBy = uid
                     };
@@ -144,7 +144,7 @@ namespace QmtdltTools.Service.Services
                             PhaseIndex = input.PhaseIndex,
                             Phase = input.Phase,
                             Explanation = result.Explanation,
-                            VoiceBuffer = result.VoiceBuffer,
+                            //VoiceBuffer = result.VoiceBuffer,
                             CreateTime = DateTime.Now,
                             CreateBy = uid
                         };

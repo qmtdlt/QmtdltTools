@@ -242,10 +242,10 @@ namespace QmtdltTools.WPF.Views
         }
         public void onClose()
         {
-            if (VideoView is WebVideoView view1)
-            {
-                view1.onClose();
-            }
+            //if (VideoView is WebVideoView view1)
+            //{
+            //    view1.onClose();
+            //}
             if (VideoView is LocalVideoView view2)
             {
                 view2.onClose();
@@ -283,10 +283,10 @@ namespace QmtdltTools.WPF.Views
 
         public void LoadUrl(string url)
         {
-            if (VideoView is WebVideoView view)
-            {
-                view.LoadUrl(url);
-            }
+            //if (VideoView is WebVideoView view)
+            //{
+            //    view.LoadUrl(url);
+            //}
         }
         internal void SetType(VideoCollectionType videoCollectionType)
         {
@@ -298,7 +298,7 @@ namespace QmtdltTools.WPF.Views
                     await _subtitleService.StopAsync();
                     await _subtitleService.StartRecognizeAsync(updatingTitle, SetSubTitle);
                 });
-                VideoView = App.Get<WebVideoView>();
+                //VideoView = App.Get<WebVideoView>();
             }
             else
             {
@@ -310,91 +310,41 @@ namespace QmtdltTools.WPF.Views
 
         internal void PauseVideo()
         {
-            if (_videoCollectionType == VideoCollectionType.OnLine)
+            if (VideoView is LocalVideoView view2)
             {
-                if (VideoView is WebVideoView view1)
-                {
-                    //view1.pause();
-                }
-            }
-            else
-            {
-                if (VideoView is LocalVideoView view2)
-                {
-                    view2.PauseMedia();
-                }
+                view2.PauseMedia();
             }
         }
 
         internal void GoLastSentence()
         {
-            if (_videoCollectionType == VideoCollectionType.OnLine)
+            if (VideoView is LocalVideoView view2)
             {
-                if (VideoView is WebVideoView view1)
-                {
-                    //view1.pause();
-                }
-            }
-            else
-            {
-                if (VideoView is LocalVideoView view2)
-                {
-                    view2.GoLastSentence();
-                }
+                view2.GoLastSentence();
             }
         }
 
         internal void GoNextSentence()
         {
-            if (_videoCollectionType == VideoCollectionType.OnLine)
+            if (VideoView is LocalVideoView view2)
             {
-                if (VideoView is WebVideoView view1)
-                {
-                    //view1.pause();
-                }
-            }
-            else
-            {
-                if (VideoView is LocalVideoView view2)
-                {
-                    view2.GoNextSentence();
-                }
+                view2.GoNextSentence();
             }
         }
 
         internal void RepeatOne()
         {
-            if (_videoCollectionType == VideoCollectionType.OnLine)
+            if (VideoView is LocalVideoView view2)
             {
-                if (VideoView is WebVideoView view1)
-                {
-                    //view1.pause();
-                }
-            }
-            else
-            {
-                if (VideoView is LocalVideoView view2)
-                {
-                    view2.RepeatOne();
-                }
+                view2.RepeatOne();
             }
         }
 
         internal void CancelRepeat()
         {
-            if (_videoCollectionType == VideoCollectionType.OnLine)
+            if (VideoView is LocalVideoView view2)
             {
-                if (VideoView is WebVideoView view1)
-                {
-                    //view1.pause();
-                }
-            }
-            else
-            {
-                if (VideoView is LocalVideoView view2)
-                {
-                    view2.CancelRepeat();
-                }
+                view2.CancelRepeat();
             }
         }
 

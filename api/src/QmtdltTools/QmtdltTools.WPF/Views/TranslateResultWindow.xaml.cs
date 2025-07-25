@@ -72,10 +72,10 @@ namespace QmtdltTools.WPF.Views
 
         private void playExplain(object sender, RoutedEventArgs e)
         {
-            if (_data.Pronunciation != null)
-            {
-                PlayAudio(_data.Pronunciation);
-            }
+            //if (_data.Pronunciation != null)
+            //{
+            //    PlayAudio(_data.Pronunciation);
+            //}
         }
 
         private void stopAudio(object sender, RoutedEventArgs e)

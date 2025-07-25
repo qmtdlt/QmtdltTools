@@ -64,7 +64,6 @@ public class MainWindowVm:BindableBase,ITransientDependency
         SelectedVideoType = VideoCollectionType.OnLine; // 默认选择在线
         AddNew = new DelegateCommand(addNew);
         OpenLocalPalyGround = new DelegateCommand(openLocal);
-        query();
     }
 
     private void openLocal()
@@ -102,59 +101,8 @@ public class MainWindowVm:BindableBase,ITransientDependency
                 AppSettingHelper.OnLineCfg = JsonSerializer.Serialize(cfg);
             }
         }
-        query();
     }
 
-    void query()
-    {
-        try
-        {
-            {
-                if (!string.IsNullOrEmpty(AppSettingHelper.OnLineCfg))
-                {
-                    var list = JsonSerializer.Deserialize<List<OnLineCfg>>(AppSettingHelper.OnLineCfg);
-                    OnLineViews = new ObservableCollection<OnLineItemView>();
-
-                    foreach (var item in list)
-                    {
-                        var view  = App.Get<OnLineItemView>();
-                        view.init(item.name, item.url);
-                        view.SetOnRemoveAction(() =>
-                        {
-                            OnLineViews.Remove(view);
-                        });
-                        OnLineViews.Add(view);
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex.Message);
-            MessageBox.Show(ex.Message);
-        }
-    }
-
-    private ObservableCollection<OnLineItemView> onLineViews;
-    public ObservableCollection<OnLineItemView> OnLineViews
-    {
-        get { return onLineViews; }
-        set
-        {
-            onLineViews = value;
-            this.RaisePropertyChanged("OnLineViews");
-        }
-    }
-    //private ObservableCollection<ComboxSelectItem<VideoCollectionType>> videoTypeSelection;
-    //public ObservableCollection<ComboxSelectItem<VideoCollectionType>> VideoTypeSelection
-    //{
-    //    get { return videoTypeSelection; }
-    //    set
-    //    {
-    //        videoTypeSelection = value;
-    //        this.RaisePropertyChanged("VideoTypeSelection");
-    //    }
-    //}
     private string inputUrl;
     public string InputUrl
     {

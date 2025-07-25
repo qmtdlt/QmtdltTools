@@ -71,7 +71,7 @@ namespace QmtdltTools.Service.Services
                             WordText = vr != null ? vr.WordText : null,
                             WordPronunciation = vr != null ? vr.WordPronunciation : null,
                             AIExplanation = vr != null ? vr.AIExplanation : null,
-                            Pronunciation = vr != null ? vr.Pronunciation : null,
+                            //Pronunciation = vr != null ? vr.Pronunciation : null,
                             AITranslation = vr != null ? vr.AITranslation : null
                         };
             var page = await query.OrderByDescending(t => t.CreateTime).ToPageList(pageIndex, pageSize);
@@ -113,7 +113,7 @@ namespace QmtdltTools.Service.Services
                             WordText = vr != null ? vr.WordText : null,
                             WordPronunciation = vr != null ? vr.WordPronunciation : null,
                             AIExplanation = vr != null ? vr.AIExplanation : null,
-                            Pronunciation = vr != null ? vr.Pronunciation : null,
+                            //Pronunciation = vr != null ? vr.Pronunciation : null,
                             AITranslation = vr != null ? vr.AITranslation : null
                         };
             var list = await query.OrderByDescending(t => t.CreateTime).ToListAsync();

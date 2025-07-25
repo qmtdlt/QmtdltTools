@@ -35,7 +35,7 @@ namespace QmtdltTools.Service.Services
                     {
                         WordText = word,
                         WordPronunciation = MsTTSHelperRest.GetSpeakStreamRest(word, ApplicationConst.DefaultVoiceName), // 单词配音
-                        Pronunciation = res.VoiceBuffer,
+                        //Pronunciation = res.VoiceBuffer,
                         AIExplanation = res.Explanation,
                         AITranslation = res.Translation,
                         CreateBy = uid
@@ -44,14 +44,14 @@ namespace QmtdltTools.Service.Services
                     return entity;
                 }
             }
-            else if(entity.Pronunciation == null || entity.WordPronunciation == null
-                || entity.Pronunciation.Length == 0 || entity.WordPronunciation.Length == 0)
+            else if(entity.WordPronunciation == null
+                 || entity.WordPronunciation.Length == 0)
             {
                 TranslateDto? res = await _aiApiService.GetTranslateResult(word);       // 翻译
                 if (res != null)
                 {
                     entity.WordPronunciation = MsTTSHelperRest.GetSpeakStreamRest(word, ApplicationConst.DefaultVoiceName); // 单词配音
-                    entity.Pronunciation = res.VoiceBuffer;
+                    //entity.Pronunciation = res.VoiceBuffer;
                     entity.AIExplanation = res.Explanation;
                     entity.AITranslation = res.Translation;
 

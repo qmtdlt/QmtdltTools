@@ -5,9 +5,6 @@
     <Compile Update="Views\LocalVideoView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\OnLineItemView.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="Views\PlayGround.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -18,9 +15,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\TranslateResultWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\WebVideoView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

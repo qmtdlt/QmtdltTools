@@ -67,5 +67,22 @@ namespace QmtdltTools.Service.Services
                     return await QianWenRestHelper.GetExplainResult(phase);
             }
         }
+
+        public async Task<string> GetEnglishArticle(string chineseArticle)
+        {
+            switch (_AIFactorys)
+            {
+                case AIFactorys.GROK:
+                    return await GrokRestHelper.GetEnglishArticle(chineseArticle);
+                case AIFactorys.GEMINI:
+                    return await GeminiRestHelper.GetEnglishArticle(chineseArticle);
+                case AIFactorys.DOUBAO:
+                    return await DouBaoRestHelper.GetEnglishArticle(chineseArticle);
+                case AIFactorys.QIANWEN:
+                    return await QianWenRestHelper.GetEnglishArticle(chineseArticle);
+                default:
+                    return await QianWenRestHelper.GetEnglishArticle(chineseArticle);
+            }
+        }
     }
 }

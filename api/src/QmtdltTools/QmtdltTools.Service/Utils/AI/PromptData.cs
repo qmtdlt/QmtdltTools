@@ -18,5 +18,14 @@ namespace QmtdltTools.Service.Utils.AI
 例句2：
 解释：";
         }
+
+        public static string EnglishArticleGenerateFromChinese(string chineseArticle)
+        {
+            return $@"你是我的英语辅导老师，我想要将一段中文文章翻译成英文,并进行润色，符合英语沐浴者的阅读写习惯，要求如下：" +
+                   $"\n1. 文章内容是：{chineseArticle}" +
+                   "\n2. 文章内容要符合英语语法规范，且通顺易懂。" +
+                   "\n3. 文章内容要尽量保留原文的意思和风格。" +
+                   "\n4. 直接返回英文段落字符串即可。";    
+        }
     }
 }

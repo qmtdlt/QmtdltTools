@@ -53,10 +53,10 @@ const handleSelection = () => {
       <nav class="main-nav">
 
         <RouterLink
-          to="/vidoes" 
-          @click="activeRoute = '/vidoes'"
-          :class="{ active: activeRoute === '/vidoes' }" 
-        >Vidoes</RouterLink>
+          to="/articles" 
+          @click="activeRoute = '/articles'"
+          :class="{ active: activeRoute === '/articles' }" 
+        >MArticle</RouterLink>
         
         <RouterLink v-if="isMobileRef"
           to="/mvocabulary" 
