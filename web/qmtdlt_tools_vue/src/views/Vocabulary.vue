@@ -85,7 +85,7 @@
             </el-button>
             </template>
         </el-table-column>
-        <el-table-column label="AI释义 测试cicd" >
+        <el-table-column label="AI释义" >
           <template #default="{ row }">
             {{ row.aiExplanation }}
             <el-button v-if="row.pronunciation" size="small" circle @click="playPronunciation(row.pronunciation)"
