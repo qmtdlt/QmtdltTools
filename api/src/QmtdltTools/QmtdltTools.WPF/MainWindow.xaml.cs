@@ -1,24 +1,8 @@
 ﻿using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 using Volo.Abp.DependencyInjection;
-using QmtdltTools.Service.Services;
-using QmtdltTools.Domain.Entitys;
 using QmtdltTools.WPF.Views;
 using QmtdltTools.WPF.Utils;
-using QmtdltTools.WPF.IServices;
-using QmtdltTools.WPF.Dto;
-using System.Collections.Concurrent;
-using System.Linq;
-using QmtdltTools.WPF.Services;
-using System.Collections.ObjectModel;
 using QmtdltTools.Domain.Enums;
-using NAudio.CoreAudioApi.Interfaces;
-using QmtdltTools.Service.Utils;
-using System.Text.Json;
-using Serilog;
-using CefSharp;
-using CefSharp.Wpf;
 
 namespace QmtdltTools.WPF;
 
@@ -27,24 +11,15 @@ namespace QmtdltTools.WPF;
 /// </summary>
 public partial class MainWindow : Window
 {
-    SubtitleService _subtitleService;
-
-    public MainWindow(MainWindowVm vm, SubtitleService subtitleService)
+    public MainWindow(MainWindowVm vm)
     {
         InitializeComponent();
 
         DataContext = vm;
 
         Loaded += MainWindow_Loaded;
-
-        Closing += MainWindow_Closing;
-        this._subtitleService = subtitleService;
     }
 
-    private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
-    {
-        _ = _subtitleService.StopAsync();
-    }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
@@ -54,53 +29,17 @@ public partial class MainWindow : Window
 
 public class MainWindowVm:BindableBase,ITransientDependency
 {
-    public DelegateCommand AddNew { get; set; }
     public DelegateCommand OpenLocalPalyGround { get; set; }
     public MainWindowVm()
     {
-        //VideoTypeSelection = new ObservableCollection<ComboxSelectItem<VideoCollectionType>>();
-        //VideoTypeSelection.AddRange(EnumHelper.GetComboxList<VideoCollectionType>());
-
         SelectedVideoType = VideoCollectionType.OnLine; // 默认选择在线
-        AddNew = new DelegateCommand(addNew);
         OpenLocalPalyGround = new DelegateCommand(openLocal);
     }
 
     private void openLocal()
     {
         var wd = App.Get<PlayGround>();
-        wd.SetType(VideoCollectionType.OffLine);
         wd?.Show();
-    }
-
-    private void addNew()
-    {
-        string json = AppSettingHelper.OnLineCfg;
-        if (string.IsNullOrEmpty(json))
-        {
-            AppSettingHelper.OnLineCfg = JsonSerializer.Serialize(new List<OnLineCfg>
-            {
-                new OnLineCfg
-                {
-                    url = InputUrl,
-                    name = InputUrl
-                }
-            });
-        }
-        else
-        {
-            var cfg = JsonSerializer.Deserialize<List<OnLineCfg>>(json);
-
-            if (!cfg.Any(t => t.url == InputUrl))
-            {
-                cfg.Add(new OnLineCfg
-                {
-                    url = InputUrl,
-                    name = InputUrl
-                });
-                AppSettingHelper.OnLineCfg = JsonSerializer.Serialize(cfg);
-            }
-        }
     }
 
     private string inputUrl;

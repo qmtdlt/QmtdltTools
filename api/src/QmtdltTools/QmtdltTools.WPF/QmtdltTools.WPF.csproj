@@ -27,7 +27,7 @@
 
   <!--windows only-->
   <ItemGroup>
-    <PackageReference Include="CefSharp.Wpf.NETCore" Version="137.0.100" />
+    <PackageReference Include="CefSharp.Common" Version="138.0.170" />
     <PackageReference Include="LibVLCSharp" Version="3.9.3" />
     <PackageReference Include="LibVLCSharp.WPF" Version="3.9.3" />
     <PackageReference Include="NAudio" Version="2.2.1" />
@@ -45,6 +45,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\QmtdltTools.Service\QmtdltTools.Service.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="IServices\" />
   </ItemGroup>
 
 </Project>

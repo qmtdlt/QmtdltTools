@@ -8,11 +8,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
-using IVideoView = QmtdltTools.WPF.IServices.IVideoView;
+using Volo.Abp.DependencyInjection;
 
 namespace QmtdltTools.WPF.Views
 {
-    public partial class LocalVideoView : UserControl, IVideoView
+    public partial class LocalVideoView : UserControl,ITransientDependency
     {
         private bool _isDragging = false;
         private DispatcherTimer _timer;
@@ -175,8 +175,8 @@ namespace QmtdltTools.WPF.Views
             {
                 if (current.Index != _lastSubtitleIndex)
                 {
-                    _setSubTitle(current.Text);
-                    _updatingSubTitle(current.Text);
+                    _setSubTitle?.Invoke(current.Text);
+                    _updatingSubTitle?.Invoke(current.Text);
                     _lastSubtitleIndex = current.Index;
                 }
             }
@@ -184,7 +184,7 @@ namespace QmtdltTools.WPF.Views
             {
                 if (_lastSubtitleIndex != -1)
                 {
-                    _setSubTitle("");  // 清空字幕
+                    _setSubTitle?.Invoke("");  // 清空字幕
                     _lastSubtitleIndex = -1;
                 }
             }

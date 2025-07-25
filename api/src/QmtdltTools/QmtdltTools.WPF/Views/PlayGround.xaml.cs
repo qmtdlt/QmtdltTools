@@ -1,27 +1,12 @@
-﻿using Microsoft.CognitiveServices.Speech.PronunciationAssessment;
+﻿using LibVLCSharp.WPF;
+using Microsoft.CognitiveServices.Speech.PronunciationAssessment;
 using NAudio.Wave;
-using QmtdltTools.Domain.Enums;
-using QmtdltTools.WPF.IServices;
 using QmtdltTools.WPF.Services;
-using ScottPlot;
-using ScottPlot.Plottables;
-using SkiaSharp;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Volo.Abp.DependencyInjection;
 
 namespace QmtdltTools.WPF.Views
@@ -39,13 +24,6 @@ namespace QmtdltTools.WPF.Views
             DataContext = vm;
             this.Closing += MainWindow_Closing;
         }
-        public void SetType(VideoCollectionType videoCollectionType)
-        {
-            if (DataContext is PlayGroundVm vm)
-            {
-                vm.SetType(videoCollectionType);
-            }
-        }
         private void TextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (sender is TextBox tb)
@@ -62,14 +40,6 @@ namespace QmtdltTools.WPF.Views
             if (DataContext is PlayGroundVm vm)
             {
                 vm.onClose();
-            }
-        }
-
-        internal void LoadUrl(string videoUrl)
-        {
-            if (DataContext is PlayGroundVm vm)
-            {
-                vm.LoadUrl(videoUrl);
             }
         }
 
@@ -134,16 +104,12 @@ namespace QmtdltTools.WPF.Views
         private WaveFileWriter waveFileWriter;
         private bool isRecording = false;
         string tempAudioFilePath = "";
-        VideoCollectionType _videoCollectionType;
         ConcurrentQueue<string> subtitleQueue = new ConcurrentQueue<string>();          // 字幕队列
 
-        ISubtitleService _subtitleService;
         public DelegateCommand AudioRecordCmd { get; set; }
         public DelegateCommand CheckShadowingCmd { get; set; }
-        public PlayGroundVm(ISubtitleService subtitleService)
+        public PlayGroundVm()
         {
-            _subtitleService = subtitleService;
-
             CheckShadowingCmd = new DelegateCommand(checkShadowing);
 
             AudioRecordCmd = new DelegateCommand(onRecordClick);
@@ -242,16 +208,8 @@ namespace QmtdltTools.WPF.Views
         }
         public void onClose()
         {
-            //if (VideoView is WebVideoView view1)
-            //{
-            //    view1.onClose();
-            //}
-            if (VideoView is LocalVideoView view2)
-            {
-                view2.onClose();
-            }
+            VideoView.onClose();
         }
-
         void updatingTitle(string subTitle)
         {
             CurSubtitle = subTitle;
@@ -270,82 +228,34 @@ namespace QmtdltTools.WPF.Views
             var list = subtitleQueue.ToList();
             if (list.Count > 1)
             {
-                if (_videoCollectionType == VideoCollectionType.OffLine)
-                {
-                    PastSubtitle = string.Join("\n", list.Take(list.Count - 1));
-                }
-                else
-                {
-                    PastSubtitle = string.Join("\n", list);
-                }
+                PastSubtitle = string.Join("\n", list);
             }
         }
 
-        public void LoadUrl(string url)
-        {
-            //if (VideoView is WebVideoView view)
-            //{
-            //    view.LoadUrl(url);
-            //}
-        }
-        internal void SetType(VideoCollectionType videoCollectionType)
-        {
-            _videoCollectionType = videoCollectionType;
-            if (videoCollectionType == VideoCollectionType.OnLine)
-            {
-                _ = Task.Run(async () =>
-                {
-                    await _subtitleService.StopAsync();
-                    await _subtitleService.StartRecognizeAsync(updatingTitle, SetSubTitle);
-                });
-                //VideoView = App.Get<WebVideoView>();
-            }
-            else
-            {
-                var view = App.Get<LocalVideoView>();
-                view.InitAction(updatingTitle, SetSubTitle);
-                VideoView = view;
-            }
-        }
 
         internal void PauseVideo()
         {
-            if (VideoView is LocalVideoView view2)
-            {
-                view2.PauseMedia();
-            }
+            VideoView.PauseMedia();
         }
 
         internal void GoLastSentence()
         {
-            if (VideoView is LocalVideoView view2)
-            {
-                view2.GoLastSentence();
-            }
+            VideoView.GoLastSentence();
         }
 
         internal void GoNextSentence()
         {
-            if (VideoView is LocalVideoView view2)
-            {
-                view2.GoNextSentence();
-            }
+            VideoView.GoNextSentence();
         }
 
         internal void RepeatOne()
         {
-            if (VideoView is LocalVideoView view2)
-            {
-                view2.RepeatOne();
-            }
+            VideoView.RepeatOne();
         }
 
         internal void CancelRepeat()
         {
-            if (VideoView is LocalVideoView view2)
-            {
-                view2.CancelRepeat();
-            }
+            VideoView.CancelRepeat();
         }
 
         private Uri recordAudioUri;
@@ -408,13 +318,16 @@ namespace QmtdltTools.WPF.Views
                 this.RaisePropertyChanged("PastSubtitle");
             }
         }
-        private IVideoView videoView;
-        public IVideoView VideoView
+        private LocalVideoView videoView;
+        public LocalVideoView VideoView
         {
             get { return videoView; }
             set
             {
                 videoView = value;
+
+                videoView.InitAction(updatingTitle, SetSubTitle);
+
                 this.RaisePropertyChanged("VideoView");
             }
         }

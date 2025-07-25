@@ -1,13 +1,7 @@
 ﻿using QmtdltTools.Domain.Entitys;
 using QmtdltTools.WPF.Dto;
-using QmtdltTools.WPF.IServices;
 using QmtdltTools.WPF.Utils;
 using QmtdltTools.WPF.Views;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using Volo.Abp.DependencyInjection;
 
@@ -15,10 +9,8 @@ namespace QmtdltTools.WPF.Services
 {
     public class TransService:ITransientDependency
     {
-        ISubtitleService _subtitleService;
-        public TransService(ISubtitleService subtitleService)
+        public TransService()
         {
-            _subtitleService = subtitleService;
         }
 
         public async Task Trans(string selectedText)
@@ -43,13 +35,8 @@ namespace QmtdltTools.WPF.Services
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         var wd = App.Get<TranslateResultWindow>();
-                        wd.setData(findRes);
-
-                        _subtitleService.Pause();
-                        
+                        wd.setData(findRes);                        
                         wd.ShowDialog();
-
-                        _subtitleService.Resume();
                     });
                 }
             }
