@@ -1,0 +1,79 @@
+name: Build and Deploy Fullstack
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # 设置 .NET 9.0
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '9.0.x'
+
+    # 设置 Node.js v22
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.17.1'
+
+    # 构建后端
+    - name: Publish backend
+      run: |
+        dotnet publish ./api/src/QmtdltTools/QmtdltTools/QmtdltTools.csproj -c Release -o backend_publish
+
+    # 构建前端
+    - name: Install frontend dependencies
+      working-directory: ./web/qmtdlt_tools_vue
+      run: npm install
+
+    - name: Build frontend
+      working-directory: ./web/qmtdlt_tools_vue
+      run: npm run build
+
+    # 上传后端文件前停止服务
+    - name: Stop backend service
+      uses: appleboy/ssh-action@v0.1.8
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          sudo systemctl stop qmtdlt_tools.service
+
+    # 上传后端
+    - name: Upload backend to server
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        source: "backend_publish/*"
+        target: "/home/qmtdlt_tools/api"
+
+    # 上传前端
+    - name: Upload frontend to server
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        source: "web/qmtdlt_tools_vue/dist/*"
+        target: "/home/qmtdlt_tools/dist"
+
+    # 启动服务
+    - name: Start backend service
+      uses: appleboy/ssh-action@v0.1.8
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          sudo systemctl start qmtdlt_tools.service
