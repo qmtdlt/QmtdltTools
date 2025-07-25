@@ -66,7 +66,7 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_KEY }}
-        source: "./web/qmtdlt_tools_vue/dist/**/*"
+        source: "./web/qmtdlt_tools_vue/dist/*"
         target: "/home/qmtdlt_tools/dist"
         strip_components: 3
 
