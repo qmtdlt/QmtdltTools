@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using QmtdltTools.Domain.Dtos;
@@ -75,6 +76,12 @@ namespace QmtdltTools.Service.Services
                             AITranslation = vr != null ? vr.AITranslation : null
                         };
             var page = await query.OrderByDescending(t => t.CreateTime).ToPageList(pageIndex, pageSize);
+
+            foreach (var item in page.PageList)
+            {
+                item.WordText += "测试cicd";
+            }
+
             return page;
         }
 
