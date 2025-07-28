@@ -12,6 +12,9 @@
     <button class="translate-btn" :disabled="loading || !inputText.trim()" @click="translateArticle">
       {{ loading ? '翻译中...' : '翻译为英文' }}
     </button>
+    <button class="translate-btn" @click="collectPharagraph">
+      摘录文本
+    </button>
     <div v-if="outputText" class="output-area">
       <h3 class="output-title">英文版本：</h3>
       <div class="output-text">{{ outputText }}</div>
@@ -22,10 +25,31 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import request from '@/utils/request';
+import { ElMessage, ElMessageBox } from 'element-plus';
 
 const inputText = ref('');
 const outputText = ref('');
 const loading = ref(false);
+
+const collectPharagraph = async () => {
+  await excerptChapter();
+}
+
+const excerptChapter = async () => {
+  const res = await ElMessageBox.confirm('是否要摘录这段话?', '提示', {
+    confirmButtonText: '摘录',
+    cancelButtonText: '取消',
+  })
+  if ("confirm" == res) {
+    // Handle the action when the user confirms
+    console.log('User confirmed:', res)
+    await request.post('/api/EpubManage/ExcerptChapter/ExcerptChapter?content=' + outputText.value);
+    ElMessage.success('摘录成功')
+  } else {
+    // Handle the action when the user cancels
+    console.log('User cancelled:', res)
+  }
+}
 
 const translateArticle = async () => {
   if (!inputText.value.trim()) return;
