@@ -48,7 +48,8 @@ const handleSelection = () => {
   <div class="container" @mouseup="handleSelection">
     <div class="header" >
       <div class="logo" v-if="!isMobileRef">
-        <h1>YoungForYou</h1>
+        <!--  -->
+        <h1>YoungForYou测试CICD</h1>
       </div>
       <nav class="main-nav">
 
