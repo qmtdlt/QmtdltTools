@@ -77,11 +77,6 @@ namespace QmtdltTools.Service.Services
                         };
             var page = await query.OrderByDescending(t => t.CreateTime).ToPageList(pageIndex, pageSize);
 
-            foreach (var item in page.PageList)
-            {
-                item.WordText += "我在测试cicd";
-            }
-            
             return page;
         }
 
