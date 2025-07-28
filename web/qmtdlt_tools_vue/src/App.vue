@@ -49,7 +49,7 @@ const handleSelection = () => {
     <div class="header" >
       <div class="logo" v-if="!isMobileRef">
         <!--  -->
-        <h1>YoungForYou测试CICD</h1>
+        <h1>YoungForYou</h1>
       </div>
       <nav class="main-nav">
 
