@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QmtdltTools.WPF", "QmtdltTools.WPF\QmtdltTools.WPF.csproj", "{9A508DA5-3CD8-4F79-977E-16263F1E6C2C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QmtdltTools.Avaloina", "QmtdltTools.Avaloina\QmtdltTools.Avaloina.csproj", "{70B3D2D1-1060-4014-83B6-EBFAEB7B383A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,11 +78,21 @@ Global
 		{9A508DA5-3CD8-4F79-977E-16263F1E6C2C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9A508DA5-3CD8-4F79-977E-16263F1E6C2C}.Release|x64.ActiveCfg = Release|x64
 		{9A508DA5-3CD8-4F79-977E-16263F1E6C2C}.Release|x64.Build.0 = Release|x64
+		{70B3D2D1-1060-4014-83B6-EBFAEB7B383A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70B3D2D1-1060-4014-83B6-EBFAEB7B383A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70B3D2D1-1060-4014-83B6-EBFAEB7B383A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{70B3D2D1-1060-4014-83B6-EBFAEB7B383A}.Debug|x64.Build.0 = Debug|Any CPU
+		{70B3D2D1-1060-4014-83B6-EBFAEB7B383A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70B3D2D1-1060-4014-83B6-EBFAEB7B383A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70B3D2D1-1060-4014-83B6-EBFAEB7B383A}.Release|x64.ActiveCfg = Release|Any CPU
+		{70B3D2D1-1060-4014-83B6-EBFAEB7B383A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {666BC706-008C-458B-BC84-4C828875AD75}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
 EndGlobal

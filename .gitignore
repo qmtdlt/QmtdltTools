@@ -27,3 +27,7 @@ api/src/QmtdltTools/QmtdltTools.sln.DotSettings.user
 /api/src/QmtdltTools/QmtdltTools.MAUI/obj
 /api/src/QmtdltTools/QmtdltTools.MAUI.Blazor/bin/Debug/net9.0-windows10.0.19041.0/win10-x64
 /api/src/QmtdltTools/QmtdltTools.MAUI.Blazor/obj
+api/src/QmtdltTools/QmtdltTools.Avaloina/bin/
+api/src/QmtdltTools/QmtdltTools.Avaloina/obj/
+/api/src/QmtdltTools/.idea/
+api/src/QmtdltTools/QmtdltTools.Avaloina/appsettings.json
