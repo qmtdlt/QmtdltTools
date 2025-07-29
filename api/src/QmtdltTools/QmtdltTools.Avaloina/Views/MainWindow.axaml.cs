@@ -15,4 +15,9 @@ public partial class MainWindow : Window
     {
         _ = RestHelper.login("qmtdlt", "12000asd");
     }
+
+    private void Button_OnClick(object? sender, RoutedEventArgs e)
+    {
+        App.Get<PlayGround>()?.Show();
+    }
 }

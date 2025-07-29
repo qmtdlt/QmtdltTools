@@ -100,12 +100,6 @@ namespace QmtdltTools.WPF.Views
             }
         }
 
-        private void PlayBtn_Click(object sender, RoutedEventArgs e)
-        {
-            _mediaPlayer?.Play();
-            _timer.Start();
-        }
-
         private void PauseBtn_Click(object sender, RoutedEventArgs e)
         {
             if(PauseBtn.Content.ToString() == "▶")
