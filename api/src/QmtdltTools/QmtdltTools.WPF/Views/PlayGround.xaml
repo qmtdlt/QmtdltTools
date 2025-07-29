@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:QmtdltTools.WPF.Views"
         mc:Ignorable="d"
         xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
-        Title="PlayGround" Height="450" Width="800" WindowState="Maximized" PreviewKeyDown="Window_PreviewKeyDown">
+        Title="PlayGround" Height="450" Width="800" WindowState="Maximized" 
+        PreviewKeyDown="Window_PreviewKeyDown">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="200"/>
