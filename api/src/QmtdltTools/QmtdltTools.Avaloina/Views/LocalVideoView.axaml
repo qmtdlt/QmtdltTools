@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="QmtdltTools.Avaloina.Views.LocalVideoView">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="40"/>
+            <!--控制条高度--> 
+        </Grid.RowDefinitions>
+        <!--视频区-->
+        <!-- <vlc:VideoView x:Name="VideoView" Background="Black"/> -->
+        <!--控制条--> 
+        <StackPanel Orientation="Horizontal" Grid.Row="1" VerticalAlignment="Center" Margin="10,0">
+            <Button FontSize="15" Height="30" Width="40" x:Name="PrevSubtitleBtn" Content="⏮" Click="PrevSubtitleBtn_Click" Margin="0,0,5,0"/>
+            <Button FontSize="15" Height="30" Width="40" x:Name="NextSubtitleBtn" Content="⏭" Click="NextSubtitleBtn_Click" Margin="0,0,5,0"/>
+            <Button FontSize="15" Height="30" Width="40" x:Name="RepeatBtn" Content="🔁" Click="RepeatBtn_Click" Margin="0,0,10,0"/>
+            <!--<Button FontSize="15" Height="30" Width="40" x:Name="PlayBtn" Content="▶" Click="PlayBtn_Click"/>-->
+            <Button FontSize="15" Height="30" Width="40" x:Name="PauseBtn" Content="⏸" Click="PauseBtn_Click" Margin="5,0"/>
+            <Slider x:Name="ProgressSlider" Width="400" ValueChanged="ProgressSlider_ValueChanged" VerticalAlignment="Center"/>
+            <TextBlock x:Name="TimeText" Width="80" Margin="10,0" VerticalAlignment="Center"/>
+            <TextBlock VerticalAlignment="Center" FontSize="20">🔊</TextBlock>
+            <Slider x:Name="VolumeSlider" Width="80" Minimum="0" Maximum="100" ValueChanged="VolumeSlider_ValueChanged" Margin="0,0"  VerticalAlignment="Center"/>
+            <Button FontSize="15" Height="30" Width="40" Margin="10,0,0,0" Content="📂" Click="OpenVideo"/>
+        </StackPanel>
+        <TextBox x:Name="targetVideoPath" IsVisible="False"/>
+    </Grid>
+</UserControl>
