@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -9,6 +10,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using LibVLCSharp.Avalonia;
 using LibVLCSharp.Shared;
 using QmtdltTools.Avaloina.Utils;
 using Serilog;
@@ -244,7 +246,35 @@ public partial class LocalVideoView : UserControl,ITransientDependency
             string subtitlePath = System.IO.Path.ChangeExtension(targetVideoPath.Text, "英文.srt");
             bool subtitleExists = System.IO.File.Exists(subtitlePath);
 
-            _libVLC = new LibVLC();
+            string libvlcPath = null;
+            string[] libvlcOptions = new[] { "--no-xlib" }; // 默认参数
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                libvlcPath = Path.Combine(AppContext.BaseDirectory, "libvlc", "osx-x64", "lib");
+                Core.Initialize(libvlcPath);
+
+                libvlcOptions = new[]
+                {
+                    "--no-xlib",
+                    "--vout=macosx",             // macOS 特有
+                    "--avcodec-hw=none",         // 可选：禁硬解，防止部分 Mac 闪退或黑屏
+                    "-vvv"                       // 日志
+                };
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // Windows 不需要 Core.Initialize(libvlcPath)，因使用的是 LibVLC.Windows 包自带路径
+                libvlcOptions = new[]
+                {
+                    "--no-xlib",
+                    "--avcodec-hw=any" // 可选：启用硬解
+                };
+            }
+
+            // 初始化 LibVLC
+            _libVLC = new LibVLC(libvlcOptions);
+            
             _mediaPlayer = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
             VideoView.MediaPlayer = _mediaPlayer; // 假设 VideoView 是 XAML 中的控件
             _mediaPlayer.Play(new Media(_libVLC, new Uri(targetVideoPath.Text)));
