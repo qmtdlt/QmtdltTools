@@ -28,13 +28,6 @@ public partial class LocalVideoView : UserControl, ITransientDependency
     {
         InitializeComponent();
 
-        // ProgressSlider.AddHandler(
-        //     System.Windows.Controls.Primitives.Thumb.DragStartedEvent,
-        //     new System.Windows.Controls.Primitives.DragStartedEventHandler(ProgressSlider_DragStarted));
-        // ProgressSlider.AddHandler(
-        //     System.Windows.Controls.Primitives.Thumb.DragCompletedEvent,
-        //     new System.Windows.Controls.Primitives.DragCompletedEventHandler(ProgressSlider_DragCompleted));
-
         ProgressSlider.PointerPressed += (_, _) => _isDragging = true;
         ProgressSlider.PointerReleased += (_, _) =>
         {

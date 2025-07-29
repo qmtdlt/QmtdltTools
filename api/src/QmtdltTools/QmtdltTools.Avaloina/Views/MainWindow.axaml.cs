@@ -20,4 +20,9 @@ public partial class MainWindow : Window
     {
         App.Get<PlayGround>()?.Show();
     }
+
+    private void Button_OnClick2(object? sender, RoutedEventArgs e)
+    {
+        AppSettingHelper.ApiServer = "老铁666";
+    }
 }

@@ -1,68 +1,111 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace QmtdltTools.Avaloina.Utils;
 
-public class AppSettingHelper
+public static class AppSettingHelper
 {
-    
     public static long LastVideoProgress
     {
-        get { return long.Parse(GetValue(nameof(LastVideoProgress))); }
-        set { SetValue(nameof(LastVideoProgress), value.ToString()); }
+        get => long.TryParse(GetValue(nameof(LastVideoProgress), "0"), out var v) ? v : 0;
+        set => SetValue(nameof(LastVideoProgress), value.ToString());
     }
+
     public static string LastVideoPath
     {
-        get { return GetValue(nameof(LastVideoPath)); }
-        set { SetValue(nameof(LastVideoPath), value.ToString()); }
+        get => GetValue(nameof(LastVideoPath), "");
+        set => SetValue(nameof(LastVideoPath), value);
     }
-    public static string lastUrl
-    {
-        get { return GetValue(nameof(lastUrl)); }
-        set { SetValue(nameof(lastUrl), value.ToString()); }
-    }
+
     public static string ApiServer
     {
-        get { return GetValue(nameof(ApiServer)); }
-        set { SetValue(nameof(ApiServer), value.ToString()); }
+        get => GetValue(nameof(ApiServer), "http://localhost:5000");
+        set => SetValue(nameof(ApiServer), value);
     }
-    public static string OnLineCfg
-    {
-        get { return GetValue(nameof(OnLineCfg)); }
-        set { SetValue(nameof(OnLineCfg), value.ToString()); }
-    }
+
     public static string OffLineCfg
     {
-        get { return GetValue(nameof(OffLineCfg)); }
-        set { SetValue(nameof(OffLineCfg), value.ToString()); }
+        get => GetValue(nameof(OffLineCfg), "");
+        set => SetValue(nameof(OffLineCfg), value);
     }
-    #region GET SET
-    public static string GetValue(string key, string value = default(string))
+
+    #region 核心实现
+
+    private static readonly string ConfigPath = Path.Combine(AppContext.BaseDirectory, "conf.txt");
+    private static readonly object _lock = new();
+    private static Dictionary<string, string> _settings;
+
+    static AppSettingHelper()
     {
-        try
+        Load();
+    }
+
+    private static void Load()
+    {
+        _settings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        // ✅ 1. 如果配置文件不存在则创建
+        if (!File.Exists(ConfigPath))
         {
-            // Configuration cfa = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            //
-            // return cfa.AppSettings.Settings[key].Value;
-            return "";
+            File.Create(ConfigPath).Close(); // 创建空文件
+            return;
         }
-        catch
+
+        var lines = File.ReadAllLines(ConfigPath);
+        foreach (var line in lines)
         {
-            SetValue(key, value);
-            return value;
+            if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
+                continue;
+
+            var index = line.IndexOf('=');
+            if (index <= 0)
+                continue;
+
+            var key = line.Substring(0, index).Trim();
+            var value = line.Substring(index + 1).Trim();
+            _settings[key] = value;
         }
     }
 
+    private static void Save()
+    {
+        lock (_lock)
+        {
+            var lines = new List<string>();
+            foreach (var kvp in _settings)
+            {
+                lines.Add($"{kvp.Key}={kvp.Value}");
+            }
+
+            File.WriteAllLines(ConfigPath, lines);
+        }
+    }
+
+    /// <summary>
+    /// 读取配置值，如果不存在则创建默认值并写入
+    /// </summary>
+    public static string GetValue(string key, string defaultValue = "")
+    {
+        if (_settings.TryGetValue(key, out var value))
+            return value;
+
+        // ✅ 3. 自动写入默认值
+        SetValue(key, defaultValue);
+        return defaultValue;
+    }
+
+    /// <summary>
+    /// 设置配置值，如果不存在则添加
+    /// </summary>
     public static void SetValue(string key, string value)
     {
-        // Configuration cfa = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-        // cfa.AppSettings.Settings[key].Value = value;
-        //
-        // cfa.Save();
+        lock (_lock)
+        {
+            _settings[key] = value;
+            Save();
+        }
     }
+
     #endregion
 }
