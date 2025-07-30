@@ -82,7 +82,7 @@ service.interceptors.response.use(
       message = error.message
     }
 
-    ElMessage.error(message)
+    // ElMessage.error(message)
     return Promise.reject(error)
   }
 )
@@ -90,7 +90,7 @@ service.interceptors.response.use(
 const handleLoginGuest = async () => {
 
   ElMessageBox.confirm(
-    '您还没有登录，是否以游客身份登录？',
+    '您还没有登录，是否登录或注册用户？点否将以游客身份登录。',
     '提示',
     {
       confirmButtonText: '是',
@@ -98,7 +98,13 @@ const handleLoginGuest = async () => {
       type: 'warning'
     }
   ).then(async () => {
+    // 用户取消登录
+    ElMessage.error('请求登录后再访问')
+      window.location.href = '/login'
+  })
+  .catch(async () => {
     try {
+      // 用户选择以游客身份登录
       let visitorId = await getVisitorId() // Ensure guest ID is created or retrieved
       const response = await request.post('/api/Auth/LoginAsGuest/LoginAsGuest?visitorId=' + visitorId)
       const token = response.token
@@ -111,16 +117,18 @@ const handleLoginGuest = async () => {
 
       let isMobileVal = isMobbile();
       if (isMobileVal) {
-        window.location.href = '/mvocabulary'     // 移动端跳转到移动词汇页面
+        window.location.href = '/'     // 移动端跳转到移动词汇页面
       }
       else {
-        window.location.href = '/vocabulary'     // 桌面端跳转到词汇页面
+        window.location.href = '/'     // 桌面端跳转到词汇页面
       }
 
     } catch (error) {
       console.error(error)
       ElMessage.error('登录失败'+ error)
-    } finally { }
+    } finally {
+      
+    }
   })
 }
 

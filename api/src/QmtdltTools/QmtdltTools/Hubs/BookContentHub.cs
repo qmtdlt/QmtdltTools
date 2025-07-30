@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Dtos;
 using QmtdltTools.Domain.Entitys;
@@ -24,13 +25,17 @@ public class BookContentHub:AbpHub
     private readonly EpubManageService _epubManageService;
     private readonly ListenWriteService _listenWriteService;
     private readonly TranslationService _translationService;
-    private Stopwatch _sw;
+    private readonly IHubContext<BookContentHub> _hubContext;
+    private readonly GuestListenLimitService _guestListenLimitService;
+    private readonly Stopwatch _sw;
     public BookContentHub(EpubManageService epubManageService, ListenWriteService listenWriteService, 
-        TranslationService translationService)
+        TranslationService translationService,IHubContext<BookContentHub> hubContext,GuestListenLimitService guestListenLimitService)
     {
         _epubManageService = epubManageService;
         _listenWriteService = listenWriteService;
         _translationService = translationService;
+        _hubContext = hubContext;
+        _guestListenLimitService = guestListenLimitService;
         _sw = new Stopwatch();
     }
 
@@ -40,32 +45,47 @@ public class BookContentHub:AbpHub
         connectionStatusCache.AddOrUpdate(connectionId, true, (connectionId, old) => { return true; });         // set connection alive
 
         var clientProxy = Clients.Caller;
-        Task.Run(async () =>
+
+        var isGuest = Context.IsGuest(); 
+        var guestId = Context.GetUserIdStr(); // 来自你自定义的扩展方法
+
+        if (isGuest)
         {
-            _sw.Start();
-            while (connectionStatusCache[connectionId])
+            // 游客登录，开始计时
+
+            Task.Run(async () =>
             {
-                double totalSeconds = _sw.Elapsed.TotalSeconds;
+                // 检查是否已超出限制
+                if (await _guestListenLimitService.IsGuestLimited(guestId))
+                {
+                    await KickOffGuest(connectionId);
+                    return;
+                }
+                // 启动计时
+                _sw.Start();
+                while (connectionStatusCache[connectionId])
+                {
+                    await Task.Delay(10000);
+                    double totalSeconds = _sw.Elapsed.TotalSeconds;
+                    if (totalSeconds > 1) // 小于 1 秒不计
+                    {
+                        await _guestListenLimitService.AddGuestListenSeconds(guestId, totalSeconds);
+                        _sw.Restart(); // 重置本段时间
+                    }
 
-                // totalSeconds format as x hour y min z sec
-
-                // 转换为小时、分钟和秒
-                int hours = (int)(totalSeconds / 3600);
-                int minutes = (int)((totalSeconds % 3600) / 60);
-                int seconds = (int)(totalSeconds % 60);
-
-                // 格式化为字符串
-                string formattedTime = $"{hours}hour {minutes}minitues {seconds}seconds";
-
-                await clientProxy.SendAsync("onUpdateWatch",formattedTime);
-
-                await Task.Delay(1000);
-            }
-        });
+                    if (await _guestListenLimitService.IsGuestLimited(guestId))
+                    {
+                        await KickOffGuest(connectionId);
+                        break;
+                    }
+                }
+            });
+        }
+        
 
         return base.OnConnectedAsync();
     }
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var connectionId = Context.ConnectionId;
         connectionStatusCache.AddOrUpdate(connectionId, false, (connectionId, old) => { return false; });       // set connection dead
@@ -75,7 +95,33 @@ public class BookContentHub:AbpHub
         // 从 connectionStatusCache 中移除 connectionId 对应数据
         connectionStatusCache.TryRemove(connectionId, out _);
 
-        return base.OnDisconnectedAsync(exception);
+        var isGuest = Context.IsGuest();
+        if (isGuest)
+        {
+            var guestId = Context.GetUserIdStr();
+            double sessionSeconds = _sw.Elapsed.TotalSeconds;
+            if (sessionSeconds > 1)
+                await _guestListenLimitService.AddGuestListenSeconds(guestId, sessionSeconds);
+        }
+
+        await base.OnDisconnectedAsync(exception);
+    }
+
+    // 
+    private async Task KickOffGuest(string connectionId)
+    {
+        // 发消息通知
+        await _hubContext.Clients.Client(connectionId)
+            .SendAsync("onShowErrMsg", "游客听书时长已达上限，请注册账户继续使用");
+
+        // 标记连接为无效（中止循环）
+        connectionStatusCache[connectionId] = false;
+
+        // 主动断开连接（可选，仅在当前线程有上下文时生效）
+        if (Context.ConnectionId == connectionId)
+        {
+            Context.Abort();
+        }
     }
 
     public async Task InitCache(Guid bookId)

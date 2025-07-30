@@ -167,17 +167,26 @@ const enTransQueue = async (phaseText:string) => {
             continue;
         }
 
-        let res = await request.get<VocabularyRecord>(
-            '/api/Vocabulary/Trans',
-            { params: { word: tmpTransText } }
-        );
-        // 新建一个 dialog 项
-        transDialogs.value.push({
-            id: ++dialogId,
-            word: tmpTransText,
-            result: res,
-            visible: true
-        })
+        try {
+            const res = await request.get<VocabularyRecord>('/api/Vocabulary/Trans', {
+                params: { word: tmpTransText },
+            });
+            // 正常翻译
+            // 新建一个 dialog 项
+            transDialogs.value.push({
+                id: ++dialogId,
+                word: tmpTransText,
+                result: res,
+                visible: true
+            })
+        } catch (err: any) {
+            if (err.response?.data?.includes('翻译词汇数已达上限')) {
+                ElMessage.warning('翻译词汇数已达上限，请注册或下月再试');
+            } else {
+                debugger
+                ElMessage.error(err.response?.data?.message || '系统错误');
+            }
+        }
         await sleep(500);
     }
 

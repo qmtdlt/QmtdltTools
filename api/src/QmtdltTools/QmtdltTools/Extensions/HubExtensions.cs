@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.SignalR;
-using Volo.Abp.AspNetCore.SignalR;
 
 namespace QmtdltTools.Hubs;
 
@@ -17,5 +16,13 @@ public static class HubExtensions
         if (userId.IsNullOrEmpty())
             return null;
         return new Guid(userId);
+    }
+
+    // ÊÇ·ñÓÎ¿Í
+    public static bool IsGuest(this HubCallerContext context)
+    {
+        var isGuest = context.User.Claims.ToList()[2].Value;
+
+        return isGuest == "y";
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Entitys;
 using QmtdltTools.Domain.Models;
 using QmtdltTools.Service.Services;
@@ -41,7 +42,7 @@ namespace QmtdltTools.Controllers
             // 简单示例：验证用户名和密码（实际项目中应使用数据库验证）
             if (result.code == 0)
             {
-                var token = GenerateJwtToken(result.data);
+                var token = GenerateJwtToken(result.data,true);
                 return Ok(new { token });
             }
             return Unauthorized();
@@ -53,7 +54,7 @@ namespace QmtdltTools.Controllers
             // 简单示例：验证用户名和密码（实际项目中应使用数据库验证）
             if (result.code == 0)
             {
-                var token = GenerateJwtToken(result.data);
+                var token = GenerateJwtToken(result.data,false);
                 return Ok(new { token });
             }
             return Unauthorized();
@@ -63,7 +64,7 @@ namespace QmtdltTools.Controllers
         {
             return await _userService.Register(user);
         }
-        private string GenerateJwtToken(Guid userId)
+        private string GenerateJwtToken(Guid userId,bool isGuest)
         {
 
             var Issuer = _configuration.GetSection("Jwt:Issuer").Get<string>();
@@ -77,7 +78,8 @@ namespace QmtdltTools.Controllers
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),                  // 用户标识
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())   // token 唯一标识
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),   // token 唯一标识
+                new Claim(ApplicationConst.IsGuest, isGuest?"y":"n")
             };
 
             var token = new JwtSecurityToken(
