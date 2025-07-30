@@ -18,4 +18,6 @@ public class SysUser : EntityBaseId
     [StringLength(256)]
     public string? PhoneNumber { get; set; }
     public bool? IsActive { get; set; }
+    // ÊÇ·ñÓÎ¿Í
+    public bool? IsGuest { get; set; }
 }

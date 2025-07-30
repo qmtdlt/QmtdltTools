@@ -85,11 +85,11 @@ const handleSelection = () => {
         >Library</RouterLink>
 
         
-        <RouterLink v-if="false"
-          to="/listenwritelist" 
-          @click="activeRoute = '/listenwritelist'"
-          :class="{ active: activeRoute === '/listenwritelist' }" 
-        >Records</RouterLink>
+        <RouterLink 
+          to="/" 
+          @click="activeRoute = '/'"
+          :class="{ active: activeRoute === '/' }" 
+        >Login</RouterLink>
       </nav>
     </div>
     <div class="content">

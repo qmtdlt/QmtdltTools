@@ -1,6 +1,8 @@
 import axios from 'axios'
 import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getOrCreateGuestId, getVisitorId } from './guestUser' // Ensure this import is correct
+import { isMobbile } from './myutil' // Adjust the import path as necessary
 
 // Define types for our request configurations
 type RequestConfig = {
@@ -42,22 +44,25 @@ service.interceptors.response.use(
   },
   (error) => {
     console.error('Response error:', error)
-    
+
     // Handle different error scenarios
     let message = 'Unknown error occurred'
-    
+
     if (error.response) {
       const status = error.response.status
-      
+
       switch (status) {
         case 400:
           message = 'Bad request'
           break
         case 401:
-          message = 'Unauthorized, please login'
-          // You might want to redirect to login page here
-          // 跳转到登录页
-          window.location.href = '/'
+          {
+            message = 'Unauthorized, please login'
+            // You might want to redirect to login page here
+            // 跳转到登录页
+            // window.location.href = '/'
+            handleLoginGuest()
+          }
           break
         case 403:
           message = 'Access forbidden'
@@ -76,30 +81,67 @@ service.interceptors.response.use(
     } else {
       message = error.message
     }
-    
+
     ElMessage.error(message)
     return Promise.reject(error)
   }
 )
+
+const handleLoginGuest = async () => {
+
+  ElMessageBox.confirm(
+    '您还没有登录，是否以游客身份登录？',
+    '提示',
+    {
+      confirmButtonText: '是',
+      cancelButtonText: '否',
+      type: 'warning'
+    }
+  ).then(async () => {
+    try {
+      let visitorId = await getVisitorId() // Ensure guest ID is created or retrieved
+      const response = await request.post('/api/Auth/LoginAsGuest/LoginAsGuest?visitorId=' + visitorId)
+      const token = response.token
+
+      // 将 token 存储到 localStorage 中
+      localStorage.setItem('token', token)
+
+      ElMessage.success('登录成功')
+      // 登录成功后跳转到首页
+
+      let isMobileVal = isMobbile();
+      if (isMobileVal) {
+        window.location.href = '/mvocabulary'     // 移动端跳转到移动词汇页面
+      }
+      else {
+        window.location.href = '/vocabulary'     // 桌面端跳转到词汇页面
+      }
+
+    } catch (error) {
+      console.error(error)
+      ElMessage.error('登录失败'+ error)
+    } finally { }
+  })
+}
 
 // Helper methods for common request types
 const request = {
   get<T = any>(url: string, config?: RequestConfig): Promise<T> {
     return service.get(url, config).then(responseBody<T>)
   },
-  
+
   post<T = any>(url: string, data?: any, config?: RequestConfig): Promise<T> {
     return service.post(url, data, config).then(responseBody<T>)
   },
-  
+
   put<T = any>(url: string, data?: any, config?: RequestConfig): Promise<T> {
     return service.put(url, data, config).then(responseBody<T>)
   },
-  
+
   delete<T = any>(url: string, config?: RequestConfig): Promise<T> {
     return service.delete(url, config).then(responseBody<T>)
   },
-  
+
   // Helper for posting with query parameters (useful for your API)
   postWithParams<T = any>(url: string, params?: any): Promise<T> {
     return service.post(url, null, { params }).then(responseBody<T>)
