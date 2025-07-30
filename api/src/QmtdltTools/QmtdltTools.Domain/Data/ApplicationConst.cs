@@ -17,4 +17,10 @@ public class ApplicationConst
     public static string DOU_BAO = "";
     public static string QIAN_WEN = "";
     public static int AIType = 4;
+    public const string IsGuest = "IsGuest";
+
+    public const double GuestListenTimeLimit = 10;          // 3 * 3600 为总秒数，可以听书3小时
+    public const int QuotaBookCnt = 3;                  // 每月可以上传3本书
+    public const int QuotaTranslateWordsCnt = 100;          // 每月可以翻译100个词汇
+    public const int QuotaExplainParagraph = 50;          // 每月可以解释3个段落
 }

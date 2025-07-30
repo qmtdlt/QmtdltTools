@@ -133,40 +133,46 @@ public partial class LocalVideoView : UserControl, ITransientDependency
     private int _lastSubtitleIndex = -1;
     private void Timer_Tick(object sender, EventArgs e)
     {
-        if (_mediaPlayer == null || _mediaPlayer.Length <= 0) return;
-
-        if (!_isDragging)
+        try
         {
-            ProgressSlider.Maximum = _mediaPlayer.Length;
-            ProgressSlider.Value = _mediaPlayer.Time;
-        }
-        TimeText.Text = $"{TimeSpan.FromMilliseconds(_mediaPlayer.Time):mm\\:ss}/{TimeSpan.FromMilliseconds(_mediaPlayer.Length):mm\\:ss}";
+            if (_mediaPlayer == null || _mediaPlayer.Length <= 0) return;
 
-        updateSubtitle();
-        // 单句循环逻辑
-        if (_isRepeating && _repeatIndex != -1)
-        {
-            var sub = subtitles.FirstOrDefault(s => s.Index == _repeatIndex);
-            var nextSub = subtitles.FirstOrDefault(s => s.Index == _repeatIndex + 1);
-
-            if (sub != null && nextSub != null && _mediaPlayer != null)
+            if (!_isDragging)
             {
-                // 当前时间超过下句开头就回到本句开头
-                if (_mediaPlayer.Time >= nextSub.Start.TotalMilliseconds)
+                ProgressSlider.Maximum = _mediaPlayer.Length;
+                ProgressSlider.Value = _mediaPlayer.Time;
+            }
+            TimeText.Text = $"{TimeSpan.FromMilliseconds(_mediaPlayer.Time):mm\\:ss}/{TimeSpan.FromMilliseconds(_mediaPlayer.Length):mm\\:ss}";
+
+            updateSubtitle();
+            // 单句循环逻辑
+            if (_isRepeating && _repeatIndex != -1)
+            {
+                var sub = subtitles.FirstOrDefault(s => s.Index == _repeatIndex);
+                var nextSub = subtitles.FirstOrDefault(s => s.Index == _repeatIndex + 1);
+
+                if (sub != null && nextSub != null && _mediaPlayer != null)
                 {
-                    _mediaPlayer.Time = (long)sub.Start.TotalMilliseconds;
+                    // 当前时间超过下句开头就回到本句开头
+                    if (_mediaPlayer.Time >= nextSub.Start.TotalMilliseconds)
+                    {
+                        _mediaPlayer.Time = (long)sub.Start.TotalMilliseconds;
+                    }
+                }
+                else if (sub != null && _mediaPlayer != null && sub.End != TimeSpan.Zero)
+                {
+                    // 没有下一句的情况（最后一句）
+                    if (_mediaPlayer.Time >= sub.End.TotalMilliseconds)
+                    {
+                        _mediaPlayer.Time = (long)sub.Start.TotalMilliseconds;
+                    }
                 }
             }
-            else if (sub != null && _mediaPlayer != null && sub.End != TimeSpan.Zero)
-            {
-                // 没有下一句的情况（最后一句）
-                if (_mediaPlayer.Time >= sub.End.TotalMilliseconds)
-                {
-                    _mediaPlayer.Time = (long)sub.Start.TotalMilliseconds;
-                }
-            }
         }
-
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
     }
     void updateSubtitle()
     {
@@ -197,18 +203,6 @@ public partial class LocalVideoView : UserControl, ITransientDependency
             _mediaPlayer.Time = (long)ProgressSlider.Value;
         }
     }
-
-    // private void ProgressSlider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
-    // {
-    //     _isDragging = true;
-    // }
-    //
-    // private void ProgressSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
-    // {
-    //     _isDragging = false;
-    //     if (_mediaPlayer != null)
-    //         _mediaPlayer.Time = (long)ProgressSlider.Value;
-    // }
 
     private LibVLC _libVLC;
     private LibVLCSharp.Shared.MediaPlayer _mediaPlayer;

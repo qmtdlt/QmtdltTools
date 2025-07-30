@@ -1,9 +1,12 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using System.Collections.Concurrent;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using QmtdltTools.Domain.Data;
 using QmtdltTools.Domain.Entitys;
 using QmtdltTools.Domain.Models;
 using QmtdltTools.Service.Services;
@@ -22,6 +25,28 @@ namespace QmtdltTools.Controllers
             _configuration = configuration;
             _userService = userService;
         }
+
+        [HttpPost("LoginAsGuest")]
+        public async Task<IActionResult> LoginAsGuest(string visitorId)
+        {
+            SysUser user = new SysUser
+            {
+                Name = visitorId,
+                Code = visitorId,
+                PasswordHash = visitorId
+            };
+
+            var reg_result = await _userService.RegisterGuest(user);                          // 注册为游客用户
+
+            var result = await _userService.CheckLogin(visitorId, visitorId);     // 获取游客登录
+            // 简单示例：验证用户名和密码（实际项目中应使用数据库验证）
+            if (result.code == 0)
+            {
+                var token = GenerateJwtToken(result.data,true);
+                return Ok(new { token });
+            }
+            return Unauthorized();
+        }
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
@@ -29,7 +54,7 @@ namespace QmtdltTools.Controllers
             // 简单示例：验证用户名和密码（实际项目中应使用数据库验证）
             if (result.code == 0)
             {
-                var token = GenerateJwtToken(result.data);
+                var token = GenerateJwtToken(result.data,false);
                 return Ok(new { token });
             }
             return Unauthorized();
@@ -39,7 +64,7 @@ namespace QmtdltTools.Controllers
         {
             return await _userService.Register(user);
         }
-        private string GenerateJwtToken(Guid userId)
+        private string GenerateJwtToken(Guid userId,bool isGuest)
         {
 
             var Issuer = _configuration.GetSection("Jwt:Issuer").Get<string>();
@@ -53,7 +78,8 @@ namespace QmtdltTools.Controllers
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),                  // 用户标识
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())   // token 唯一标识
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),   // token 唯一标识
+                new Claim(ApplicationConst.IsGuest, isGuest?"y":"n")
             };
 
             var token = new JwtSecurityToken(
@@ -65,6 +91,23 @@ namespace QmtdltTools.Controllers
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        private static ConcurrentDictionary<string, DateTime> _tokenBlacklist = new();
+        [Authorize]
+        [HttpPost("Logout")]
+        public IActionResult Logout()
+        {
+            // 获取 token 的 jti
+            var jti = User.FindFirstValue(JwtRegisteredClaimNames.Jti);
+            if (!string.IsNullOrEmpty(jti))
+            {
+                // 加入黑名单，设置过期时间（建议与 token 有效期一致）
+                _tokenBlacklist[jti] = DateTime.UtcNow.AddMinutes(
+                    _configuration.GetSection("Jwt:ExpiresMinutes").Get<double>()
+                );
+            }
+
+            return Ok(new { message = "Logged out successfully" });
         }
     }
 

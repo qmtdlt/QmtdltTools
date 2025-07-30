@@ -5,4 +5,4 @@ const isMobbile = () => {
     return isMobile !== null
 }
 
-export { isMobbile }
+export { isMobbile };

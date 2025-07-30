@@ -70,6 +70,7 @@ namespace QmtdltTools.Service.Services
         // Register
         public async Task<Response<bool>> Register(SysUser user)
         {
+            user.IsGuest = false;
             var existingUser = await _dc.SysUsers.Where(t => t.Name == user.Name).FirstOrDefaultAsync();
             if (existingUser != null)
             {
@@ -79,6 +80,35 @@ namespace QmtdltTools.Service.Services
                     message = "用户名已存在"
                 };
             }
+            user.Id = Guid.NewGuid();
+            _dc.SysUsers.Add(user);
+            await _dc.SaveChangesAsync();
+            return new Response<bool>
+            {
+                code = 0,
+                message = "注册成功"
+            };
+        }
+        const int maxGuestCnt = 500;                    
+        public async Task<Response<bool>> RegisterGuest(SysUser user)
+        {
+            user.IsGuest = true;
+            var guestCnt = await _dc.SysUsers.Where(t => t.IsGuest == true).CountAsync();
+            if(guestCnt > maxGuestCnt)
+            {
+                throw new Exception("游客用户已满，请稍后再试");
+            }
+
+            var existingUser = await _dc.SysUsers.Where(t => t.Name == user.Name).FirstOrDefaultAsync();
+            if (existingUser != null)
+            {
+                return new Response<bool>
+                {
+                    code = 1,
+                    message = "用户名已存在"
+                };
+            }
+
             user.Id = Guid.NewGuid();
             _dc.SysUsers.Add(user);
             await _dc.SaveChangesAsync();

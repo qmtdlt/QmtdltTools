@@ -7,6 +7,7 @@ using VersOne.Epub;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.JsonWebTokens;
 using QmtdltTools.Extensions;
+using QmtdltTools.Domain.Data;
 
 namespace QmtdltTools.Controllers
 {
@@ -16,16 +17,30 @@ namespace QmtdltTools.Controllers
     public class EpubManageController:AbpController
     {
         private readonly EpubManageService _epubManageService;
-        public EpubManageController(EpubManageService epubManageService)
+        private readonly GuestQuotaLimitService _guestQuotaLimitService;
+        public EpubManageController(EpubManageService epubManageService, GuestQuotaLimitService guestQuotaLimitService)
         {
             _epubManageService = epubManageService;
+            _guestQuotaLimitService = guestQuotaLimitService;
         }
         // epub 文件上传接口
         [HttpPost("UploadEpub")]
         public async Task<Response<bool>> UploadEpub(IFormFile file)
         {
-            
             Guid? uid = HttpContext.GetUserId();           // 当前登录用户id
+            string? uidStr = HttpContext.GetUserIdStr();           // 当前登录用户id
+
+            if (await _guestQuotaLimitService.IsLimited(uidStr, "UploadBook", ApplicationConst.QuotaBookCnt))
+            {
+                return new Response<bool>
+                {
+                    code = 1,
+                    message = "上传电子书次数已达上限，请登录或注册用户，或将在下个月重置配额"
+                };
+            }
+
+            await _guestQuotaLimitService.AddUsage(uidStr, "UploadBook");
+
             var bytes = file.GetAllBytes();         // 文件转换为字节数组
             
             return await _epubManageService.UploadEpub(bytes,file.FileName,uid);

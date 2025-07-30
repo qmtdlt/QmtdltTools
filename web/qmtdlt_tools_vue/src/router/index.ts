@@ -33,12 +33,12 @@ const router = createRouter({
       component: () => import('../views/ListenWriteList.vue'),
     },
     {
-      path: '/library',
+      path: '/',
       name: 'library',
       component: () => import('../views/Library.vue'),
     },
     {
-      path: '/',
+      path: '/login',
       name: 'login',
       component: LoginView
     },

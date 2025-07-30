@@ -184,20 +184,26 @@ const explainPhase = async () => {
   if ("confirm" == res) {
     // 调用接口获取讲解内容
     explanationLoading.value = true; // 显示加载状态
-    explainResult.value = await request.post<ExplainResultDto>('/api/ReadBook/GetExplainResult', {
-      Phase: readContent.value.full_pragraph_text,
-      bookId: readContent.value.bookId,
-      PhaseIndex: readContent.value.curPosition.pragraphIndex,
-    });
+    
+
+    try {
+            explainResult.value = await request.post<ExplainResultDto>('/api/ReadBook/GetExplainResult', {
+              Phase: readContent.value.full_pragraph_text,
+              bookId: readContent.value.bookId,
+              PhaseIndex: readContent.value.curPosition.pragraphIndex,
+            });
+        } catch (err: any) {
+            if (err.response?.data?.includes('段落讲解次数已达上限')) {
+                ElMessage.warning('段落讲解次数已达上限，请注册或下月再试');
+            } else {
+                ElMessage.error(err.response?.data || '系统错误');
+            }
+        }
+
     explanationLoading.value = false; // 隐藏加载状态
 
-    stopPlayBase64Audio();
-    startPlayBase64Audio(explainResult.value.voiceBuffer ?? "", () => {
-      console.log("播放完成");
-    });
     explanationText.value = explainResult.value.explanation ?? '';
     showExplanation.value = true;
-    ElMessage.success('讲解成功')
   } else {
     showExplanation.value = false;
   }
@@ -304,12 +310,6 @@ const stopRead = async () => {
   stopPlayBase64Audio(); // Now suspends the context
 }
 
-
-connection.on("onShowErrMsg", (msg: string) => {
-  console.error("Received error message:", msg);
-  ElMessage.error(msg);
-});
-
 const formatTime = ref(""); // 格式化时间
 connection.on("onUpdateWatch", (formatTimeStr: string) => {
   formatTime.value = formatTimeStr; // 更新时间
@@ -328,6 +328,12 @@ connection.on("UIReadInfo", (input: any) => {
       readNext(); // 继续读取下一段
     }
   });
+});
+
+connection.on("onShowErrMsg", (msg: string) => {
+  debugger
+  console.error("Received error message:", msg);
+  ElMessage.error(msg);
 });
 
 connection.on("onsetbookposition", (input: any) => {

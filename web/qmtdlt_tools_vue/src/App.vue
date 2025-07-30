@@ -52,6 +52,23 @@ const handleSelection = () => {
         <h1>YoungForYou</h1>
       </div>
       <nav class="main-nav">
+        <RouterLink
+          to="/" 
+          @click="activeRoute = '/'" 
+          :class="{ active: activeRoute === '/' }"
+        >Library</RouterLink>
+
+        <RouterLink v-if="!isMobileRef"
+          to="/vocabulary" 
+          @click="activeRoute = '/vocabulary'"
+          :class="{ active: activeRoute === '/vocabulary' }" 
+        >Vocabulary</RouterLink>
+
+        <RouterLink v-if="isMobileRef"
+          to="/mvocabulary" 
+          @click="activeRoute = '/mvocabulary'"
+          :class="{ active: activeRoute === '/mvocabulary' }" 
+        >Vocabulary</RouterLink>
 
         <RouterLink
           to="/articles" 
@@ -60,36 +77,16 @@ const handleSelection = () => {
         >MArticle</RouterLink>
         
         <RouterLink v-if="isMobileRef"
-          to="/mvocabulary" 
-          @click="activeRoute = '/mvocabulary'"
-          :class="{ active: activeRoute === '/mvocabulary' }" 
-        >Vocabulary</RouterLink>
-
-        
-        <RouterLink v-if="isMobileRef"
           to="/mreplay" 
           @click="activeRoute = '/mreplay'"
           :class="{ active: activeRoute === '/mreplay' }" 
         >Replay</RouterLink>
 
-        <RouterLink v-if="!isMobileRef"
-          to="/vocabulary" 
-          @click="activeRoute = '/vocabulary'"
-          :class="{ active: activeRoute === '/vocabulary' }" 
-        >Vocabulary</RouterLink>
-        
-        <RouterLink
-          to="/library" 
-          @click="activeRoute = '/library'" 
-          :class="{ active: activeRoute === '/library' }"
-        >Library</RouterLink>
-
-        
-        <RouterLink v-if="false"
-          to="/listenwritelist" 
-          @click="activeRoute = '/listenwritelist'"
-          :class="{ active: activeRoute === '/listenwritelist' }" 
-        >Records</RouterLink>
+        <RouterLink 
+          to="/login" 
+          @click="activeRoute = '/login'"
+          :class="{ active: activeRoute === '/login' }" 
+        >Login</RouterLink>
       </nav>
     </div>
     <div class="content">

@@ -151,7 +151,7 @@ export default defineComponent({
         books.value = response.data || response;
       } catch (error) {
         console.error('获取书籍失败:', error);
-        ElMessage.error('获取书籍列表失败');
+        // ElMessage.error('获取书籍列表失败');
       } finally {
         loading.value = false;
       }
@@ -165,7 +165,7 @@ export default defineComponent({
         txtBooks.value = response.data || response;
       } catch (error) {
         console.error('获取TXT失败:', error);
-        ElMessage.error('获取TXT列表失败');
+        // ElMessage.error('获取TXT列表失败');
       } finally {
         txtLoading.value = false;
       }
@@ -211,7 +211,7 @@ export default defineComponent({
       formData.append('file', file);
 
       try {
-        await request.post('/api/EpubManage/UploadEpub/UploadEpub', formData, {
+        let res = await request.post('/api/EpubManage/UploadEpub/UploadEpub', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -223,8 +223,17 @@ export default defineComponent({
             onProgress?.({ percent: percentCompleted });
           },
         });
-
-        ElMessage.success('电子书上传成功');
+        debugger
+        if(res.code == 0)
+        {
+          ElMessage.success('电子书上传成功');
+        }
+        else
+        {
+          ElMessage.error('电子书上传失败: ' + res.message);
+          return;
+        }
+        
         fetchBooks();
       } catch (error) {
         console.error('上传失败:', error);
