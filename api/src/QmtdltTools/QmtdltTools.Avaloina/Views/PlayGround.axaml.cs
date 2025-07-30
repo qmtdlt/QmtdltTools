@@ -17,8 +17,8 @@ namespace QmtdltTools.Avaloina.Views;
 
 public partial class PlayGround : Window,ITransientDependency
 {
-    private readonly TransService _transService;
-    public PlayGround(PlayGroundVm vm, TransService transService)
+    private readonly TransRestService _transService;
+    public PlayGround(PlayGroundVm vm, TransRestService transService)
     {
         InitializeComponent();
         _transService = transService;
@@ -27,7 +27,14 @@ public partial class PlayGround : Window,ITransientDependency
 
     private void TextBox_OnPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        
+        if (sender is TextBox tb)
+        {
+            string selectedText = tb.SelectedText;
+            if (!string.IsNullOrEmpty(selectedText))
+            {
+                _ = _transService.Trans(selectedText);
+            }
+        }
     }
 
     private void Window_OnClosing(object? sender, WindowClosingEventArgs e)
@@ -44,7 +51,7 @@ public class PlayGroundVm : ViewModelBase, ITransientDependency
     const string startRecord = "开始录音";
     const string stopRecord = "停止录音";
     // private WaveInEvent waveIn;
-    private MemoryStream audioStream;
+    //private MemoryStream audioStream;
     // private WaveFileWriter waveFileWriter;
     private bool isRecording = false;
     string tempAudioFilePath = "";
@@ -99,7 +106,7 @@ public class PlayGroundVm : ViewModelBase, ITransientDependency
         }
         else
         {
-            StopRecording();            // 停止录音
+            //StopRecording();            // 停止录音
         }
     }
     private void StartRecording()
@@ -133,17 +140,17 @@ public class PlayGroundVm : ViewModelBase, ITransientDependency
         {
             // waveIn.StopRecording();
             // waveFileWriter.Flush();
-            isRecording = false;
-            RecordBtnContent = startRecord;
-            IsSubmitEnable = true;
-            StatusText = "录音已停止，可以提交或播放";
+            //isRecording = false;
+            //RecordBtnContent = startRecord;
+            //IsSubmitEnable = true;
+            //StatusText = "录音已停止，可以提交或播放";
 
-            // Save audio to a temporary file
-            tempAudioFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"recording_submit.wav");
-            File.WriteAllBytes(tempAudioFilePath, audioStream.ToArray());
+            //// Save audio to a temporary file
+            //tempAudioFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"recording_submit.wav");
+            //File.WriteAllBytes(tempAudioFilePath, audioStream.ToArray());
 
-            // Prepare audio for playback
-            RecordAudioUri = new Uri(tempAudioFilePath, UriKind.Absolute);
+            //// Prepare audio for playback
+            //RecordAudioUri = new Uri(tempAudioFilePath, UriKind.Absolute);
         }
         catch (Exception ex)
         {
