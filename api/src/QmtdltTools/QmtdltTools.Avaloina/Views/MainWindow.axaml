@@ -23,8 +23,6 @@
         <RowDefinition Height="300" />
       </Grid.RowDefinitions>
 
-      <!-- <ContentControl Grid.Row="0" Content="{Binding VideoView}" /> -->
-
       <views:LocalVideoView Name="localVideoView"/>
       
       <GridSplitter Grid.Row="1" Background="Gray" ShowsPreview="True" HorizontalAlignment="Stretch" />
@@ -52,9 +50,9 @@
             <ColumnDefinition Width="*" />
           </Grid.ColumnDefinitions>
 
-          <Button Grid.Column="0" Content="{Binding RecordBtnContent}" Command="{Binding AudioRecordCmd}" />
+          <Button Grid.Column="0" Content="{Binding RecordBtnContent, Mode=TwoWay}" Command="{Binding AudioRecordCmd}" />
           <Button Grid.Column="1" Content="提交录音" Command="{Binding CheckShadowingCmd}"
-                  IsEnabled="{Binding IsSubmitEnable}" />
+                  IsEnabled="{Binding IsSubmitEnable, Mode=TwoWay}" />
           <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="{Binding StatusText}" />
         </Grid>
       </Grid>

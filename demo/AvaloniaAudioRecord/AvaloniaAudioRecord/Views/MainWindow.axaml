@@ -20,5 +20,6 @@
         <Button Click="StopRecordAudio">停止录音</Button>
         <Button Click="PlayAudio">播放录音</Button>
         <Button Click="SaveAudio">保存录音</Button>
+        <TextBlock Text="{Binding Greeting, Mode=TwoWay}"></TextBlock>
     </StackPanel>
 </Window>
