@@ -17,18 +17,18 @@ public partial class PronunciationEvaluation : UserControl,ITransientDependency
     {
         InitializeComponent();
         DataContext = vm;
-        plot.Plot.Font.Set(SKFontManager.Default.MatchCharacter('ºº').FamilyName);
+        plot.Plot.Font.Set(SKFontManager.Default.MatchCharacter('æ±‰').FamilyName);
     }
 
 
     public void SetScores(PronunciationAssessmentResultDto input)
     {
-        string[] spokeLabels = { "·¢Òô×¼È·¶È", "ÓïÒôµÄÁ÷³©¶È", "ÍêÕûĞÔ", "ÔÏÂÉ" };
+        string[] spokeLabels = { "å‘éŸ³å‡†ç¡®åº¦", "è¯­éŸ³æµç•…åº¦", "å®Œæ•´æ€§", "éŸµå¾‹" };
         double[] values = { input.AccuracyScore, input.FluencyScore, input.CompletenessScore, input.ProsodyScore };
         var radar = plot.Plot.Add.Radar(values);
         radar.PolarAxis.SetSpokes(spokeLabels, length: 110);
         plot.Refresh();
-        overAllScore.Text = input.PronunciationScore.ToString("0.00") + "·Ö";
+        overAllScore.Text = input.PronunciationScore.ToString("0.00") + "åˆ†";
         ShowWordsResult(input.Words);
     }
 

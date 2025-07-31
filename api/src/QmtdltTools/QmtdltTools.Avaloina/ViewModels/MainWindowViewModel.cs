@@ -15,6 +15,8 @@ using SoundFlow.Components;
 using SoundFlow.Enums;
 using SoundFlow.Structs;
 using System.Windows.Input;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
 using QmtdltTools.Avaloina.Dto;
 
 namespace QmtdltTools.Avaloina.ViewModels;
@@ -65,6 +67,7 @@ public partial class MainWindowViewModel : ReactiveObject, ISingletonDependency
                 else
                 {
                     // MessageBox.Show("未获取到评价，请重试");
+                    MessageBoxManager.GetMessageBoxStandard("提示", "未获取到评价，请重试", ButtonEnum.Ok).ShowAsync();
                 }
             }
         }
