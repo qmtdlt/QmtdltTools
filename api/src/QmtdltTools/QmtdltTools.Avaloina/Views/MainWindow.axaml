@@ -38,11 +38,11 @@
         </Grid.RowDefinitions>
 
         <TextBox Grid.Row="0" FontSize="28" BorderThickness="0" TextWrapping="Wrap"
-                 Text="{Binding PastSubtitle}" IsReadOnly="True"
-                 PointerReleased="TextBox_OnPointerReleased" />
+                 Name="PastSubtitle" IsReadOnly="True"
+                 PointerReleased="TextBox_OnPointerReleased"/>
 
         <TextBox Grid.Row="1" FontSize="28" FontWeight="Bold" BorderThickness="0" TextWrapping="Wrap"
-                 Text="{Binding CurSubtitle}" IsReadOnly="True"
+                 Name="CurSubtitle" IsReadOnly="True"
                  PointerReleased="TextBox_OnPointerReleased" />
 
         <Grid Grid.Row="2">

@@ -10,6 +10,7 @@ using System.Collections.Concurrent;
 using System.Reactive;
 using System;
 using Volo.Abp.DependencyInjection;
+using System.Linq;
 
 namespace QmtdltTools.Avaloina.Views;
 
@@ -23,7 +24,7 @@ public partial class MainWindow : Window
         DataContext = vm;
         this.Closing += MainWindow_Closing;
         
-        localVideoView.InitAction(vm.updatingTitle, vm.SetSubTitle);
+        localVideoView.InitAction(updatingTitle, SetSubTitle);
     }
 
     private void MainWindow_Closing(object? sender, WindowClosingEventArgs e)
@@ -46,7 +47,28 @@ public partial class MainWindow : Window
             }
         }
     }
-
+    public void updatingTitle(string subTitle)
+    {
+        CurSubtitle.Text = subTitle;
+    }
+    ConcurrentQueue<string> subtitleQueue = new ConcurrentQueue<string>();          // 字幕队列
+    public void SetSubTitle(string subTitle)
+    {
+        subtitleQueue.Enqueue(subTitle);
+        updatePastSubtitles();
+    }
+    void updatePastSubtitles()
+    {
+        if (subtitleQueue.Count > 4)
+        {
+            subtitleQueue.TryDequeue(out string? data);
+        }
+        var list = subtitleQueue.ToList();
+        if (list.Count > 1)
+        {
+            PastSubtitle.Text = string.Join("\n", list);
+        }
+    }
     private void InputElement_OnKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Key == Key.Space)

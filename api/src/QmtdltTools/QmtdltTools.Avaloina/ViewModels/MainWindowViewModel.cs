@@ -16,12 +16,8 @@ public partial class MainWindowViewModel : ViewModelBase,ISingletonDependency
 {
     const string startRecord = "开始录音";
     const string stopRecord = "停止录音";
-    // private WaveInEvent waveIn;
-    //private MemoryStream audioStream;
-    // private WaveFileWriter waveFileWriter;
     private bool isRecording = false;
     string tempAudioFilePath = "";
-    ConcurrentQueue<string> subtitleQueue = new ConcurrentQueue<string>();          // 字幕队列
 
     public ReactiveCommand<Unit, Unit> AudioRecordCmd { get; set; }
     public ReactiveCommand<Unit, Unit> CheckShadowingCmd { get; set; }
@@ -123,35 +119,13 @@ public partial class MainWindowViewModel : ViewModelBase,ISingletonDependency
             // MessageBox.Show($"录音停止失败: {ex.Message}");
         }
     }
-    public void updatingTitle(string subTitle)
-    {
-        CurSubtitle = subTitle;
-    }
-    public void SetSubTitle(string subTitle)
-    {
-        subtitleQueue.Enqueue(subTitle);
-        updatePastSubtitles();
-    }
-    void updatePastSubtitles()
-    {
-        if (subtitleQueue.Count > 4)
-        {
-            subtitleQueue.TryDequeue(out string? data);
-        }
-        var list = subtitleQueue.ToList();
-        if (list.Count > 1)
-        {
-            PastSubtitle = string.Join("\n", list);
-        }
-    }
+    
 
 
     public Uri RecordAudioUri { get; set; }
     public bool IsSubmitEnable { get; set; }
     public string StatusText { get; set; }
     public string RecordBtnContent { get; set; }
-    public string CurSubtitle { get; set; }
-    public string PastSubtitle { get; set; }
     public PronunciationAssessmentResult? PronunciationResult { get; set; }
     public object OverAllPlot { get; set; }
 }

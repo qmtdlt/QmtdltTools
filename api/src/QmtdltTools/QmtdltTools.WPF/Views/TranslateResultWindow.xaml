@@ -27,9 +27,6 @@
                 </Grid.ColumnDefinitions>
                 <TextBox Text="{Binding ResData.AIExplanation}" TextWrapping="Wrap" FontSize="18" VerticalContentAlignment="Top" Padding="5" 
                          MouseDoubleClick="TextBox_MouseDoubleClick" PreviewMouseUp="TextBox_PreviewMouseUp"/>
-                <Grid Grid.Column="1">
-                    <Button Click="playExplain" VerticalAlignment="Top">🔊</Button>
-                </Grid>
             </Grid>
         </StackPanel>
 
