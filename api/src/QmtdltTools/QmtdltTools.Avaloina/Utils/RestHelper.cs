@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.CognitiveServices.Speech.PronunciationAssessment;
 using QmtdltTools.Avaloina.Dto;
 using RestSharp;
 
@@ -63,5 +64,40 @@ public class RestHelper
         return dto;
     }
 
+    public static async Task<PronunciationAssessmentResultDto?> CheckShadowing(string audioFilePath, string reftext)
+    {
+        var endpoint = $"{AppSettingHelper.ApiServer}/api/Shadowing/CheckShadowing?reftext={Uri.EscapeDataString(reftext)}";
 
+        var client = new RestClient();
+        var request = new RestRequest(endpoint, Method.Post);
+
+        request.AddHeader("Authorization", $"Bearer {token}");
+        request.AlwaysMultipartFormData = true;
+
+        // 添加音频文件
+        request.AddFile("audioFile", audioFilePath, "audio/wav");
+
+        // 发送请求
+        var response = await client.ExecuteAsync(request);
+
+        if (!response.IsSuccessful)
+        {
+            Console.WriteLine($"Request failed: {response.StatusCode} - {response.Content}");
+            return null;
+        }
+
+        try
+        {
+            var result = JsonSerializer.Deserialize<PronunciationAssessmentResultDto>(response.Content, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Deserialization error: " + ex.Message);
+            return null;
+        }
+    }
 }

@@ -15,6 +15,7 @@ using SoundFlow.Components;
 using SoundFlow.Enums;
 using SoundFlow.Structs;
 using System.Windows.Input;
+using QmtdltTools.Avaloina.Dto;
 
 namespace QmtdltTools.Avaloina.ViewModels;
 
@@ -29,10 +30,9 @@ public partial class MainWindowViewModel : ReactiveObject, ISingletonDependency
     const string startRecord = "开始录音";
     const string stopRecord = "停止录音";
     private bool isRecording = false;
-    string tempAudioFilePath = "";
 
     public ICommand AudioRecordCmd { get; }
-    public ReactiveCommand<Unit, Unit> CheckShadowingCmd { get; set; }
+    public ICommand CheckShadowingCmd { get; set; }
     public MainWindowViewModel()
     {
         _outputFilePath = Path.Combine(Directory.GetCurrentDirectory(), "recording.wav");
@@ -46,26 +46,26 @@ public partial class MainWindowViewModel : ReactiveObject, ISingletonDependency
     {
         try
         {
-            if (File.Exists(tempAudioFilePath))
+            if (File.Exists(_outputFilePath))
             {
                 StatusText = "正在进行评估...";
                 PronunciationResult = null;
 
                 OverAllPlot = null;
 
-                //PronunciationResult = await MsTTSHelperRest.PronunciationAssessmentWithLocalWavFileAsync(tempAudioFilePath, CurSubtitle);
+                PronunciationResult = await RestHelper.CheckShadowing(_outputFilePath, CurSubTitle);
 
-                //if(PronunciationResult != null)
-                //{
-                //    // var view = App.Get<PronunciationEvaluation>();
-                //    // view.SetScores(PronunciationResult);
-                //    // OverAllPlot = view;
-                //    StatusText = "请查看发音评价。";
-                //}
-                //else
-                //{
-                //    // MessageBox.Show("未获取到评价，请重试");
-                //}
+                if (PronunciationResult != null)
+                {
+                    var view = App.Get<PronunciationEvaluation>();
+                    view.SetScores(PronunciationResult);
+                    OverAllPlot = view;
+                    StatusText = "请查看发音评价。";
+                }
+                else
+                {
+                    // MessageBox.Show("未获取到评价，请重试");
+                }
             }
         }
         catch (Exception ex)
@@ -178,9 +178,13 @@ public partial class MainWindowViewModel : ReactiveObject, ISingletonDependency
             // MessageBox.Show($"录音停止失败: {ex.Message}");
         }
     }
-    
 
+    internal void updateCurSubtitle(string subTitle)
+    {
+        CurSubTitle = subTitle;
+    }
 
+    public string CurSubTitle { get; set; }
     public Uri RecordAudioUri { get; set; }
     //public bool IsSubmitEnable { get; set; }
 
@@ -213,6 +217,15 @@ public partial class MainWindowViewModel : ReactiveObject, ISingletonDependency
             this.RaiseAndSetIfChanged(ref _recordBtnContent, value);
         }
     }
-    public PronunciationAssessmentResult? PronunciationResult { get; set; }
-    public object OverAllPlot { get; set; }
+    public PronunciationAssessmentResultDto? PronunciationResult { get; set; }
+
+    private object _overAllPlot;
+    public object OverAllPlot
+    {
+        get { return _overAllPlot; }
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _overAllPlot, value);
+        }
+    }
 }

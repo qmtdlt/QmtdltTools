@@ -51,6 +51,10 @@ public partial class MainWindow : Window
     public void updatingTitle(string subTitle)
     {
         CurSubtitle.Text = subTitle;
+        if(DataContext is MainWindowViewModel vm)
+        {
+            vm.updateCurSubtitle(subTitle);
+        }
     }
     ConcurrentQueue<string> subtitleQueue = new ConcurrentQueue<string>();          // 字幕队列
     public void SetSubTitle(string subTitle)
