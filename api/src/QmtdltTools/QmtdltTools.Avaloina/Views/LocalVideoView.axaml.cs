@@ -240,7 +240,7 @@ public partial class LocalVideoView : UserControl, ITransientDependency
     {
         // 构造字幕文件路径（同名、同目录）
         string subtitlePath = Path.ChangeExtension(targetVideoPath.Text, "英文.srt");
-        //Sleepless.in.Seattle.1993.1080p.iTunes.WEB-DL.DDP5.1.Atmos.H264-BATWEB
+        //Sleepless.in.Seattle.1993.1080p.BluRay.X264-AMIABLE
         //Sleepless.in.Seattle.1993.1080p.BluRay.X264-AMIABLE.英文
         //subtitlePath = "Sleepless.in.Seattle.1993.1080p.BluRay.X264-AMIABLE.英文.srt";
         Debug.WriteLine($"找到字幕了：{subtitlePath}");

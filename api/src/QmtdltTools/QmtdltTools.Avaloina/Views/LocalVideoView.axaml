@@ -19,13 +19,11 @@
       <Button FontSize="15" Height="35" Width="40" x:Name="NextSubtitleBtn" Content="⏭" Click="NextSubtitleBtn_Click" Margin="0,0,5,0"/>
       <Button FontSize="15" Height="35" Width="40" x:Name="RepeatBtn" Content="🔁" Click="RepeatBtn_Click" Margin="0,0,10,0"/>
       <Button FontSize="15" Height="35" Width="40" x:Name="PauseBtn" Content="⏸" Click="PauseBtn_Click" Margin="5,0"/>
-      <Slider x:Name="ProgressSlider" Width="400" 
-              ValueChanged="ProgressSlider_ValueChanged"
+      <Slider x:Name="ProgressSlider" Width="250" ValueChanged="ProgressSlider_ValueChanged"
               VerticalAlignment="Top" />
-
       <TextBlock x:Name="TimeText" Width="150" Margin="10,0" VerticalAlignment="Center"/>
       <TextBlock VerticalAlignment="Center" FontSize="20">🔊</TextBlock>
-      <Slider x:Name="VolumeSlider" Width="80" Minimum="0" Maximum="100" ValueChanged="VolumeSlider_ValueChanged"   VerticalAlignment="Center"/>
+      <Slider x:Name="VolumeSlider" Width="80" Minimum="0" Maximum="100" ValueChanged="VolumeSlider_ValueChanged"   VerticalAlignment="Top"/>
       <Button FontSize="15" Height="35" Width="40" Margin="10,0,0,0" Content="📂" Click="OpenVideo"/>
     </StackPanel>
     <TextBox x:Name="targetVideoPath" IsVisible="false"/>
