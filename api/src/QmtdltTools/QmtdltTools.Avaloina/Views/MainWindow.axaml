@@ -7,7 +7,7 @@
         x:Class="QmtdltTools.Avaloina.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="QmtdltTools.Avaloina" Loaded="Control_OnLoaded">
+        Title="看电影学英语" Loaded="Control_OnLoaded">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,

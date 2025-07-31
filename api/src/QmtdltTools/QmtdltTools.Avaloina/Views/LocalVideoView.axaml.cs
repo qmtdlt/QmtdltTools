@@ -4,11 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using LibVLCSharp.Avalonia;
@@ -26,18 +24,15 @@ public partial class LocalVideoView : UserControl, ITransientDependency
     private DispatcherTimer _timer;
     private bool _isRepeating = false; // 是否正在单句重复
     private int _repeatIndex = -1;     // 当前单句重复的字幕 index
+    private int _lastSubtitleIndex = -1;
+    private LibVLC _libVLC;
+    private MediaPlayer _mediaPlayer;
+    Action<string> _updatingSubTitle;
+    Action<string> _setSubTitle;
+    List<SubtitleItem> subtitles = new List<SubtitleItem>();
     public LocalVideoView()
     {
         InitializeComponent();
-
-        ProgressSlider.PointerPressed += (_, _) => _isDragging = true;
-        ProgressSlider.PointerReleased += (_, _) =>
-        {
-            _isDragging = false;
-            if (_mediaPlayer != null)
-                _mediaPlayer.Time = (long)ProgressSlider.Value;
-        };
-
         VolumeSlider.Value = 100; // 默认最大音量
         ProgressSlider.Minimum = 0;
         ProgressSlider.Maximum = 100;
@@ -46,6 +41,19 @@ public partial class LocalVideoView : UserControl, ITransientDependency
         _timer.Interval = TimeSpan.FromMilliseconds(500);
         _timer.Tick += Timer_Tick;
         Loaded += LocalVideoView_Loaded;
+
+        ProgressSlider.AddHandler(PointerPressedEvent, (s, e) =>
+        {
+            _isDragging = true;
+        }, RoutingStrategies.Tunnel);
+        ProgressSlider.AddHandler(PointerReleasedEvent, (s, e) =>
+        {
+            _isDragging = false;
+            if (_mediaPlayer != null)
+            {
+                _mediaPlayer.Time = (long)ProgressSlider.Value;
+            }
+        }, RoutingStrategies.Tunnel);
     }
 
     private void LocalVideoView_Loaded(object sender, RoutedEventArgs e)
@@ -132,7 +140,7 @@ public partial class LocalVideoView : UserControl, ITransientDependency
         if (_mediaPlayer != null)
             _mediaPlayer.Volume = (int)VolumeSlider.Value;
     }
-    private int _lastSubtitleIndex = -1;
+    
     private void Timer_Tick(object sender, EventArgs e)
     {
         try
@@ -144,7 +152,7 @@ public partial class LocalVideoView : UserControl, ITransientDependency
                 ProgressSlider.Maximum = _mediaPlayer.Length;
                 ProgressSlider.Value = _mediaPlayer.Time;
             }
-            TimeText.Text = $"{TimeSpan.FromMilliseconds(_mediaPlayer.Time):mm\\:ss}/{TimeSpan.FromMilliseconds(_mediaPlayer.Length):mm\\:ss}";
+            TimeText.Text = $"{TimeSpan.FromMilliseconds(_mediaPlayer.Time):hh\\:mm\\:ss}/{TimeSpan.FromMilliseconds(_mediaPlayer.Length):hh\\:mm\\:ss}";
 
             updateSubtitle();
             // 单句循环逻辑
@@ -205,9 +213,7 @@ public partial class LocalVideoView : UserControl, ITransientDependency
             _mediaPlayer.Time = (long)ProgressSlider.Value;
         }
     }
-
-    private LibVLC _libVLC;
-    private MediaPlayer _mediaPlayer;
+    
     private async void OpenVideo(object? sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog
@@ -313,15 +319,12 @@ public partial class LocalVideoView : UserControl, ITransientDependency
             Log.Error(ex.Message);
         }
     }
-    Action<string> _updatingSubTitle;
-    Action<string> _setSubTitle;
     internal void InitAction(Action<string> updatingSubTitle, Action<string> setSubTitle1)
     {
         _updatingSubTitle = updatingSubTitle;
         _setSubTitle = setSubTitle1;
     }
 
-    List<SubtitleItem> subtitles = new List<SubtitleItem>();
     public List<SubtitleItem> ParseSrt(string filePath)
     {
         var lines = System.IO.File.ReadAllLines(filePath);
