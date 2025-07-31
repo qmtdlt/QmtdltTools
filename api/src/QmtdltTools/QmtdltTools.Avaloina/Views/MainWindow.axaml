@@ -3,15 +3,14 @@
         xmlns:vm="using:QmtdltTools.Avaloina.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:QmtdltTools.Avaloina.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="QmtdltTools.Avaloina.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="看电影学英语" Loaded="Control_OnLoaded">
+        Title="看电影学英语" Loaded="Control_OnLoaded" KeyDown="InputElement_OnKeyDown" KeyUp="InputElement_OnKeyUp"> 
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
@@ -24,8 +23,10 @@
         <RowDefinition Height="300" />
       </Grid.RowDefinitions>
 
-      <ContentControl Grid.Row="0" Content="{Binding VideoView}" />
+      <!-- <ContentControl Grid.Row="0" Content="{Binding VideoView}" /> -->
 
+      <views:LocalVideoView Name="localVideoView"/>
+      
       <GridSplitter Grid.Row="1" Background="Gray" ShowsPreview="True" HorizontalAlignment="Stretch" />
 
       <!-- Subtitles + controls -->

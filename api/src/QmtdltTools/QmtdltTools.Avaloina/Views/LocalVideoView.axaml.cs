@@ -15,6 +15,7 @@ using QmtdltTools.Avaloina.Dto;
 using QmtdltTools.Avaloina.Utils;
 using Serilog;
 using Volo.Abp.DependencyInjection;
+using Avalonia;
 
 namespace QmtdltTools.Avaloina.Views;
 
@@ -239,6 +240,10 @@ public partial class LocalVideoView : UserControl, ITransientDependency
     {
         // 构造字幕文件路径（同名、同目录）
         string subtitlePath = Path.ChangeExtension(targetVideoPath.Text, "英文.srt");
+        //Sleepless.in.Seattle.1993.1080p.iTunes.WEB-DL.DDP5.1.Atmos.H264-BATWEB
+        //Sleepless.in.Seattle.1993.1080p.BluRay.X264-AMIABLE.英文
+        subtitlePath = "Sleepless.in.Seattle.1993.1080p.BluRay.X264-AMIABLE.英文.srt";
+        Debug.WriteLine($"找到字幕了：{subtitlePath}");
         bool subtitleExists = File.Exists(subtitlePath);
 
         string libvlcPath = null;
@@ -251,13 +256,16 @@ public partial class LocalVideoView : UserControl, ITransientDependency
 
             libvlcOptions = new[]
             {
-                    "--no-xlib",
-                    "--vout=macosx",             // macOS 特有
-                    "--avcodec-hw=none",         // 可选：禁硬解，防止部分 Mac 闪退或黑屏
-                    "-vvv"                       // 日志
-                };
-            // 初始化 LibVLC
-            _libVLC = new LibVLC(libvlcOptions);
+                "--no-xlib",
+                "--vout=macosx",
+                "--avcodec-hw=none",
+                "--no-sub-autodetect-file",
+                "--sub-track=-1",
+                "-vvv"
+            };
+             // 初始化 LibVLC
+             _libVLC = new LibVLC(libvlcOptions);
+            //_libVLC = new LibVLC();
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -265,19 +273,25 @@ public partial class LocalVideoView : UserControl, ITransientDependency
             _libVLC = new LibVLC();
         }
 
-
-        _mediaPlayer = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
-        VideoView.MediaPlayer = _mediaPlayer; // 假设 VideoView 是 XAML 中的控件
-        _mediaPlayer.Play(new Media(_libVLC, new Uri(targetVideoPath.Text)));
-
         if (subtitleExists)
         {
             ParseSrt(subtitlePath);
         }
+
+        _mediaPlayer = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
+
         if (_mediaPlayer != null)
         {
             VideoView.MediaPlayer = _mediaPlayer;
             _mediaPlayer.Play(new Media(_libVLC, new Uri(targetVideoPath.Text)));
+            // 设置延迟禁用字幕
+            DispatcherTimer onceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+            onceTimer.Tick += (s, e) =>
+            {
+                _mediaPlayer.SetSpu(-1);
+                onceTimer.Stop();
+            };
+            onceTimer.Start();
             _timer.Start();
         }
     }

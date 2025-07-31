@@ -123,15 +123,11 @@ public partial class MainWindowViewModel : ViewModelBase,ISingletonDependency
             // MessageBox.Show($"录音停止失败: {ex.Message}");
         }
     }
-    public void onClose()
-    {
-        VideoView.onClose();
-    }
-    void updatingTitle(string subTitle)
+    public void updatingTitle(string subTitle)
     {
         CurSubtitle = subTitle;
     }
-    void SetSubTitle(string subTitle)
+    public void SetSubTitle(string subTitle)
     {
         subtitleQueue.Enqueue(subTitle);
         updatePastSubtitles();
@@ -150,38 +146,12 @@ public partial class MainWindowViewModel : ViewModelBase,ISingletonDependency
     }
 
 
-    internal void PauseVideo()
-    {
-        VideoView.PauseMedia();
-    }
-
-    internal void GoLastSentence()
-    {
-        VideoView.GoLastSentence();
-    }
-
-    internal void GoNextSentence()
-    {
-        VideoView.GoNextSentence();
-    }
-
-    internal void RepeatOne()
-    {
-        VideoView.RepeatOne();
-    }
-
-    internal void CancelRepeat()
-    {
-        VideoView.CancelRepeat();
-    }
-
     public Uri RecordAudioUri { get; set; }
     public bool IsSubmitEnable { get; set; }
     public string StatusText { get; set; }
     public string RecordBtnContent { get; set; }
     public string CurSubtitle { get; set; }
     public string PastSubtitle { get; set; }
-    public LocalVideoView VideoView { get; set; }
     public PronunciationAssessmentResult? PronunciationResult { get; set; }
     public object OverAllPlot { get; set; }
 }
