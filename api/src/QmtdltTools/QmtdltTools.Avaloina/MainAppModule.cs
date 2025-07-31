@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using QmtdltTools.Avaloina.Views;
-using QmtdltTools.Service;
+using QmtdltTools.Domain;
 using Volo.Abp;
 using Volo.Abp.Autofac;
 using Volo.Abp.Modularity;
@@ -9,7 +9,7 @@ namespace QmtdltTools.Avaloina;
 
 [DependsOn(
     typeof(AbpAutofacModule),
-    typeof(QmtdltToolsServiceModule)
+    typeof(QmtdltToolsDomainModule)
 )]
 
 public class MainAppModule : AbpModule

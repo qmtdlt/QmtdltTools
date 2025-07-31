@@ -15,12 +15,57 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
+  <Grid ColumnDefinitions="*,8,500">
+    <!-- Left panel: video and subtitles -->
     <Grid>
-        <StackPanel>
-            <Button Click="Button_OnClick">play ground</Button>
-            <TextBox Text="{Binding Greeting}"></TextBox>
-            <TextBox Text="{Binding Appsettingtext}"></TextBox>
-            <Button Click="Button_OnClick2">修改值 ground</Button>
-        </StackPanel>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*" />
+        <RowDefinition Height="8" />
+        <RowDefinition Height="300" />
+      </Grid.RowDefinitions>
+
+      <ContentControl Grid.Row="0" Content="{Binding VideoView}" />
+
+      <GridSplitter Grid.Row="1" Background="Gray" ShowsPreview="True" HorizontalAlignment="Stretch" />
+
+      <!-- Subtitles + controls -->
+      <Grid Grid.Row="2" Margin="10">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="2*" />
+          <RowDefinition Height="*" />
+          <RowDefinition Height="40" />
+        </Grid.RowDefinitions>
+
+        <TextBox Grid.Row="0" FontSize="28" BorderThickness="0" TextWrapping="Wrap"
+                 Text="{Binding PastSubtitle}" IsReadOnly="True"
+                 PointerReleased="TextBox_OnPointerReleased" />
+
+        <TextBox Grid.Row="1" FontSize="28" FontWeight="Bold" BorderThickness="0" TextWrapping="Wrap"
+                 Text="{Binding CurSubtitle}" IsReadOnly="True"
+                 PointerReleased="TextBox_OnPointerReleased" />
+
+        <Grid Grid.Row="2">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100" />
+            <ColumnDefinition Width="100" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+
+          <Button Grid.Column="0" Content="{Binding RecordBtnContent}" Command="{Binding AudioRecordCmd}" />
+          <Button Grid.Column="1" Content="提交录音" Command="{Binding CheckShadowingCmd}"
+                  IsEnabled="{Binding IsSubmitEnable}" />
+          <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="{Binding StatusText}" />
+        </Grid>
+      </Grid>
     </Grid>
+
+    <!-- Middle splitter -->
+    <GridSplitter Grid.Column="1" Background="Gray" ShowsPreview="True" HorizontalAlignment="Stretch" />
+
+    <!-- Right panel: PronunciationEvaluation -->
+    <Grid Grid.Column="2" Margin="10">
+      <ContentControl Content="{Binding OverAllPlot}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+    </Grid>
+
+  </Grid>
 </Window>

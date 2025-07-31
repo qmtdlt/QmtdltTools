@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -12,6 +13,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using LibVLCSharp.Avalonia;
 using LibVLCSharp.Shared;
+using QmtdltTools.Avaloina.Dto;
 using QmtdltTools.Avaloina.Utils;
 using Serilog;
 using Volo.Abp.DependencyInjection;
@@ -171,7 +173,7 @@ public partial class LocalVideoView : UserControl, ITransientDependency
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            Debug.WriteLine(ex.Message);
         }
     }
     void updateSubtitle()
@@ -205,7 +207,7 @@ public partial class LocalVideoView : UserControl, ITransientDependency
     }
 
     private LibVLC _libVLC;
-    private LibVLCSharp.Shared.MediaPlayer _mediaPlayer;
+    private MediaPlayer _mediaPlayer;
     private async void OpenVideo(object? sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog
@@ -230,8 +232,8 @@ public partial class LocalVideoView : UserControl, ITransientDependency
     void loadVideo()
     {
         // 构造字幕文件路径（同名、同目录）
-        string subtitlePath = System.IO.Path.ChangeExtension(targetVideoPath.Text, "英文.srt");
-        bool subtitleExists = System.IO.File.Exists(subtitlePath);
+        string subtitlePath = Path.ChangeExtension(targetVideoPath.Text, "英文.srt");
+        bool subtitleExists = File.Exists(subtitlePath);
 
         string libvlcPath = null;
         string[] libvlcOptions = new[] { "--no-xlib" }; // 默认参数
@@ -396,11 +398,4 @@ public partial class LocalVideoView : UserControl, ITransientDependency
             RepeatBtn.Content = "🔁";
         }
     }
-}
-public class SubtitleItem
-{
-    public int Index { get; set; }
-    public TimeSpan Start { get; set; }
-    public TimeSpan End { get; set; }
-    public string Text { get; set; }
 }

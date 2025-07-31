@@ -55,31 +55,15 @@ public partial class App : Application
 
                 var _configuration = _abpApplication.Services.GetRequiredService<IConfiguration>();
 
-                ApplicationConst.SPEECH_KEY = _configuration.GetSection("MySecret:SPEECH_KEY").Value??"";
-                ApplicationConst.SPEECH_REGION = _configuration.GetSection("MySecret:SPEECH_REGION").Value ?? "";
-                ApplicationConst.GROK_KEY = _configuration.GetSection("MySecret:GROK_KEY").Value ?? "";
-                ApplicationConst.GEMINI_KEY = _configuration.GetSection("MySecret:GEMINI_KEY").Value ?? "";
-                ApplicationConst.DOU_BAO = _configuration.GetSection("MySecret:DOU_BAO").Value ?? "";
-                ApplicationConst.QIAN_WEN = _configuration.GetSection("MySecret:QIAN_WEN").Value ?? "";
-
-                ApplicationConst.AIType = int.Parse(_configuration.GetSection("MySecret:AIType").Value ??"4");
-
                 DisableAvaloniaDataAnnotationValidation();              // avalonia 取消数据验证
                 
                 desktop.MainWindow = _abpApplication.Services.GetRequiredService<MainWindow>();
-                desktop.MainWindow.DataContext = new MainWindowViewModel();
                 desktop.MainWindow.Show();
             }
             catch (Exception ex)
             {
                 Log.Fatal(ex, "Host terminated unexpectedly!");
             }
-            
-            // DisableAvaloniaDataAnnotationValidation();
-            // desktop.MainWindow = new MainWindow
-            // {
-            //     DataContext = new MainWindowViewModel(),
-            // };
         }
 
         base.OnFrameworkInitializationCompleted();
