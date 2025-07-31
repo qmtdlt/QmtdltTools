@@ -34,7 +34,7 @@ public partial class MainWindow : Window
 
     private void Control_OnLoaded(object? sender, RoutedEventArgs e)
     {
-        _ = RestHelper.login("qmtdlt", "12000asd");
+        _ = RestHelper.login("qmtdlt", "12000asd");                     // 登录默认用户，后续需要修改为使用自己的账户登录
     }
     private void TextBox_OnPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
@@ -46,10 +46,5 @@ public partial class MainWindow : Window
                 _ = _transService.Trans(selectedText);
             }
         }
-    }
-
-    private void Window_OnClosing(object? sender, WindowClosingEventArgs e)
-    {
-        
     }
 }

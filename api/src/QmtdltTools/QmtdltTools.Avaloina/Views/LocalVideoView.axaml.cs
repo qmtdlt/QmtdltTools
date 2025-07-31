@@ -30,13 +30,13 @@ public partial class LocalVideoView : UserControl, ITransientDependency
     {
         InitializeComponent();
 
-        ProgressSlider.PointerPressed += (_, _) => _isDragging = true;
-        ProgressSlider.PointerReleased += (_, _) =>
-        {
-            _isDragging = false;
-            if (_mediaPlayer != null)
-                _mediaPlayer.Time = (long)ProgressSlider.Value;
-        };
+        //ProgressSlider.PointerPressed += (_, _) => _isDragging = true;
+        //ProgressSlider.PointerReleased += (_, _) =>
+        //{
+        //    _isDragging = false;
+        //    if (_mediaPlayer != null)
+        //        _mediaPlayer.Time = (long)ProgressSlider.Value;
+        //};
 
         VolumeSlider.Value = 100; // 默认最大音量
         ProgressSlider.Minimum = 0;

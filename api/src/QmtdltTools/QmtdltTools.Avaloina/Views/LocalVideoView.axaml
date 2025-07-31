@@ -5,26 +5,26 @@
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="450"
              xmlns:vlc="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia"
              x:Class="QmtdltTools.Avaloina.Views.LocalVideoView">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition Height="40"/>
-            <!--控制条高度--> 
-        </Grid.RowDefinitions>
-        <!--视频区:vlc 控件-->
-        <vlc:VideoView x:Name="VideoView"/>
-        <!--控制 bar--> 
-        <StackPanel Orientation="Horizontal" Grid.Row="1" VerticalAlignment="Center" Margin="10,0">
-            <Button FontSize="15" Height="30" Width="40" x:Name="PrevSubtitleBtn" Content="⏮" Click="PrevSubtitleBtn_Click" Margin="0,0,5,0"/>
-            <Button FontSize="15" Height="30" Width="40" x:Name="NextSubtitleBtn" Content="⏭" Click="NextSubtitleBtn_Click" Margin="0,0,5,0"/>
-            <Button FontSize="15" Height="30" Width="40" x:Name="RepeatBtn" Content="🔁" Click="RepeatBtn_Click" Margin="0,0,10,0"/>
-            <Button FontSize="15" Height="30" Width="40" x:Name="PauseBtn" Content="⏸" Click="PauseBtn_Click" Margin="5,0"/>
-            <Slider x:Name="ProgressSlider" Width="400" ValueChanged="ProgressSlider_ValueChanged" VerticalAlignment="Center"/>
-            <TextBlock x:Name="TimeText" Width="80" Margin="10,0" VerticalAlignment="Center"/>
-            <TextBlock VerticalAlignment="Center" FontSize="20">🔊</TextBlock>
-            <Slider x:Name="VolumeSlider" Width="80" Minimum="0" Maximum="100" ValueChanged="VolumeSlider_ValueChanged" Margin="0,0"  VerticalAlignment="Center"/>
-            <Button FontSize="15" Height="30" Width="40" Margin="10,0,0,0" Content="📂" Click="OpenVideo"/>
-        </StackPanel>
-        <TextBox x:Name="targetVideoPath" IsVisible="False"/>
-    </Grid>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition/>
+      <RowDefinition Height="35"/>
+      <!--控制条高度-->
+    </Grid.RowDefinitions>
+    <!--视频区:vlc 控件-->
+    <vlc:VideoView x:Name="VideoView"/>
+    <!--控制 bar-->
+    <StackPanel Orientation="Horizontal" Grid.Row="1" VerticalAlignment="Center" Margin="0,0">
+      <Button FontSize="15" Height="35" Width="40" x:Name="PrevSubtitleBtn" Content="⏮" Click="PrevSubtitleBtn_Click" Margin="0,0,5,0"/>
+      <Button FontSize="15" Height="35" Width="40" x:Name="NextSubtitleBtn" Content="⏭" Click="NextSubtitleBtn_Click" Margin="0,0,5,0"/>
+      <Button FontSize="15" Height="35" Width="40" x:Name="RepeatBtn" Content="🔁" Click="RepeatBtn_Click" Margin="0,0,10,0"/>
+      <Button FontSize="15" Height="35" Width="40" x:Name="PauseBtn" Content="⏸" Click="PauseBtn_Click" Margin="5,0"/>
+      <Slider x:Name="ProgressSlider" Width="400" ValueChanged="ProgressSlider_ValueChanged" VerticalAlignment="Top"/>
+      <TextBlock x:Name="TimeText" Width="80" Margin="10,0" VerticalAlignment="Center"/>
+      <TextBlock VerticalAlignment="Center" FontSize="20">🔊</TextBlock>
+      <Slider x:Name="VolumeSlider" Width="80" Minimum="0" Maximum="100" ValueChanged="VolumeSlider_ValueChanged"   VerticalAlignment="Center"/>
+      <Button FontSize="15" Height="35" Width="40" Margin="10,0,0,0" Content="📂" Click="OpenVideo"/>
+    </StackPanel>
+    <TextBox x:Name="targetVideoPath" IsVisible="False"/>
+  </Grid>
 </UserControl>
