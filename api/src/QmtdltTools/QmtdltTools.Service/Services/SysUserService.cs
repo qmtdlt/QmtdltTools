@@ -70,6 +70,7 @@ namespace QmtdltTools.Service.Services
         // Register
         public async Task<Response<bool>> Register(SysUser user)
         {
+            user.CreateTime = DateTime.Now;
             user.IsGuest = false;
             var existingUser = await _dc.SysUsers.Where(t => t.Name == user.Name).FirstOrDefaultAsync();
             if (existingUser != null)
@@ -92,6 +93,7 @@ namespace QmtdltTools.Service.Services
         const int maxGuestCnt = 500;                    
         public async Task<Response<bool>> RegisterGuest(SysUser user)
         {
+            user.CreateTime = DateTime.Now;
             user.IsGuest = true;
             var guestCnt = await _dc.SysUsers.Where(t => t.IsGuest == true).CountAsync();
             if(guestCnt > maxGuestCnt)
