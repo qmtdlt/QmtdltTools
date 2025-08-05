@@ -1,0 +1,41 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" Width="500" Height="300"
+        x:Class="QmtdltTools.Avaloina.Views.Login"
+        Title="Login">
+    <Grid VerticalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80" />
+            <RowDefinition Height="220" />
+        </Grid.RowDefinitions>
+        <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
+                   FontSize="40">看电影学英语</TextBlock>
+        <Grid Grid.Row="1" Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="80"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+        
+            <TextBlock VerticalAlignment="Center"
+                       HorizontalAlignment="Center">用户名</TextBlock>
+            <TextBox Grid.Column="1" Name="UsernameTextBox" Margin="5"
+                     VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+            <TextBlock Grid.Row="1" Text="密码" Margin="0,5,0,0" VerticalAlignment="Center"
+                       HorizontalAlignment="Center"/>
+            <TextBox Grid.Column="1" Grid.Row="1" Name="PasswordBox" Margin="5" 
+                     PasswordChar="*"
+                     VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+            <Button HorizontalAlignment="Stretch" Grid.Row="2" Grid.ColumnSpan="2" Content="登录" Margin="5" 
+                    HorizontalContentAlignment="Center" VerticalAlignment="Stretch" VerticalContentAlignment="Center"
+                    Click="LoginButton_Click"
+                    />
+        </Grid>
+    </Grid>
+</Window>

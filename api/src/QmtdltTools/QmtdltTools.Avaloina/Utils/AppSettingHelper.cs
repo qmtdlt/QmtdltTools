@@ -29,7 +29,17 @@ public static class AppSettingHelper
         get => GetValue(nameof(OffLineCfg), "");
         set => SetValue(nameof(OffLineCfg), value);
     }
-
+    
+    public static string LoginUserName
+    {
+        get => GetValue(nameof(LoginUserName), "");
+        set => SetValue(nameof(LoginUserName), value);
+    }
+    public static string LoguserPwd
+    {
+        get => GetValue(nameof(LoguserPwd), "");
+        set => SetValue(nameof(LoguserPwd), value);
+    }
     #region 核心实现
 
     private static readonly string ConfigPath = Path.Combine(AppContext.BaseDirectory, "conf.txt");

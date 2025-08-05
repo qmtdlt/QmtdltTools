@@ -57,7 +57,7 @@ public partial class App : Application
 
                 DisableAvaloniaDataAnnotationValidation();              // avalonia 取消数据验证
                 
-                desktop.MainWindow = _abpApplication.Services.GetRequiredService<MainWindow>();
+                desktop.MainWindow = _abpApplication.Services.GetRequiredService<Login>();
                 desktop.MainWindow.Show();
             }
             catch (Exception ex)
