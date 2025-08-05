@@ -241,13 +241,13 @@ public partial class LocalVideoView : UserControl, ITransientDependency
         if (result != null && result.Length > 0)
         {
             targetVideoPath.Text = result[0];
-            var aaa = await _Service.SearchSubtitles(targetVideoPath.Text);
             loadVideo();
         }
     }
     private async void SelectMatchSubTitle(object? sender, RoutedEventArgs e)
     {
         // 选择字幕文件
+        //var aaa = await _Service.SearchSubtitles(targetVideoPath.Text);
     }
     void loadVideo()
     {

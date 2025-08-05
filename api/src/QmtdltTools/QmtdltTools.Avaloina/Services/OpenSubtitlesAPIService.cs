@@ -33,12 +33,7 @@ namespace QmtdltTools.Avaloina
 
             var search = new NewSubtitleSearch
             {
-                // For best results with automatic searching based on file analysis,
-                // send the file name as a query together with the moviehash.
                 Query = Path.GetFileName(moviePath),
-
-                // Open Subtitles is using a special hash function to match subtitle files against movie files.
-                // Hash is not dependent on file name of movie file.
                 MovieHash = OpenSubtitlesHasher.GetFileHash(moviePath),
                 Languages = new List<string> { "en" }
             };
