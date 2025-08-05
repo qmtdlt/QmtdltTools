@@ -247,13 +247,13 @@ public partial class LocalVideoView : UserControl, ITransientDependency
     private async void SelectMatchSubTitle(object? sender, RoutedEventArgs e)
     {
         // 选择字幕文件
-        //var aaa = await _Service.SearchSubtitles(targetVideoPath.Text);
+        var aaa = await _Service.SearchSubtitles(targetVideoPath.Text);
+        Console.WriteLine("");
     }
     void loadVideo()
     {
         // 构造字幕文件路径（同名、同目录）
         string subtitlePath = Path.ChangeExtension(targetVideoPath.Text, "英文.srt");
-
 
         //Sleepless.in.Seattle.1993.1080p.BluRay.X264-AMIABLE
         //Sleepless.in.Seattle.1993.1080p.BluRay.X264-AMIABLE.英文
