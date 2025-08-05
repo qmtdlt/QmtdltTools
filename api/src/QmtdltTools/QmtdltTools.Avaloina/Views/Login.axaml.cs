@@ -13,6 +13,7 @@ public partial class Login : Window,ITransientDependency
     public Login()
     {
         InitializeComponent();
+        AppSettingHelper.ApiServer = "https://youngforyou.top:5083";
         UsernameTextBox.Text = AppSettingHelper.LoginUserName;
         PasswordBox.Text = AppSettingHelper.LoguserPwd;
     }

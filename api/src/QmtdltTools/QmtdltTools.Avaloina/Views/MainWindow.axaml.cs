@@ -34,7 +34,7 @@ public partial class MainWindow : Window
 
     private void Control_OnLoaded(object? sender, RoutedEventArgs e)
     {
-        AppSettingHelper.ApiServer = "https://youngforyou.top:5083";
+        
     }
     private void TextBox_OnPointerReleased(object? sender, PointerReleasedEventArgs e)
     {

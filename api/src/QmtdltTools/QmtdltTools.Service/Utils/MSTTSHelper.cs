@@ -43,7 +43,7 @@ public class MsTTSHelperRest
             // Set request headers
             client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", speechKey);
             // Specify the audio format - matching the SDK's Audio16Khz32KBitRateMonoMp3
-            client.DefaultRequestHeaders.Add("X-Microsoft-OutputFormat", "audio-16khz-32kbitrate-mono-mp3");
+            client.DefaultRequestHeaders.Add("X-Microsoft-OutputFormat", "riff-16khz-16bit-mono-pcm");          // audio-16khz-32kbitrate-mono-mp3 为了让客户端能够直接播放
             // Set a User-Agent header (recommended)
             client.DefaultRequestHeaders.Add("User-Agent", "YourAppName"); // Replace with your application name
 

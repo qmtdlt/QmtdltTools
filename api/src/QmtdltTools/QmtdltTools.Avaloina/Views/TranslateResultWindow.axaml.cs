@@ -6,6 +6,15 @@ using Avalonia.Markup.Xaml;
 using QmtdltTools.Avaloina.Services;
 using QmtdltTools.Avaloina.ViewModels;
 using QmtdltTools.Domain.Entitys;
+using SoundFlow.Backends.MiniAudio;
+using SoundFlow.Components;
+using SoundFlow.Enums;
+using SoundFlow.Providers;
+using SoundFlow.Structs;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using Volo.Abp.DependencyInjection;
 
 namespace QmtdltTools.Avaloina.Views;
@@ -33,7 +42,36 @@ public partial class TranslateResultWindow : Window,ITransientDependency
 
     public void PlayAudio(byte[] audioData)
     {
-        
+        using var audioEngine = new MiniAudioEngine();
+
+        var defaultPlaybackDevice = audioEngine.PlaybackDevices.FirstOrDefault(d => d.IsDefault);
+        if (defaultPlaybackDevice.Id == IntPtr.Zero)
+        {
+            return;
+        }
+
+        var audioFormat = new AudioFormat;
+
+        using var device = audioEngine.InitializePlaybackDevice(defaultPlaybackDevice, audioFormat);
+
+        using var ms = new MemoryStream(audioData);
+
+        using var dataProvider = new StreamDataProvider(audioEngine, audioFormat, ms);
+
+        using var player = new SoundPlayer(audioEngine, audioFormat, dataProvider);
+
+        device.MasterMixer.AddComponent(player);
+
+        device.Start();
+
+        player.Play();
+
+        while (player.State != PlaybackState.Stopped)
+        {
+            Thread.Sleep(100);
+        }
+
+        Console.WriteLine("");
     }
 
     public void StopAudio()
