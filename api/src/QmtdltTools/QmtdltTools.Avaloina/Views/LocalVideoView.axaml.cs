@@ -16,6 +16,8 @@ using QmtdltTools.Avaloina.Utils;
 using Serilog;
 using Volo.Abp.DependencyInjection;
 using Avalonia;
+using QmtdltTools.Avaloina.Services;
+using Autofac.Core;
 
 namespace QmtdltTools.Avaloina.Views;
 
@@ -31,9 +33,12 @@ public partial class LocalVideoView : UserControl, ITransientDependency
     Action<string> _updatingSubTitle;
     Action<string> _setSubTitle;
     List<SubtitleItem> subtitles = new List<SubtitleItem>();
+
+    OpenSubtitlesAPIService _Service;
     public LocalVideoView()
     {
         InitializeComponent();
+        _Service = App.Get<OpenSubtitlesAPIService>();
         VolumeSlider.Value = 100; // 默认最大音量
         ProgressSlider.Minimum = 0;
         ProgressSlider.Maximum = 100;
@@ -81,6 +86,7 @@ public partial class LocalVideoView : UserControl, ITransientDependency
         _lastSubtitleIndex = prevSub.Index;
 
         updateSubtitle();
+        PauseBtn.Focus();
     }
 
     private void NextSubtitleBtn_Click(object? sender, RoutedEventArgs e)
@@ -101,6 +107,7 @@ public partial class LocalVideoView : UserControl, ITransientDependency
         _lastSubtitleIndex = nextSub.Index;
 
         updateSubtitle();
+        PauseBtn.Focus();
     }
     private void RepeatBtn_Click(object? sender, RoutedEventArgs e)
     {
@@ -116,6 +123,7 @@ public partial class LocalVideoView : UserControl, ITransientDependency
             _repeatIndex = -1;
             RepeatBtn.Content = "🔁";
         }
+        PauseBtn.Focus();
     }
 
     private void PauseBtn_Click(object? sender, RoutedEventArgs e)
@@ -233,13 +241,20 @@ public partial class LocalVideoView : UserControl, ITransientDependency
         if (result != null && result.Length > 0)
         {
             targetVideoPath.Text = result[0];
+            var aaa = await _Service.SearchSubtitles(targetVideoPath.Text);
             loadVideo();
         }
+    }
+    private async void SelectMatchSubTitle(object? sender, RoutedEventArgs e)
+    {
+        // 选择字幕文件
     }
     void loadVideo()
     {
         // 构造字幕文件路径（同名、同目录）
         string subtitlePath = Path.ChangeExtension(targetVideoPath.Text, "英文.srt");
+
+
         //Sleepless.in.Seattle.1993.1080p.BluRay.X264-AMIABLE
         //Sleepless.in.Seattle.1993.1080p.BluRay.X264-AMIABLE.英文
         //subtitlePath = "Sleepless.in.Seattle.1993.1080p.BluRay.X264-AMIABLE.英文.srt";

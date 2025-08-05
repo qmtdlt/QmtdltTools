@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using QmtdltTools.Avaloina.Services;
 using QmtdltTools.Avaloina.ViewModels;
 using QmtdltTools.Domain.Entitys;
+using SoundFlow.Abstracts.Devices;
 using SoundFlow.Backends.MiniAudio;
 using SoundFlow.Components;
 using SoundFlow.Enums;
@@ -22,6 +23,9 @@ namespace QmtdltTools.Avaloina.Views;
 public partial class TranslateResultWindow : Window,ITransientDependency
 {
     private readonly TransRestService _transService;
+    private MiniAudioEngine? _audioEngine;
+    private AudioPlaybackDevice? _playbackDevice;
+    private SoundPlayer? _player;
     public TranslateResultWindow(TransRestService transService)
     {
         InitializeComponent();
@@ -40,46 +44,47 @@ public partial class TranslateResultWindow : Window,ITransientDependency
         aIExplanation.Text = data.AIExplanation;
     }
 
-    public void PlayAudio(byte[] audioData)
+    public void PlayAudio(byte[] wavData)
     {
-        using var audioEngine = new MiniAudioEngine();
+        StopAudio(); // 播放前先停止上一次播放
 
-        var defaultPlaybackDevice = audioEngine.PlaybackDevices.FirstOrDefault(d => d.IsDefault);
-        if (defaultPlaybackDevice.Id == IntPtr.Zero)
-        {
+        _audioEngine = new MiniAudioEngine();
+        var device = _audioEngine.PlaybackDevices.FirstOrDefault(d => d.IsDefault);
+        if (device.Id == IntPtr.Zero)
             return;
-        }
 
-        var audioFormat = new AudioFormat;
+        var audioFormat = AudioFormat.Cd; // 根据实际格式调整
+        _playbackDevice = _audioEngine.InitializePlaybackDevice(device, audioFormat);
+        var ms = new MemoryStream(wavData);
+        var provider = new StreamDataProvider(_audioEngine, audioFormat, ms);
+        _player = new SoundPlayer(_audioEngine, audioFormat, provider);
 
-        using var device = audioEngine.InitializePlaybackDevice(defaultPlaybackDevice, audioFormat);
-
-        using var ms = new MemoryStream(audioData);
-
-        using var dataProvider = new StreamDataProvider(audioEngine, audioFormat, ms);
-
-        using var player = new SoundPlayer(audioEngine, audioFormat, dataProvider);
-
-        device.MasterMixer.AddComponent(player);
-
-        device.Start();
-
-        player.Play();
-
-        while (player.State != PlaybackState.Stopped)
-        {
-            Thread.Sleep(100);
-        }
-
-        Console.WriteLine("");
+        _playbackDevice.MasterMixer.AddComponent(_player);
+        _playbackDevice.Start();
+        _player.Play();
     }
 
     public void StopAudio()
     {
-        
+        try
+        {
+            _player?.Stop();
+            _player?.Dispose();
+            _player = null;
+
+            _playbackDevice?.Stop();
+            _playbackDevice?.Dispose();
+            _playbackDevice = null;
+
+            _audioEngine?.Dispose();
+            _audioEngine = null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"StopAudio error: {ex.Message}");
+        }
     }
 
-    
     private void stopAudio(object sender, RoutedEventArgs e)
     {
         StopAudio();
