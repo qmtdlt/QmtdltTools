@@ -36,7 +36,7 @@
           <RowDefinition Height="40" />
         </Grid.RowDefinitions>
 
-        <TextBox Grid.Row="0" FontSize="28" BorderThickness="0" TextWrapping="Wrap"
+        <TextBox Grid.Row="0" FontSize="20" BorderThickness="0" TextWrapping="Wrap"
                  Name="PastSubtitle" IsReadOnly="True"
                  PointerReleased="TextBox_OnPointerReleased"/>
 

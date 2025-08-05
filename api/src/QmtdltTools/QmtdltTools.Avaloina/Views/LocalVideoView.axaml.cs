@@ -18,6 +18,7 @@ using Volo.Abp.DependencyInjection;
 using Avalonia;
 using QmtdltTools.Avaloina.Services;
 using Autofac.Core;
+using DynamicData;
 
 namespace QmtdltTools.Avaloina.Views;
 
@@ -34,11 +35,9 @@ public partial class LocalVideoView : UserControl, ITransientDependency
     Action<string> _setSubTitle;
     List<SubtitleItem> subtitles = new List<SubtitleItem>();
 
-    OpenSubtitlesAPIService _Service;
     public LocalVideoView()
     {
         InitializeComponent();
-        _Service = App.Get<OpenSubtitlesAPIService>();
         VolumeSlider.Value = 100; // 默认最大音量
         ProgressSlider.Minimum = 0;
         ProgressSlider.Maximum = 100;
@@ -247,17 +246,26 @@ public partial class LocalVideoView : UserControl, ITransientDependency
     private async void SelectMatchSubTitle(object? sender, RoutedEventArgs e)
     {
         // 选择字幕文件
-        var aaa = await _Service.SearchSubtitles(targetVideoPath.Text);
-        Console.WriteLine("");
+        var wd = App.Get<ChooseSubtitle>();
+        if(wd != null)
+        {
+            if(!string.IsNullOrEmpty(targetVideoPath.Text) && File.Exists(targetVideoPath.Text))
+            {
+                wd.SetMoviePath(targetVideoPath.Text);
+                wd.Show();
+            }
+        }
+    }
+    private async void OpenSetting(object? sender, RoutedEventArgs e)
+    {
+        // 选择字幕文件
+        
     }
     void loadVideo()
     {
         // 构造字幕文件路径（同名、同目录）
-        string subtitlePath = Path.ChangeExtension(targetVideoPath.Text, "英文.srt");
+        string subtitlePath = AppSettingHelper.LastVideoSrt;
 
-        //Sleepless.in.Seattle.1993.1080p.BluRay.X264-AMIABLE
-        //Sleepless.in.Seattle.1993.1080p.BluRay.X264-AMIABLE.英文
-        //subtitlePath = "Sleepless.in.Seattle.1993.1080p.BluRay.X264-AMIABLE.英文.srt";
         Debug.WriteLine($"找到字幕了：{subtitlePath}");
         bool subtitleExists = File.Exists(subtitlePath);
 
@@ -377,7 +385,7 @@ public partial class LocalVideoView : UserControl, ITransientDependency
                     Index = index,
                     Start = start,
                     End = end,
-                    Text = text.Trim()
+                    Text = text.Trim().Replace("<i>", "").Replace("</i>", "")
                 });
                 i = j;
             }

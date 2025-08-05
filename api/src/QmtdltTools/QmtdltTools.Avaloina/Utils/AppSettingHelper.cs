@@ -18,6 +18,11 @@ public static class AppSettingHelper
         set => SetValue(nameof(LastVideoPath), value);
     }
 
+    public static string LastVideoSrt
+    {
+        get => GetValue(nameof(LastVideoSrt), "");
+        set => SetValue(nameof(LastVideoSrt), value);
+    }
     public static string ApiServer
     {
         get => GetValue(nameof(ApiServer), "http://localhost:5000");

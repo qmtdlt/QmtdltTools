@@ -24,8 +24,9 @@
       <TextBlock x:Name="TimeText" Width="150" Margin="10,0" VerticalAlignment="Center"/>
       <TextBlock VerticalAlignment="Center" FontSize="20">🔊</TextBlock>
       <Slider x:Name="VolumeSlider" Width="80" Minimum="0" Maximum="100" ValueChanged="VolumeSlider_ValueChanged"   VerticalAlignment="Top"/>
-      <Button FontSize="15" Height="35" Width="40" Margin="10,0,0,0" Content="📂" Click="OpenVideo"/>
-      <Button FontSize="15" Height="35" Width="40" Margin="10,0,0,0" Content="📂" Click="SelectMatchSubTitle"/>
+      <Button FontSize="15" Height="35" Width="40" Margin="10,0,0,0" Content="🎬" Click="OpenVideo"/>
+      <Button FontSize="15" Height="35" Width="40" Margin="10,0,0,0" Content="💬" Click="SelectMatchSubTitle"/>
+      <Button FontSize="15" Height="35" Width="40" Margin="10,0,0,0" Content="⚙" Click="OpenSetting"/>
     </StackPanel>
     <TextBox x:Name="targetVideoPath" IsVisible="false"/>
   </Grid>
