@@ -53,12 +53,16 @@ public class TestViewModel: ReactiveObject
     ...
 />
 
-</Window>
-<Design.DataContext>
-  <vm:SysSettingVm />
-</Design.DataContext>
+  <Design.DataContext>
+    <vm:SysSettingVm />
+  </Design.DataContext>
 
-<Grid>
-</Grid>
+  <Grid>
+  </Grid>
+</Window>
 ```
-5. 
+5. Command binding
+```
+
+```
+6. 

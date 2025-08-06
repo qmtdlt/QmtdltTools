@@ -18,23 +18,16 @@ namespace QmtdltTools.Avaloina
 {
     public class OpenSubtitlesAPIService:ITransientDependency
     {
+        OpenSubtitlesService? _service = null;
+
         public OpenSubtitlesAPIService()
         {
-            
+            _service = new OpenSubtitlesService(new HttpClient(), new OpenSubtitlesOptions
+            {
+                ApiKey = AppSettingHelper.OpenSubtitleApiKey,
+                ProductInformation = new ProductHeaderValue("youngforyou", "1.0"),
+            });
         }
-        static string apiKey = "";
-        static string openSubTitleUName = AppSettingHelper.ApiServer;
-        static string openSubTitleUPwd = AppSettingHelper.ApiServer;
-        private static string _token = "";
-        static HttpClient httpClient = new HttpClient();
-        static OpenSubtitlesOptions options = new OpenSubtitlesOptions
-        {
-            ApiKey = apiKey,
-            ProductInformation = new ProductHeaderValue("youngforyou", "1.0"),
-        };
-
-        static OpenSubtitlesService _service = new OpenSubtitlesService(httpClient, options);
-
 
         public async Task<string> DownloadSubtitle(int fileId,string targetSaveDir)
         {
@@ -43,20 +36,11 @@ namespace QmtdltTools.Avaloina
                 FileId = fileId,
             };
 
-            var result = await _service.GetSubtitleForDownloadAsync(download, _token);
-
-            Console.WriteLine($"FileName: {result.FileName}");
-            Console.WriteLine($"Requests: {result.Requests}");
-            Console.WriteLine($"Remaining: {result.Remaining}");
-            Console.WriteLine($"Message: {result.Message}");
-            Console.WriteLine($"Link: {result.Link}");
-
+            var result = await _service.GetSubtitleForDownloadAsync(download, "");
             var path = Path.Combine(targetSaveDir, result.FileName);
 
             try
             {
-                Console.WriteLine($"Downloading to: {path}");
-
                 var webClient = new WebClient();
                 await webClient.DownloadFileTaskAsync(result.Link, path);
                 return path;
@@ -67,42 +51,6 @@ namespace QmtdltTools.Avaloina
                 return "";
             }
         }
-        private static async Task Login()
-        {
-            if (!string.IsNullOrEmpty(_token))
-            {
-                Console.WriteLine("Already logged in.");
-                return;
-            }
-
-            var login = new NewLogin
-            {
-                Username = openSubTitleUName,
-                Password = openSubTitleUPwd,
-            };
-
-            var result = await _service.LoginAsync(login);
-
-            Console.WriteLine($"Status: {result.Status}");
-
-            if (result.Status == 200)
-            {
-                // Login was successful, save the token.
-                _token = result.Token;
-
-                Console.WriteLine($"Token: {result.Token}");
-                Console.WriteLine($"AllowedDownloads: {result.User.AllowedDownloads}");
-                Console.WriteLine($"Level: {result.User.Level}");
-                Console.WriteLine($"UserId: {result.User.UserId}");
-                Console.WriteLine($"ExtInstalled: {result.User.ExtInstalled}");
-                Console.WriteLine($"Vip: {result.User.Vip}");
-            }
-            else
-            {
-                // Login failed, show the error message.
-                Console.WriteLine($"Message: {result.Message}");
-            }
-        }
         public async Task<PagedResult<AttributeResult<Subtitle>>> SearchSubtitles(string moviePath,int page = 0)
         {
             var search = new NewSubtitleSearch
@@ -111,7 +59,6 @@ namespace QmtdltTools.Avaloina
                 MovieHash = OpenSubtitlesHasher.GetFileHash(moviePath),
                 Languages = new List<string> { "en" }
             };
-
             PagedResult<AttributeResult<Subtitle>> result = await _service.SearchSubtitlesAsync(search);
             return result;
         }

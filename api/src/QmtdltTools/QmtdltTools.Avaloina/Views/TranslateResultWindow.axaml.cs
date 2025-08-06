@@ -34,6 +34,7 @@ public partial class TranslateResultWindow : Window,ITransientDependency
         {
             StopAudio();
         };
+        this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
     }
     VocabularyRecord _data;
     public void setData(VocabularyRecord data)

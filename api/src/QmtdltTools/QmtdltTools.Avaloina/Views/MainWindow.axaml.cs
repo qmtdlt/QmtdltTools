@@ -25,6 +25,7 @@ public partial class MainWindow : Window
         this.Closing += MainWindow_Closing;
         
         localVideoView.InitAction(updatingTitle, SetSubTitle);
+        this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
     }
 
     private void MainWindow_Closing(object? sender, WindowClosingEventArgs e)

@@ -12,6 +12,24 @@
     <vm:SysSettingVm />
   </Design.DataContext>
   <Grid>
-    <TextBlock Text="{Binding TestStr}"></TextBlock>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="60"/>
+      <RowDefinition Height="60"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="150"/>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="100"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- API Key 输入框 -->
+    <TextBlock Text="OpenSubtitle ApiKey" VerticalAlignment="Center"></TextBlock>
+    <TextBox Text="{Binding OpenSubTitleApiKey}" Grid.Column="1" VerticalAlignment="Center"></TextBox>
+    <Button Command="{Binding SaveApiKeyCommand}" Grid.Column="2" VerticalAlignment="Center">保存密钥</Button>
+
+
+    <Button Command="{Binding ChooseLocalSrtCmd}" Grid.Row="1" VerticalAlignment="Center">选择本地字幕文件</Button>
+    <TextBlock Text="{Binding LocalSubtitlePath}" VerticalAlignment="Center" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2"></TextBlock>
   </Grid>
 </Window>

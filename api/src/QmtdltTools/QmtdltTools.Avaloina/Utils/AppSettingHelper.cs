@@ -6,6 +6,11 @@ namespace QmtdltTools.Avaloina.Utils;
 
 public static class AppSettingHelper
 {
+    public static string OpenSubtitleApiKey
+    {
+        get => GetValue(nameof(OpenSubtitleApiKey), "");
+        set => SetValue(nameof(OpenSubtitleApiKey), value);
+    }
     public static long LastVideoProgress
     {
         get => long.TryParse(GetValue(nameof(LastVideoProgress), "0"), out var v) ? v : 0;
@@ -25,7 +30,7 @@ public static class AppSettingHelper
     }
     public static string ApiServer
     {
-        get => GetValue(nameof(ApiServer), "http://localhost:5000");
+        get => GetValue(nameof(ApiServer), "https://youngforyou.top:5083");
         set => SetValue(nameof(ApiServer), value);
     }
 

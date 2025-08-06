@@ -16,6 +16,7 @@ public partial class Login : Window,ITransientDependency
         AppSettingHelper.ApiServer = "https://youngforyou.top:5083";
         UsernameTextBox.Text = AppSettingHelper.LoginUserName;
         PasswordBox.Text = AppSettingHelper.LoguserPwd;
+        this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
     }
 
     private async void LoginButton_Click(object? sender, RoutedEventArgs e)
