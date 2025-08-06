@@ -259,7 +259,15 @@ public partial class LocalVideoView : UserControl, ITransientDependency
     private async void OpenSetting(object? sender, RoutedEventArgs e)
     {
         // 选择字幕文件
-        
+        var wd = App.Get<SysSetting>();
+        if (wd != null)
+        {
+            //if (!string.IsNullOrEmpty(targetVideoPath.Text) && File.Exists(targetVideoPath.Text))
+            {
+                //wd.SetMoviePath(targetVideoPath.Text);
+                wd.Show();
+            }
+        }
     }
     void loadVideo()
     {
