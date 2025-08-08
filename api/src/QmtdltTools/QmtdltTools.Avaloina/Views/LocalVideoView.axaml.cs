@@ -16,54 +16,111 @@ using QmtdltTools.Avaloina.Utils;
 using Serilog;
 using Volo.Abp.DependencyInjection;
 using Avalonia;
-using QmtdltTools.Avaloina.Services;
-using Autofac.Core;
-using DynamicData;
 
 namespace QmtdltTools.Avaloina.Views;
 
 public partial class LocalVideoView : UserControl, ITransientDependency
 {
     private bool _isDragging = false;
-    private DispatcherTimer _timer;
-    private bool _isRepeating = false; // 是否正在单句重复
-    private int _repeatIndex = -1;     // 当前单句重复的字幕 index
+    private readonly DispatcherTimer _timer;
+
+    private bool _isRepeating = false;
+    private int _repeatIndex = -1;
     private int _lastSubtitleIndex = -1;
+
     private LibVLC _libVLC;
     private MediaPlayer _mediaPlayer;
-    Action<string> _updatingSubTitle;
-    Action<string> _setSubTitle;
-    List<SubtitleItem> subtitles = new List<SubtitleItem>();
+    private Media _currentMedia;                 // ★ 新增：持有当前 Media
+
+    private Action<string> _updatingSubTitle;
+    private Action<string> _setSubTitle;
+    private readonly List<SubtitleItem> subtitles = new();
 
     public LocalVideoView()
     {
         InitializeComponent();
-        VolumeSlider.Value = 100; // 默认最大音量
+
+        VolumeSlider.Value = 100;
         ProgressSlider.Minimum = 0;
         ProgressSlider.Maximum = 100;
 
-        _timer = new DispatcherTimer();
-        _timer.Interval = TimeSpan.FromMilliseconds(500);
+        _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
         _timer.Tick += Timer_Tick;
+
         Loaded += LocalVideoView_Loaded;
 
-        ProgressSlider.AddHandler(PointerPressedEvent, (s, e) =>
-        {
-            _isDragging = true;
-        }, RoutingStrategies.Tunnel);
+        // 拖动滑块时只在释放时 Seek
+        ProgressSlider.AddHandler(PointerPressedEvent, (s, e) => _isDragging = true, RoutingStrategies.Tunnel);
         ProgressSlider.AddHandler(PointerReleasedEvent, (s, e) =>
         {
             _isDragging = false;
             if (_mediaPlayer != null)
-            {
                 _mediaPlayer.Time = (long)ProgressSlider.Value;
-            }
         }, RoutingStrategies.Tunnel);
     }
 
     private void LocalVideoView_Loaded(object sender, RoutedEventArgs e)
     {
+        InitVlcOnce();
         LoadAppsettingProgress();
+    }
+
+    // ★ 只初始化一次 LibVLC & MediaPlayer，并绑定到 VideoView
+    private void InitVlcOnce()
+    {
+        if (_libVLC != null) return;
+
+        Core.Initialize(); // 不手动指定 mac 的 vout，避免独立窗口
+
+        var options = new[]
+        {
+            "--no-video-title-show",
+            "--no-osd",
+            "--no-sub-autodetect-file",
+            "--sub-track=-1" // 禁用 VLC 内建字幕（你自己做字幕）
+        };
+
+        _libVLC = new LibVLC(options);
+        _mediaPlayer = new MediaPlayer(_libVLC);
+
+        // 关键：只设置一次
+        VideoView.MediaPlayer = _mediaPlayer;
+
+        _timer.Start();
+    }
+
+    // ★ 统一的播放入口：切换文件时不会弹外部窗口
+    private void PlayFile(string path, string subtitlePath = null)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+            return;
+
+        // 停止旧媒体
+        try { _mediaPlayer?.Stop(); } catch { /* ignore */ }
+
+        // 释放旧 Media
+        _currentMedia?.Dispose();
+        _currentMedia = null;
+
+        // 解析外挂字幕（你自己的显示）
+        subtitles.Clear();
+        if (!string.IsNullOrEmpty(subtitlePath) && File.Exists(subtitlePath))
+            ParseSrt(subtitlePath);
+
+        // 创建并持有新 Media（不要 using 立刻释放）
+        _currentMedia = new Media(_libVLC, path, FromType.FromPath);
+
+        // 禁用 VLC 自带字幕
+        _mediaPlayer.SetSpu(-1);
+
+        // 播放
+        _mediaPlayer.Play(_currentMedia);
+
+        // UI 状态同步
+        PauseBtn.Content = "⏸";
+        _isRepeating = false;
+        _repeatIndex = -1;
+        RepeatBtn.Content = "🔁";
     }
 
     private void PrevSubtitleBtn_Click(object? sender, RoutedEventArgs e)
@@ -73,11 +130,11 @@ public partial class LocalVideoView : UserControl, ITransientDependency
         var currentTime = TimeSpan.FromMilliseconds(_mediaPlayer.Time);
         int currIdx = subtitles.FindIndex(s => currentTime >= s.Start && currentTime <= s.End);
 
-        // 如果未命中，currIdx = -1，此时找第一个大于当前时间的字幕，回退一位
         if (currIdx == -1)
             currIdx = subtitles.FindIndex(s => currentTime < s.Start);
         if (currIdx == -1)
-            currIdx = subtitles.Count - 1; // 当前时间大于所有字幕，取最后一句
+            currIdx = subtitles.Count - 1;
+
         int prevIdx = Math.Max(currIdx - 1, 0);
 
         var prevSub = subtitles[prevIdx];
@@ -108,6 +165,7 @@ public partial class LocalVideoView : UserControl, ITransientDependency
         updateSubtitle();
         PauseBtn.Focus();
     }
+
     private void RepeatBtn_Click(object? sender, RoutedEventArgs e)
     {
         if (!_isRepeating)
@@ -127,29 +185,23 @@ public partial class LocalVideoView : UserControl, ITransientDependency
 
     private void PauseBtn_Click(object? sender, RoutedEventArgs e)
     {
-        if (PauseBtn.Content.ToString() == "▶")
-        {
+        if (PauseBtn.Content?.ToString() == "▶")
             PauseBtn.Content = "⏸";
-        }
         else
-        {
             PauseBtn.Content = "▶";
-        }
+
         _mediaPlayer?.Pause();
     }
 
-    public void PauseMedia()
-    {
-        PauseBtn.Focus();
-    }
+    public void PauseMedia() => PauseBtn.Focus();
 
     private void VolumeSlider_ValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
     {
         if (_mediaPlayer != null)
             _mediaPlayer.Volume = (int)VolumeSlider.Value;
     }
-    
-    private void Timer_Tick(object sender, EventArgs e)
+
+    private void Timer_Tick(object? sender, EventArgs e)
     {
         try
         {
@@ -160,30 +212,27 @@ public partial class LocalVideoView : UserControl, ITransientDependency
                 ProgressSlider.Maximum = _mediaPlayer.Length;
                 ProgressSlider.Value = _mediaPlayer.Time;
             }
-            TimeText.Text = $"{TimeSpan.FromMilliseconds(_mediaPlayer.Time):hh\\:mm\\:ss}/{TimeSpan.FromMilliseconds(_mediaPlayer.Length):hh\\:mm\\:ss}";
+
+            TimeText.Text =
+                $"{TimeSpan.FromMilliseconds(_mediaPlayer.Time):hh\\:mm\\:ss}/{TimeSpan.FromMilliseconds(_mediaPlayer.Length):hh\\:mm\\:ss}";
 
             updateSubtitle();
-            // 单句循环逻辑
+
+            // 单句循环
             if (_isRepeating && _repeatIndex != -1)
             {
                 var sub = subtitles.FirstOrDefault(s => s.Index == _repeatIndex);
                 var nextSub = subtitles.FirstOrDefault(s => s.Index == _repeatIndex + 1);
 
-                if (sub != null && nextSub != null && _mediaPlayer != null)
+                if (sub != null && nextSub != null)
                 {
-                    // 当前时间超过下句开头就回到本句开头
                     if (_mediaPlayer.Time >= nextSub.Start.TotalMilliseconds)
-                    {
                         _mediaPlayer.Time = (long)sub.Start.TotalMilliseconds;
-                    }
                 }
-                else if (sub != null && _mediaPlayer != null && sub.End != TimeSpan.Zero)
+                else if (sub != null && sub.End != TimeSpan.Zero)
                 {
-                    // 没有下一句的情况（最后一句）
                     if (_mediaPlayer.Time >= sub.End.TotalMilliseconds)
-                    {
                         _mediaPlayer.Time = (long)sub.Start.TotalMilliseconds;
-                    }
                 }
             }
         }
@@ -192,10 +241,14 @@ public partial class LocalVideoView : UserControl, ITransientDependency
             Debug.WriteLine(ex.Message);
         }
     }
-    void updateSubtitle()
+
+    private void updateSubtitle()
     {
+        if (_mediaPlayer == null) return;
+
         var position = TimeSpan.FromMilliseconds(_mediaPlayer.Time);
         var current = subtitles.FirstOrDefault(s => position >= s.Start && position <= s.End);
+
         if (current != null)
         {
             if (current.Index != _lastSubtitleIndex)
@@ -209,161 +262,106 @@ public partial class LocalVideoView : UserControl, ITransientDependency
         {
             if (_lastSubtitleIndex != -1)
             {
-                _setSubTitle?.Invoke("");  // 清空字幕
+                _setSubTitle?.Invoke("");
                 _lastSubtitleIndex = -1;
             }
         }
     }
+
     private void ProgressSlider_ValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
     {
         if (_mediaPlayer != null && _isDragging)
-        {
             _mediaPlayer.Time = (long)ProgressSlider.Value;
-        }
     }
-    
+
     private async void OpenVideo(object? sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog
         {
             Title = "选择视频文件",
             Filters = new List<FileDialogFilter>
-                {
-                    new FileDialogFilter { Name = "视频文件", Extensions = new List<string> { "mp4", "avi", "mkv", "flv", "mov", "wmv" } },
-                    new FileDialogFilter { Name = "所有文件", Extensions = new List<string> { "*" } }
-                },
+            {
+                new FileDialogFilter { Name = "视频文件", Extensions = new() { "mp4","avi","mkv","flv","mov","wmv" } },
+                new FileDialogFilter { Name = "所有文件", Extensions = new() { "*" } }
+            },
             AllowMultiple = false
         };
 
         var window = this.GetVisualRoot() as Window;
         var result = await dialog.ShowAsync(window);
-        if (result != null && result.Length > 0)
+        if (result is { Length: > 0 })
         {
-            targetVideoPath.Text = result[0];
-            loadVideo();
+            var videoPath = result[0];
+            targetVideoPath.Text = videoPath;
+
+            // 你项目里的配置：可用同名SRT或 AppSettingHelper.LastVideoSrt
+            string subtitlePath = AppSettingHelper.LastVideoSrt;
+
+            PlayFile(videoPath, subtitlePath);
         }
     }
+
     private async void SelectMatchSubTitle(object? sender, RoutedEventArgs e)
     {
-        // 选择字幕文件
         var wd = App.Get<ChooseSubtitle>();
-        if(wd != null)
+        if (wd != null && !string.IsNullOrEmpty(targetVideoPath.Text) && File.Exists(targetVideoPath.Text))
         {
-            if(!string.IsNullOrEmpty(targetVideoPath.Text) && File.Exists(targetVideoPath.Text))
-            {
-                wd.SetMoviePath(targetVideoPath.Text);
-                wd.Show();
-            }
+            wd.SetMoviePath(targetVideoPath.Text);
+            wd.Show();
         }
     }
+
     private async void OpenSetting(object? sender, RoutedEventArgs e)
     {
-        // 选择字幕文件
         var wd = App.Get<SysSetting>();
         if (wd != null)
-        {
-            //if (!string.IsNullOrEmpty(targetVideoPath.Text) && File.Exists(targetVideoPath.Text))
-            {
-                //wd.SetMoviePath(targetVideoPath.Text);
-                wd.Show();
-            }
-        }
+            wd.Show();
     }
-    void loadVideo()
+
+    private void LoadAppsettingProgress()
     {
-        // 构造字幕文件路径（同名、同目录）
-        string subtitlePath = AppSettingHelper.LastVideoSrt;
-
-        Debug.WriteLine($"找到字幕了：{subtitlePath}");
-        bool subtitleExists = File.Exists(subtitlePath);
-
-        string libvlcPath = null;
-        string[] libvlcOptions = new[] { "--no-xlib" }; // 默认参数
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        try
         {
-            libvlcPath = Path.Combine(AppContext.BaseDirectory, "libvlc", "osx-x64", "lib");
-            Core.Initialize(libvlcPath);
-
-            libvlcOptions = new[]
+            if (File.Exists(AppSettingHelper.LastVideoPath))
             {
-                "--no-xlib",
-                "--vout=macosx",
-                "--avcodec-hw=none",
-                "--no-sub-autodetect-file",
-                "--sub-track=-1",
-                "-vvv"
-            };
-             // 初始化 LibVLC
-             _libVLC = new LibVLC(libvlcOptions);
-            //_libVLC = new LibVLC();
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            // 初始化 LibVLC
-            _libVLC = new LibVLC();
-        }
+                targetVideoPath.Text = AppSettingHelper.LastVideoPath;
+                PlayFile(targetVideoPath.Text, AppSettingHelper.LastVideoSrt);
 
-        if (subtitleExists)
-        {
-            ParseSrt(subtitlePath);
-        }
-
-        _mediaPlayer = new LibVLCSharp.Shared.MediaPlayer(_libVLC);
-
-        if (_mediaPlayer != null)
-        {
-            VideoView.MediaPlayer = _mediaPlayer;
-            _mediaPlayer.Play(new Media(_libVLC, new Uri(targetVideoPath.Text)));
-            // 设置延迟禁用字幕
-            DispatcherTimer onceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-            onceTimer.Tick += (s, e) =>
-            {
-                _mediaPlayer.SetSpu(-1);
-                onceTimer.Stop();
-            };
-            onceTimer.Start();
-            _timer.Start();
-        }
-    }
-    void LoadAppsettingProgress()
-    {
-        if (File.Exists(AppSettingHelper.LastVideoPath))
-        {
-            targetVideoPath.Text = AppSettingHelper.LastVideoPath;
-            loadVideo();
-            // 定位进度
-            try
-            {
                 if (AppSettingHelper.LastVideoProgress > 0)
-                {
                     _mediaPlayer.Time = AppSettingHelper.LastVideoProgress;
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex.Message);
             }
         }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "恢复进度失败");
+        }
     }
+
     internal void onClose()
     {
         try
         {
             AppSettingHelper.LastVideoPath = targetVideoPath.Text;
-            AppSettingHelper.LastVideoProgress = _mediaPlayer.Time;
+            if (_mediaPlayer != null)
+                AppSettingHelper.LastVideoProgress = _mediaPlayer.Time;
+
             _timer.Stop();
-            // 释放资源
             _mediaPlayer?.Stop();
+
+            _currentMedia?.Dispose();
+            _currentMedia = null;
+
             _mediaPlayer?.Dispose();
             _libVLC?.Dispose();
             _mediaPlayer = null;
+            _libVLC = null;
         }
         catch (Exception ex)
         {
-            Log.Error(ex.Message);
+            Log.Error(ex, "关闭释放失败");
         }
     }
+
     internal void InitAction(Action<string> updatingSubTitle, Action<string> setSubTitle1)
     {
         _updatingSubTitle = updatingSubTitle;
@@ -372,13 +370,13 @@ public partial class LocalVideoView : UserControl, ITransientDependency
 
     public List<SubtitleItem> ParseSrt(string filePath)
     {
-        var lines = System.IO.File.ReadAllLines(filePath);
+        var lines = File.ReadAllLines(filePath);
         int i = 0;
         while (i < lines.Length)
         {
             if (int.TryParse(lines[i], out int index))
             {
-                var times = lines[i + 1].Split(new string[] { " --> " }, StringSplitOptions.None);
+                var times = lines[i + 1].Split(new[] { " --> " }, StringSplitOptions.None);
                 var start = TimeSpan.Parse(times[0].Replace(',', '.'));
                 var end = TimeSpan.Parse(times[1].Replace(',', '.'));
                 var text = "";
@@ -405,45 +403,20 @@ public partial class LocalVideoView : UserControl, ITransientDependency
         return subtitles;
     }
 
-    internal void GoLastSentence()
-    {
-        PrevSubtitleBtn_Click(null, null);
-    }
-
-    internal void GoNextSentence()
-    {
-        NextSubtitleBtn_Click(null, null);
-    }
+    internal void GoLastSentence() => PrevSubtitleBtn_Click(null, null);
+    internal void GoNextSentence() => NextSubtitleBtn_Click(null, null);
 
     internal void RepeatOne()
     {
-        if (!_isRepeating)
-        {
-            _isRepeating = true;
-            _repeatIndex = _lastSubtitleIndex;
-            RepeatBtn.Content = "❌";
-        }
-        else
-        {
-            _isRepeating = false;
-            _repeatIndex = -1;
-            RepeatBtn.Content = "🔁";
-        }
+        _isRepeating = !_isRepeating;
+        _repeatIndex = _isRepeating ? _lastSubtitleIndex : -1;
+        RepeatBtn.Content = _isRepeating ? "❌" : "🔁";
     }
 
     internal void CancelRepeat()
     {
-        if (!_isRepeating)
-        {
-            _isRepeating = true;
-            _repeatIndex = _lastSubtitleIndex;
-            RepeatBtn.Content = "❌";
-        }
-        else
-        {
-            _isRepeating = false;
-            _repeatIndex = -1;
-            RepeatBtn.Content = "🔁";
-        }
+        _isRepeating = false;
+        _repeatIndex = -1;
+        RepeatBtn.Content = "🔁";
     }
 }
