@@ -29,21 +29,60 @@ namespace QmtdltTools.Avaloina
             });
         }
 
-        public async Task<string> DownloadSubtitle(int fileId,string targetSaveDir)
+        // public async Task<string> DownloadSubtitle(int fileId,string targetSaveDir)
+        // {
+        //     var download = new NewDownload
+        //     {
+        //         FileId = fileId,
+        //     };
+        //
+        //     var result = await _service.GetSubtitleForDownloadAsync(download, "");
+        //     var path = Path.Combine(targetSaveDir, result.FileName);
+        //
+        //     try
+        //     {
+        //         var webClient = new WebClient();
+        //         await webClient.DownloadFileTaskAsync(result.Link, path);
+        //         return path;
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         Console.WriteLine($"Download file error: {ex.Message}");
+        //         return "";
+        //     }
+        // }
+        public async Task<string> DownloadSubtitle(int fileId, string targetSaveDir)
         {
-            var download = new NewDownload
-            {
-                FileId = fileId,
-            };
+            var download = new NewDownload { FileId = fileId };
 
-            var result = await _service.GetSubtitleForDownloadAsync(download, "");
-            var path = Path.Combine(targetSaveDir, result.FileName);
+            // 取得下载信息（含文件名与直链）
+            Download? result = await _service.GetSubtitleForDownloadAsync(download, "");
+            if (result == null || string.IsNullOrWhiteSpace(result.FileName))
+                return "";
+
+            // 确保目标目录存在（支持传入绝对路径）
+            if (string.IsNullOrWhiteSpace(targetSaveDir))
+                return "";
+
+            Directory.CreateDirectory(targetSaveDir); // ✅ 若不存在则创建
+
+            // 清理一下文件名（跨平台安全）
+            var fileName = string.Join("_", (result.FileName ?? "subtitle.srt")
+                .Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
+
+            var path = Path.Combine(targetSaveDir, fileName);
 
             try
             {
-                var webClient = new WebClient();
-                await webClient.DownloadFileTaskAsync(result.Link, path);
-                return path;
+                using var http = new HttpClient();
+                using var resp = await http.GetAsync(result.Link, HttpCompletionOption.ResponseHeadersRead);
+                resp.EnsureSuccessStatusCode();
+
+                await using var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+                await using var stream = await resp.Content.ReadAsStreamAsync();
+                await stream.CopyToAsync(fs);
+
+                return path; // ✅ 返回实际保存的绝对路径
             }
             catch (Exception ex)
             {
@@ -51,6 +90,7 @@ namespace QmtdltTools.Avaloina
                 return "";
             }
         }
+
         public async Task<PagedResult<AttributeResult<Subtitle>>> SearchSubtitles(string moviePath,int page = 0)
         {
             var search = new NewSubtitleSearch

@@ -72,7 +72,7 @@ public partial class LocalVideoView : UserControl, ITransientDependency
 
         Core.Initialize(); // 不手动指定 mac 的 vout，避免独立窗口
 
-        var options = new[]
+        var options = new[]：q
         {
             "--no-video-title-show",
             "--no-osd",

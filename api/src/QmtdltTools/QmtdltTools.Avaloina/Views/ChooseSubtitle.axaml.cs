@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Volo.Abp.DependencyInjection;
 using static System.Net.WebRequestMethods;
+using File = System.IO.File;
 
 namespace QmtdltTools.Avaloina.Views;
 
@@ -44,11 +45,33 @@ public class ChooseSubtitleVm : ReactiveObject, ITransientDependency
         _openSubtitlesAPIService = openSubtitlesAPIService;
         DownloadSubtitleCommand = ReactiveCommand.Create<Subtitle>(downloadSubtitle);         //<Subtitle>
     }
+    // public async void downloadSubtitle(Subtitle subtitle)
+    // {
+    //     if (subtitle == null) return;
+    //     AppSettingHelper.LastVideoSrt = await _openSubtitlesAPIService.DownloadSubtitle(subtitle.Files.FirstOrDefault().FileId, movieDir);          // ���ص���Ļ�ļ�·��
+    //     _ = MessageBoxManager.GetMessageBoxStandard("提示", $"字幕已保存至{AppSettingHelper.LastVideoSrt}").ShowWindowAsync();
+    // }
     public async void downloadSubtitle(Subtitle subtitle)
     {
         if (subtitle == null) return;
-        AppSettingHelper.LastVideoSrt = await _openSubtitlesAPIService.DownloadSubtitle(subtitle.Files.FirstOrDefault().FileId, movieDir);          // ���ص���Ļ�ļ�·��
-        _ = MessageBoxManager.GetMessageBoxStandard("��ʾ", $"��Ļ�ѱ��棺{AppSettingHelper.LastVideoSrt}").ShowWindowAsync();
+
+        var fileId = subtitle.Files?.FirstOrDefault()?.FileId ?? 0;
+        if (fileId == 0)
+        {
+            _ = MessageBoxManager.GetMessageBoxStandard("提示", "该字幕缺少可下载的文件。").ShowWindowAsync();
+            return;
+        }
+
+        var savePath = await _openSubtitlesAPIService.DownloadSubtitle(fileId, movieDir);
+        if (!string.IsNullOrWhiteSpace(savePath) && File.Exists(savePath))
+        {
+            AppSettingHelper.LastVideoSrt = savePath;
+            _ = MessageBoxManager.GetMessageBoxStandard("提示", $"字幕已保存至：{savePath}").ShowWindowAsync();
+        }
+        else
+        {
+            _ = MessageBoxManager.GetMessageBoxStandard("提示", "字幕下载失败或保存路径无效。").ShowWindowAsync();
+        }
     }
     public async void SetMoviePath(string moviePath)
     {
@@ -62,12 +85,15 @@ public class ChooseSubtitleVm : ReactiveObject, ITransientDependency
 
 
                 var info = new FileInfo(moviePath);
-                movieDir = info.Directory.Name;
+                // movieDir = info.Directory.FullName;
+                movieDir = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),
+                    "Subtitles");
             }
         }
         catch (Exception ex)
         {
-            _ = MessageBoxManager.GetMessageBoxStandard("����", $"��ȡ��Ļʧ��: {ex.Message}").ShowWindowAsync();
+            _ = MessageBoxManager.GetMessageBoxStandard("提示", $"字幕下载失败 {ex.Message}").ShowWindowAsync();
         }
     }
     public string movieDir { get; set; }
